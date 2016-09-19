@@ -4,10 +4,21 @@
 ##
 import sys
 import matlab.engine
-from enum import Enum
+import enum
+
+use_log = True
 
 
-class MatlabOdeSolvers(Enum):
+def _log(message):
+    global use_log
+    if use_log:
+        print(message)
+
+
+class MatlabOdeSolvers(enum.Enum):
+    """
+    Choose your MATLAB ode solver from this enum.
+    """
     ode45 = "45"
     ode23 = "23"
     ode113 = "113"
@@ -21,12 +32,13 @@ class MatlabOdeSolvers(Enum):
 class MatlabOde:
     """
     Wrapper for working with odes using the MATLAB python engine.
+    Meant for REAL numbers.
     """
     ode_solver = MatlabOdeSolvers.ode45
     integration_range = (0, 0)
     init_conditions = (0,)
 
-    def __init__(self, eq_system, solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), init_conditions=(0,)):
+    def __init__(self, eq_system="", solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), init_conditions=(0,)):
         if isinstance(eq_system, str):
             self.diff = eq_system
         if isinstance(integration_range, (tuple, list)):
@@ -36,7 +48,9 @@ class MatlabOde:
         if isinstance(solver, MatlabOdeSolvers):
             self.ode_solver = solver
 
+        _log("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
+        _log("Started.")
 
     def set_integration_range(self, range_tuple):
         if isinstance(range_tuple, (tuple, list)):
@@ -57,16 +71,25 @@ class MatlabOde:
             self.ode_solver = name
 
     def solve(self):
+        _log("Solving ode using MATLAB")
         self.engine.workspace['y0'] = matlab.double(self.init_conditions)
         self.engine.workspace['tspan'] = matlab.double(self.integration_range)
 
-        eval_str = "ode" + str(self.ode_solver.value) + "(" + self.diff + ", tspan, y0)"
-        tres, yres = self.engine.eval(eval_str, nargout=2)
-        self.engine.clear()
-        return tres, yres
+        if len(self.diff) > 0:
+            eval_str = "ode" + str(self.ode_solver.value) + "(" + self.diff + ", tspan, y0)"
+            tres, yres = self.engine.eval(eval_str, nargout=2)
+            self.engine.clear(nargout=0)
+            return tres, yres
+        else:
+            return None
+
+    def close_engine(self):
+        _log("Closing MATLAB engine...")
+        self.engine.exit()
+        _log("Closed")
 
     def __del__(self):
-        self.engine.exit()
+        self.close_engine()
 
 
 if __name__ == "__main__":
