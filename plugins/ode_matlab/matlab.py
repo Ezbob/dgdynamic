@@ -5,6 +5,7 @@
 import sys
 import matlab.engine
 import enum
+from plugins.ode_plugin import OdePlugin
 
 use_log = True
 
@@ -29,7 +30,7 @@ class MatlabOdeSolvers(enum.Enum):
     ode15i = "15i"
 
 
-class MatlabOde:
+class MatlabOde(OdePlugin):
     """
     Wrapper for working with odes using the MATLAB python engine.
     Meant for REAL numbers.
@@ -39,12 +40,7 @@ class MatlabOde:
     init_conditions = (0,)
 
     def __init__(self, eq_system="", solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), init_conditions=(0,)):
-        if isinstance(eq_system, str):
-            self.diff = eq_system
-        if isinstance(integration_range, (tuple, list)):
-            self.integration_range = integration_range
-        if isinstance(init_conditions, (tuple, list)):
-            self.init_conditions = init_conditions
+        super().__init__(eq_system, integration_range, init_conditions)
         if isinstance(solver, MatlabOdeSolvers):
             self.ode_solver = solver
 
