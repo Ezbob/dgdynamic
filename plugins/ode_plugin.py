@@ -1,11 +1,23 @@
+import logging
+
+
+class LogMixin:
+    @property
+    def logger(self):
+        name = ".".join([__name__, self.__class__.__name__])
+        return logging.getLogger(name)
+
 
 class OdePlugin:
 
-    def __init__(self, function, integration_range=(0, 0), initial_conditions=(0,)):
+    def __init__(self, function, integration_range=(0, 0), initial_conditions=None):
         self.diff = function
+
         if isinstance(integration_range, (tuple, list)):
             self.integration_range = integration_range
-        if isinstance(initial_conditions, (tuple, list)):
+        if initial_conditions is None:
+            self.initial_conditions = {0: 0}
+        elif isinstance(initial_conditions, dict):
             self.initial_conditions = initial_conditions
 
     def set_integration_range(self, range_tuple):
@@ -19,3 +31,8 @@ class OdePlugin:
 
     def solve(self):
         raise NotImplementedError("Subclass must implement abstract method")
+
+
+def set_logging(filename="myapp.log", level=logging.DEBUG):
+    logging.basicConfig(level=level, format='%(asctime)s %(name)s %(levelname)s %(message)s',
+                        filename=filename, filemode='w')

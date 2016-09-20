@@ -1,10 +1,11 @@
 from scipy.integrate import ode
 from plugins.ode_plugin import OdePlugin
+import sys
 
 
 class Scipy(OdePlugin):
 
-    def __init__(self, function, integration_range=(0, 0), initial_condition=(0,)):
+    def __init__(self, function, integration_range=(0, 0), initial_condition=None):
         super().__init__(function, integration_range, initial_condition)
 
     def solve(self):

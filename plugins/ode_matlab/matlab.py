@@ -5,15 +5,7 @@
 import sys
 import matlab.engine
 import enum
-from plugins.ode_plugin import OdePlugin
-
-use_log = True
-
-
-def _log(message):
-    global use_log
-    if use_log:
-        print(message)
+from plugins.ode_plugin import OdePlugin, LogMixin
 
 
 class MatlabOdeSolvers(enum.Enum):
@@ -30,23 +22,21 @@ class MatlabOdeSolvers(enum.Enum):
     ode15i = "15i"
 
 
-class MatlabOde(OdePlugin):
+class MatlabOde(OdePlugin, LogMixin):
     """
     Wrapper for working with odes using the MATLAB python engine.
     Meant for REAL numbers.
     """
     ode_solver = MatlabOdeSolvers.ode45
-    integration_range = (0, 0)
-    init_conditions = (0,)
 
-    def __init__(self, eq_system="", solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), init_conditions=(0,)):
-        super().__init__(eq_system, integration_range, init_conditions)
+    def __init__(self, eq_system="", solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), init_conditions=None):
+        super().__init__(eq_system, integration_range=integration_range,  initial_conditions=init_conditions)
         if isinstance(solver, MatlabOdeSolvers):
             self.ode_solver = solver
 
-        _log("Starting MATLAB engine...")
+        self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
-        _log("Started.")
+        self.logger.debug("Started.")
 
     def set_integration_range(self, range_tuple):
         if isinstance(range_tuple, (tuple, list)):
@@ -67,8 +57,14 @@ class MatlabOde(OdePlugin):
             self.ode_solver = name
 
     def solve(self):
-        _log("Solving ode using MATLAB")
-        self.engine.workspace['y0'] = matlab.double(self.init_conditions)
+        self.logger.debug("Solving ode using MATLAB")
+        conditions = self.initial_conditions.values()
+        if isinstance(conditions, (list, tuple)):
+            self.engine.workspace['y0'] = matlab.double(conditions)
+        else:
+            # python 3 returns a view not a list of values
+            self.engine.workspace['y0'] = matlab.double(list(conditions))
+
         self.engine.workspace['tspan'] = matlab.double(self.integration_range)
 
         if len(self.diff) > 0:
@@ -80,12 +76,12 @@ class MatlabOde(OdePlugin):
             return None
 
     def close_engine(self):
-        _log("Closing MATLAB engine...")
+        self.logger.debug("Closing MATLAB engine...")
         self.engine.exit()
-        _log("Closed")
+        self.logger.debug("Closed")
 
     def __del__(self):
-        self.close_engine()
+        self.engine.exit()
 
 
 if __name__ == "__main__":
