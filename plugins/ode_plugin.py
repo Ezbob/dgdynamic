@@ -1,6 +1,7 @@
 import logging
 import subprocess
 
+
 class LogMixin:
     @property
     def logger(self):
@@ -31,6 +32,14 @@ class OdePlugin:
 
     def solve(self):
         raise NotImplementedError("Subclass must implement abstract method")
+
+
+class OdeOutput:
+
+    def __init__(self, solvedby, dependend, independed):
+        self.dependend = dependend
+        self.independed = independed
+        self.name = solvedby
 
 
 def set_logging(filename="myapp.log", level=logging.DEBUG):
