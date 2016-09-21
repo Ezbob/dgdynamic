@@ -14,24 +14,29 @@ class ScipyOdeSolvers(Enum):
 
 class ScipyOde(OdePlugin, LogMixin):
 
-    deltaT = 0.1
     solverMethod = ScipyOdeSolvers.VODE
 
-    def __init__(self, function, integration_range=(0, 0), initial_condition=None):
-        super().__init__(function, integration_range, initial_condition)
+    def __init__(self, function, integration_range=(0, 0), initial_condition=None, delta_t=0.05):
+        if isinstance(function, str):
+            super().__init__(eval(function), integration_range, initial_condition, delta_t)
+        else:
+            super().__init__(function, integration_range, initial_condition, delta_t)
         self.logger.debug("Initializing SciPy module...")
-        self._odesolver = ode(self.userFunction).set_integrator(str(self.solverMethod.value))
+        self._odesolver = ode(self.user_function).set_integrator(str(self.solverMethod.value))
         initial_t, initial_y = self.initial_conditions.popitem()
         self._odesolver.set_initial_value(initial_y, initial_t)
         self.logger.debug("Initialized.")
 
     def solve(self):
+        self.logger.debug("Started solving using Scipy with method {}".format(self.solverMethod.value))
         ys = list()
         ts = list()
         while self._odesolver.successful() and self._odesolver.t < self.integration_range[1]:
-            self._odesolver.integrate(self._odesolver.t + self.deltaT)
+            self._odesolver.integrate(self._odesolver.t + self.delta_t)
             ts.append(self._odesolver.t)
             ys.append(list(self._odesolver.y))
+
+        self.logger.debug("Solving finished")
         if len(ys) > 0 and len(ts) > 0:
             return OdeOutput("scipy", ys, ts)
         else:
@@ -42,7 +47,7 @@ class ScipyOde(OdePlugin, LogMixin):
             self.integration_range = range_tuple
 
     def set_ode_solver(self, function):
-        self.userFunction = function
+        self.user_function = function
 
     def set_initial_conditions(self, conditions):
         if isinstance(conditions, dict):

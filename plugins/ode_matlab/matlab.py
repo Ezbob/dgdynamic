@@ -67,8 +67,8 @@ class MatlabOde(OdePlugin, LogMixin):
 
         self.engine.workspace['tspan'] = matlab.double(self.integration_range)
 
-        if len(self.userFunction) > 0:
-            eval_str = "ode" + str(self.ode_solver.value) + "(" + self.userFunction + ", tspan, y0)"
+        if len(self.user_function) > 0:
+            eval_str = "ode" + str(self.ode_solver.value) + "(" + self.user_function + ", tspan, y0)"
             tres, yres = self.engine.eval(eval_str, nargout=2)
             self.engine.clear(nargout=0)
             return OdeOutput(solvedby='matlab', dependend=yres, independed=tres)

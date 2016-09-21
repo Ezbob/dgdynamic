@@ -11,10 +11,11 @@ class LogMixin:
 
 class OdePlugin:
 
-    def __init__(self, function, integration_range=(0, 0), initial_conditions=None):
-        self.userFunction = function
+    def __init__(self, function, integration_range=(0, 0), initial_conditions=None, delta_t=0.05):
+        self.user_function = function
+        self.delta_t = delta_t
 
-        if isinstance(integration_range, (tuple, list)):
+        if isinstance(integration_range, (tuple, list)) and len(integration_range) >= 2:
             self.integration_range = integration_range
         if initial_conditions is None:
             self.initial_conditions = {0: 0}
