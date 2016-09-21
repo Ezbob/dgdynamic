@@ -38,17 +38,17 @@ class OdePlugin:
 
 class OdeOutput:
 
-    def __init__(self, solvedby, dependend, independed):
-        self.dependend = dependend
-        self.independed = independed
-        self.name = solvedby
+    def __init__(self, solved_by, dependent, independent):
+        self.dependent = dependent
+        self.independent = independent
+        self.name = solved_by
 
     def __str__(self):
-        return "{} \n {}".format(self.independed, self.dependend)
+        return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
     def plot(self):
-        ys = list(self.dependend)
-        ts = list(self.independed)
+        ys = list(self.dependent)
+        ts = list(self.independent)
         plt.plot(ts, ys)
         plt.show()
 
@@ -56,5 +56,3 @@ class OdeOutput:
 def set_logging(filename="myapp.log", level=logging.DEBUG):
     logging.basicConfig(level=level, format='%(asctime)s %(name)s %(levelname)s %(message)s',
                         filename=filename, filemode='w')
-
-
