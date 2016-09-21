@@ -12,7 +12,7 @@ class LogMixin:
 class OdePlugin:
 
     def __init__(self, function, integration_range=(0, 0), initial_conditions=None):
-        self.odeFunction = function
+        self.userFunction = function
 
         if isinstance(integration_range, (tuple, list)):
             self.integration_range = integration_range

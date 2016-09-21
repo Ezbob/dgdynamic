@@ -1,3 +1,4 @@
+from plugins.ode_scipy.scipy import ScipyOde
 from plugins.ode_matlab.matlab import MatlabOde
 from plugins.ode_plugin import set_logging
 
@@ -8,7 +9,11 @@ matlab_ode = MatlabOde("@(y,t) y * 2 - 3", integration_range=(0, 5), init_condit
 output = matlab_ode.solve()
 
 print(output)
-#print(type(str(ts)))
-#print(type(str(ys)))
+
+scipy_ode = ScipyOde(lambda y, t: y * 2 - 3, integration_range=(0, 5), initial_condition={0: 4})
+
+output = scipy_ode.solve()
+
+print(output)
 
 output.plot()
