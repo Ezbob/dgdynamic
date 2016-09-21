@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import logging
 import subprocess
 
@@ -46,7 +47,10 @@ class OdeOutput:
         return "{} \n {}".format(self.independed, self.dependend)
 
     def plot(self):
-        subprocess.run(["python", "run_matplot.py", str(self.dependend), str(self.independed)])
+        ys = list(self.dependend)
+        ts = list(self.independed)
+        plt.plot(ts, ys)
+        plt.show()
 
 
 def set_logging(filename="myapp.log", level=logging.DEBUG):
