@@ -1,5 +1,5 @@
 import logging
-
+import subprocess
 
 class LogMixin:
     @property
@@ -11,7 +11,7 @@ class LogMixin:
 class OdePlugin:
 
     def __init__(self, function, integration_range=(0, 0), initial_conditions=None):
-        self.diff = function
+        self.odeFunction = function
 
         if isinstance(integration_range, (tuple, list)):
             self.integration_range = integration_range
@@ -36,3 +36,7 @@ class OdePlugin:
 def set_logging(filename="myapp.log", level=logging.DEBUG):
     logging.basicConfig(level=level, format='%(asctime)s %(name)s %(levelname)s %(message)s',
                         filename=filename, filemode='w')
+
+
+def plot(ys, ts):
+    subprocess.run(["python", "run_matplot.py", str(ys), str(ts)])
