@@ -10,6 +10,8 @@ output = matlab_ode.solve()
 
 print(output)
 
+output.plot()
+
 scipy_ode = ScipyOde(lambda y, t: y * 2 - 3, integration_range=(0, 5), initial_condition={0: 4})
 
 output = scipy_ode.solve()

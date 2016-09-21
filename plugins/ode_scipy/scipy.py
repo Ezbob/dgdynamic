@@ -33,9 +33,9 @@ class ScipyOde(OdePlugin, LogMixin):
         ys = list()
         ts = list()
         while self._odesolver.successful() and self._odesolver.t < self.integration_range[1]:
-            self._odesolver.integrate(self._odesolver.t + self.delta_t)
             ts.append(self._odesolver.t)
             ys.append(list(self._odesolver.y))
+            self._odesolver.integrate(self._odesolver.t + self.delta_t)
 
         self.logger.debug("Solving finished")
         if len(ys) > 0 and len(ts) > 0:
