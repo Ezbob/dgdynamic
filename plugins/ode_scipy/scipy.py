@@ -1,6 +1,7 @@
 from scipy.integrate import ode
 from plugins.ode_plugin import OdePlugin, LogMixin, OdeOutput
 from enum import Enum
+from config import SupportedSolvers
 import sys
 
 
@@ -25,7 +26,7 @@ class ScipyOde(OdePlugin, LogMixin):
         self._odesolver = ode(self.user_function).set_integrator(str(self.solverMethod.value))
         initial_t, initial_y = self.initial_conditions.popitem()
         self._odesolver.set_initial_value(initial_y, initial_t)
-        self.logger.debug("Initialized.")
+        self.logger.debug("Initialized SciPy.")
 
     def solve(self):
         self.logger.debug("Started solving using Scipy with method {}".format(self.solverMethod.value))
@@ -38,7 +39,7 @@ class ScipyOde(OdePlugin, LogMixin):
 
         self.logger.debug("Solving finished")
         if len(ys) > 0 and len(ts) > 0:
-            return OdeOutput("scipy", ys, ts)
+            return OdeOutput(SupportedSolvers.Scipy, ys, ts)
         else:
             return None
 

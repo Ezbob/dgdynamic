@@ -6,6 +6,7 @@ import sys
 import matlab.engine
 import enum
 from plugins.ode_plugin import OdePlugin, LogMixin, OdeOutput
+from config import SupportedSolvers
 
 
 class MatlabOdeSolvers(enum.Enum):
@@ -71,7 +72,7 @@ class MatlabOde(OdePlugin, LogMixin):
             eval_str = "ode" + str(self.ode_solver.value) + "(" + self.user_function + ", tspan, y0)"
             tres, yres = self.engine.eval(eval_str, nargout=2)
             self.engine.clear(nargout=0)
-            return OdeOutput(solvedby='matlab', dependend=yres, independed=tres)
+            return OdeOutput(solvedby=SupportedSolvers.Matlab, dependend=yres, independed=tres)
         else:
             return None
 
