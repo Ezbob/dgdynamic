@@ -41,11 +41,15 @@ class OdeOutput:
         self.independed = independed
         self.name = solvedby
 
+    def __str__(self):
+        return "{} \n {}".format(self.independed, self.dependend)
+
+    def plot(self):
+        subprocess.run(["python", "run_matplot.py", str(self.dependend), str(self.independed)])
+
 
 def set_logging(filename="myapp.log", level=logging.DEBUG):
     logging.basicConfig(level=level, format='%(asctime)s %(name)s %(levelname)s %(message)s',
                         filename=filename, filemode='w')
 
 
-def plot(ys, ts):
-    subprocess.run(["python", "run_matplot.py", str(ys), str(ts)])
