@@ -71,6 +71,8 @@ class MatlabOde(OdePlugin, LogMixin):
         if len(self.user_function) > 0:
             eval_str = "ode" + str(self.ode_solver.value) + "(" + self.user_function + ", tspan, y0)"
             tres, yres = self.engine.eval(eval_str, nargout=2)
+            if len(tres) >= 2:
+                self.delta_t = tres[1] - tres[0]
             self.engine.clear(nargout=0)
             self.logger.debug("Successfully solved")
             return OdeOutput(solved_by=SupportedSolvers.Matlab.value, dependent=yres, independent=tres)

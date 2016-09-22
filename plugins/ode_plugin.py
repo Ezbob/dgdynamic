@@ -53,27 +53,26 @@ class OdeOutput(LogMixin):
         plt.plot(ts, ys)
         plt.show()
 
-    def save(self, filename="plotdata"):
+    def save(self, name="plotdata"):
         paired = list(zip(self.independent, self.dependent))
         self.logger.debug(paired)
-
-        if os.path.exists(config.PLOT_DIRECTORY):
-            shutil.rmtree(config.PLOT_DIRECTORY)
-        os.mkdir(config.PLOT_DIRECTORY)
+        _make_directory(config.PLOT_DIRECTORY, pre_delete=True)
         count = 0
         if isinstance(self.dependent, list) and isinstance(self.dependent[0], list):
             count = len(self.dependent[0])
             self.logger.debug("Count is {}".format(count))
 
         absolute = os.path.abspath(config.PLOT_DIRECTORY)
-
-        new_filename = os.path.join(absolute, "{}_{}.csv".format(self.name, filename))
+        new_filename = os.path.join(absolute, "{}_{}.csv".format(self.name, name))
+        self.logger.debug("Saving data as {}".format(new_filename))
         with open(new_filename, mode='a') as fout:
+            # writing header
             fout.write("t,")
             for j in range(0, count - 1):
                 fout.write("y{},".format(j))
             fout.write("y{}\n".format(count - 1))
 
+            # now for the data
             for i in range(0, len(paired)):
                 fout.write("{},".format(self.independent[i]))
                 for j in range(0, count):
@@ -84,6 +83,17 @@ class OdeOutput(LogMixin):
                 fout.write("\n")
 
 
-def set_logging(filename="myapp.log", level=logging.DEBUG):
+def _make_directory(path, pre_delete=False):
+    if os.path.exists(path) and pre_delete is True:
+            shutil.rmtree(path)
+            os.mkdir(path)
+    elif not os.path.exists(path):
+        os.mkdir(path)
+
+
+def set_logging(filename="solver.log", new_session=False, level=logging.DEBUG):
+    log_dir = os.path.abspath(config.LOG_DIRECTORY)
+    _make_directory(log_dir, pre_delete=new_session)
+    new_file_path = os.path.join(log_dir, filename)
     logging.basicConfig(level=level, format='%(asctime)s %(name)s %(levelname)s %(message)s',
-                        filename=filename, filemode='w')
+                        filename=new_file_path, filemode='w')
