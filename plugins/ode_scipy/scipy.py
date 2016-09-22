@@ -40,6 +40,8 @@ initial condition: {} range: {} and dt: {} ".format(inspect.getsource(self.user_
                                                     self.initial_conditions, self.integration_range, self.delta_t))
 
         self.logger.debug("Setting scipy parameters...")
+        assert self.integration_range[0] <= self.integration_range[1]
+
         self._odesolver = ode(self.user_function).set_integrator(str(self._solverMethod.value))
         initial_t, initial_y = self.initial_conditions.popitem()
         self._odesolver.set_initial_value(initial_y, initial_t)

@@ -70,13 +70,13 @@ class OdeOutput(LogMixin):
 
     def save(self, name="plotdata"):
         paired = list(zip(self.independent, self.dependent))
-        _make_directory(config.PLOT_DIRECTORY, pre_delete=False)
+        _make_directory(config.DATA_DIRECTORY, pre_delete=False)
         count = 0
         if isinstance(self.dependent, list) and isinstance(self.dependent[0], list):
             count = len(self.dependent[0])
             self.logger.debug("Count is {}".format(count))
 
-        absolute = os.path.abspath(config.PLOT_DIRECTORY)
+        absolute = os.path.abspath(config.DATA_DIRECTORY)
         new_filename = os.path.join(absolute, "{}_{}.csv".format(self.solver.value, name))
         self.logger.debug("Saving data as {}".format(new_filename))
         with open(new_filename, mode='a') as fout:

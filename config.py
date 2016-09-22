@@ -1,8 +1,9 @@
 import enum
 
 ODE_MODULE_PRECISION = "double"
-PLOT_DIRECTORY = "plots"
+DATA_DIRECTORY = "data"
 LOG_DIRECTORY = "logs"
+
 
 class SupportedSolvers(enum.Enum):
     Scipy = "scipy"
