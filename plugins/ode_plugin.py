@@ -79,7 +79,7 @@ class OdeOutput(LogMixin):
         absolute = os.path.abspath(config.DATA_DIRECTORY)
         new_filename = os.path.join(absolute, "{}_{}.csv".format(self.solver.value, name))
         self.logger.debug("Saving data as {}".format(new_filename))
-        with open(new_filename, mode='a') as fout:
+        with open(new_filename, mode='w') as fout:
             # writing header
             fout.write("t,")
             for j in range(0, count - 1):

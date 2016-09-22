@@ -93,8 +93,18 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_rang
             self.engine.clear(nargout=0)
             self.logger.debug("Successfully solved")
 
-            # a bit dirty way of converting it to normal lists but matlab likes its "doubles"
-            tres = tres[0]._data.tolist()
+            # http://stackoverflow.com/questions/30013853/convert-matlab-double-array-to-python-array
+            # plus some base case I figured out
+            def convert_matrix(double_matrix):
+                row_width = double_matrix.size[0]
+                converts = []
+                for x in range(row_width):
+                    converts.append(double_matrix._data[x::row_width].tolist())
+                return converts
+
+            # flat that list
+            tres = [a for i in convert_matrix(tres) for a in i]
+            yres = convert_matrix(yres)
 
             return OdeOutput(solved_by=SupportedSolvers.Matlab, dependent=yres, independent=tres)
         else:
