@@ -47,6 +47,7 @@ initial condition: {} range: {} and dt: {} ".format(inspect.getsource(self.user_
 
         ys = list()
         ts = list()
+        self._odesolver.t = self.integration_range[0]
         while self._odesolver.successful() and self._odesolver.t < self.integration_range[1]:
             ts.append(self._odesolver.t)
             ys.append(list(self._odesolver.y))
