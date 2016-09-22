@@ -8,7 +8,7 @@ matlab_ode = MatlabOde("@(t, y) y * 2 - 3", integration_range=(0, 5), init_condi
 
 output = matlab_ode.solve()
 
-print(output)
+#print(output)
 output.save(name="firstordertest")
 output.plot()
 
@@ -17,7 +17,7 @@ matlab_ode.set_initial_conditions({0: [2, 3]})
 matlab_ode.set_integration_range((-10, 10))
 
 output = matlab_ode.solve()
-print(output)
+#print(output)
 output.save(name="secondordertest")
 output.plot()
 
@@ -34,5 +34,5 @@ scipy_ode.set_initial_conditions({0: [2, 3]})
 
 output = scipy_ode.solve()
 output.save("secondordertest")
-print(output)
+#print(output)
 output.plot()
