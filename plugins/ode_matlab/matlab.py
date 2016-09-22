@@ -1,4 +1,3 @@
-##
 #  Matlab ode solver plugin
 #  This plugin uses the matlab python engine to approximate solutions to ODEs
 ##
@@ -26,7 +25,6 @@ class MatlabOdeSolvers(enum.Enum):
 class MatlabOde(OdePlugin, LogMixin):
     """
     Wrapper for working with odes using the MATLAB python engine.
-    Meant for REAL numbers.
     """
     ode_solver = MatlabOdeSolvers.ode45
 
@@ -53,9 +51,13 @@ class MatlabOde(OdePlugin, LogMixin):
             self.engine.exit()
             raise TypeError("Initial conditions should be formulated as a dictionary t -> y")
 
-    def set_ode_solver(self, name):
+    def set_ode_method(self, name):
         if isinstance(name, MatlabOdeSolvers):
             self.ode_solver = name
+
+    def set_ode_function(self, ode_function):
+        if isinstance(ode_function, (callable, str)):
+            self.user_function = ode_function
 
     def add_to_workspace(self, key, value):
         if isinstance(key, str):
@@ -69,6 +71,8 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine.clear()
 
     def solve(self):
+        if self.user_function is None:
+            return None
         self.logger.debug("Solving ode using MATLAB")
         conditions = self.initial_conditions.values()
         if isinstance(conditions, (list, tuple)):

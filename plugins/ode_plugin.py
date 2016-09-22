@@ -6,9 +6,14 @@ import shutil
 import config
 import abc
 from abc import abstractmethod
+import collections
+import matlab
 
 
 class LogMixin:
+    """
+    Handy code for injecting a logger instance in any class
+    """
     @property
     def logger(self):
         name = ".".join([__name__, self.__class__.__name__])
@@ -16,7 +21,7 @@ class LogMixin:
 
 
 class OdePlugin(metaclass=abc.ABCMeta):
-    def __init__(self, function, integration_range=(0, 0), initial_conditions=None, delta_t=0.05):
+    def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05):
         self.user_function = function
         self.delta_t = delta_t
 
@@ -32,7 +37,7 @@ class OdePlugin(metaclass=abc.ABCMeta):
         raise NotImplementedError("Subclass must implement abstract method")
 
     @abstractmethod
-    def set_ode_solver(self, name):
+    def set_ode_method(self, name):
         raise NotImplementedError("Subclass must implement abstract method")
 
     @abstractmethod
@@ -41,6 +46,10 @@ class OdePlugin(metaclass=abc.ABCMeta):
 
     @abstractmethod
     def solve(self):
+        raise NotImplementedError("Subclass must implement abstract method")
+
+    @abstractmethod
+    def set_ode_function(self, ode_function):
         raise NotImplementedError("Subclass must implement abstract method")
 
 
@@ -61,7 +70,6 @@ class OdeOutput(LogMixin):
 
     def save(self, name="plotdata"):
         paired = list(zip(self.independent, self.dependent))
-        self.logger.debug(paired)
         _make_directory(config.PLOT_DIRECTORY, pre_delete=False)
         count = 0
         if isinstance(self.dependent, list) and isinstance(self.dependent[0], list):
@@ -89,6 +97,15 @@ class OdeOutput(LogMixin):
                 fout.write("\n")
 
 
+def _flatten(li):
+    return [item for item in li]
+
+
+def _unpack_matlab_double(double):
+    for i in range(0, len(double._data)):
+        yield double._data[i]
+
+
 def _make_directory(path, pre_delete=False):
     if os.path.exists(path) and pre_delete is True:
             shutil.rmtree(path)
@@ -98,6 +115,13 @@ def _make_directory(path, pre_delete=False):
 
 
 def set_logging(filename="solver.log", new_session=False, level=logging.DEBUG):
+    """
+    This function setups the root logging system for use with the logging mixin.
+    All log statements gets written to a log file
+    :param filename: the name of the log file
+    :param new_session: whether to delete all previous log files in the log directory
+    :param level: maximum log level to log for
+    """
     log_dir = os.path.abspath(config.LOG_DIRECTORY)
     _make_directory(log_dir, pre_delete=new_session)
     new_file_path = os.path.join(log_dir, filename)

@@ -3,9 +3,13 @@ from plugins.ode_plugin import OdePlugin, LogMixin, OdeOutput
 from enum import Enum
 from config import SupportedSolvers
 import sys
+import inspect
 
 
 class ScipyOdeSolvers(Enum):
+    """
+    Enum representing different ode solver methods available to the Scipy solver
+    """
     VODE = "vode"
     ZVODE = "zvode"
     ISODA = "isoda"
@@ -14,22 +18,33 @@ class ScipyOdeSolvers(Enum):
 
 
 class ScipyOde(OdePlugin, LogMixin):
+    """
+    Scipy ODE solver plugin
+    """
+    # the default method uses the real value solver VODE
+    _solverMethod = ScipyOdeSolvers.VODE
+    _odesolver = None
 
-    solverMethod = ScipyOdeSolvers.VODE
-
-    def __init__(self, function, integration_range=(0, 0), initial_condition=None, delta_t=0.05):
+    def __init__(self, function=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05):
         if isinstance(function, str):
             super().__init__(eval(function), integration_range, initial_condition, delta_t)
         else:
             super().__init__(function, integration_range, initial_condition, delta_t)
-        self.logger.debug("Initializing SciPy module...")
-        self._odesolver = ode(self.user_function).set_integrator(str(self.solverMethod.value))
-        initial_t, initial_y = self.initial_conditions.popitem()
-        self._odesolver.set_initial_value(initial_y, initial_t)
-        self.logger.debug("Initialized SciPy.")
 
     def solve(self):
-        self.logger.debug("Started solving using Scipy with method {}".format(self.solverMethod.value))
+        if self.user_function is None or (isinstance(self.user_function, str) and len(self.user_function) == 0):
+            return None
+        self.logger.debug("Started solving using Scipy with method {}".format(self._solverMethod.value))
+        self.logger.debug("Functions is {}, \
+initial condition: {} range: {} and dt: {} ".format(inspect.getsource(self.user_function),
+                                                    self.initial_conditions, self.integration_range, self.delta_t))
+
+        self.logger.debug("Setting scipy parameters...")
+        self._odesolver = ode(self.user_function).set_integrator(str(self._solverMethod.value))
+        initial_t, initial_y = self.initial_conditions.popitem()
+        self._odesolver.set_initial_value(initial_y, initial_t)
+        self.logger.debug("Set.")
+
         ys = list()
         ts = list()
         while self._odesolver.successful() and self._odesolver.t < self.integration_range[1]:
@@ -47,12 +62,16 @@ class ScipyOde(OdePlugin, LogMixin):
         if isinstance(range_tuple, tuple):
             self.integration_range = range_tuple
 
-    def set_ode_solver(self, function):
+    def set_ode_method(self, function):
         self.user_function = function
 
     def set_initial_conditions(self, conditions):
         if isinstance(conditions, dict):
             self.initial_conditions = conditions
+
+    def set_ode_function(self, ode_function):
+        if isinstance(ode_function, str) or callable(ode_function):
+            self.user_function = ode_function
 
 if __name__ == "__main__":
     print("Plugin not meant as standalone application", file=sys.stderr)
