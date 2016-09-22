@@ -94,7 +94,6 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_rang
             self.logger.debug("Successfully solved")
 
             # http://stackoverflow.com/questions/30013853/convert-matlab-double-array-to-python-array
-            # plus some base case I figured out
             def convert_matrix(double_matrix):
                 row_width = double_matrix.size[0]
                 converts = []
@@ -103,7 +102,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_rang
                 return converts
 
             # flat that list
-            tres = [a for i in convert_matrix(tres) for a in i]
+            tres = [a for i in tres for a in i]
             yres = convert_matrix(yres)
 
             return OdeOutput(solved_by=SupportedSolvers.Matlab, dependent=yres, independent=tres)
