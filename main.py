@@ -4,20 +4,27 @@ from plugins.ode_plugin import set_logging
 
 set_logging(new_session=True)
 
-#matlab_ode = MatlabOde("@(y,t) y * 2 - 3", integration_range=(0, 5), init_conditions={0: 4})
+matlab_ode = MatlabOde("@(t, y) y * 2 - 3", integration_range=(0, 5), init_conditions={0: 4})
 
-#output = matlab_ode.solve()
+output = matlab_ode.solve()
 
-#print(output)
+print(output)
+output.plot()
 
+matlab_ode.user_function = "@(t,y) [ y(2); (1 - y(1) ^ 2) * y(2) - y(1) ]"
+matlab_ode.set_initial_conditions({0: [2, 3]})
+matlab_ode.set_integration_range((-10, 10))
 
-#output.plot()
+output = matlab_ode.solve()
+print(output)
+output.save(name="secondorder")
+output.plot()
 
-scipy_ode = ScipyOde(lambda y, t: y * 2 - 3, integration_range=(0, 5), initial_condition={0: 4})
+scipy_ode = ScipyOde(lambda t, y: y * 2 - 3, integration_range=(0, 5), initial_condition={0: 4})
 
 output = scipy_ode.solve()
 output.save()
 
-#print(output)
+print(output)
 
-#output.plot()
+output.plot()

@@ -56,7 +56,7 @@ class OdeOutput(LogMixin):
     def save(self, name="plotdata"):
         paired = list(zip(self.independent, self.dependent))
         self.logger.debug(paired)
-        _make_directory(config.PLOT_DIRECTORY, pre_delete=True)
+        _make_directory(config.PLOT_DIRECTORY, pre_delete=False)
         count = 0
         if isinstance(self.dependent, list) and isinstance(self.dependent[0], list):
             count = len(self.dependent[0])
