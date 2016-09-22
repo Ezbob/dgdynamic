@@ -39,7 +39,7 @@ class ScipyOde(OdePlugin, LogMixin):
 
         self.logger.debug("Solving finished")
         if len(ys) > 0 and len(ts) > 0:
-            return OdeOutput(SupportedSolvers.Scipy.value, ys, ts)
+            return OdeOutput(SupportedSolvers.Scipy, ys, ts)
         else:
             return None
 

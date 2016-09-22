@@ -88,7 +88,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_rang
                 self.delta_t = tres._data[1] - tres._data[0]
             self.engine.clear(nargout=0)
             self.logger.debug("Successfully solved")
-            return OdeOutput(solved_by=SupportedSolvers.Matlab.value, dependent=yres, independent=tres)
+            return OdeOutput(solved_by=SupportedSolvers.Matlab, dependent=yres, independent=tres)
         else:
             self.logger.debug("Empty ode function. Aborting...")
             return None

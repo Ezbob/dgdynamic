@@ -4,6 +4,8 @@ import os
 import os.path
 import shutil
 import config
+import abc
+from abc import abstractmethod
 
 
 class LogMixin:
@@ -13,7 +15,7 @@ class LogMixin:
         return logging.getLogger(name)
 
 
-class OdePlugin:
+class OdePlugin(metaclass=abc.ABCMeta):
     def __init__(self, function, integration_range=(0, 0), initial_conditions=None, delta_t=0.05):
         self.user_function = function
         self.delta_t = delta_t
@@ -25,15 +27,19 @@ class OdePlugin:
         elif isinstance(initial_conditions, dict):
             self.initial_conditions = initial_conditions
 
+    @abstractmethod
     def set_integration_range(self, range_tuple):
         raise NotImplementedError("Subclass must implement abstract method")
 
+    @abstractmethod
     def set_ode_solver(self, name):
         raise NotImplementedError("Subclass must implement abstract method")
 
+    @abstractmethod
     def set_initial_conditions(self, conditions):
         raise NotImplementedError("Subclass must implement abstract method")
 
+    @abstractmethod
     def solve(self):
         raise NotImplementedError("Subclass must implement abstract method")
 
@@ -42,7 +48,7 @@ class OdeOutput(LogMixin):
     def __init__(self, solved_by, dependent, independent):
         self.dependent = dependent
         self.independent = independent
-        self.name = solved_by
+        self.solver = solved_by
 
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
@@ -63,7 +69,7 @@ class OdeOutput(LogMixin):
             self.logger.debug("Count is {}".format(count))
 
         absolute = os.path.abspath(config.PLOT_DIRECTORY)
-        new_filename = os.path.join(absolute, "{}_{}.csv".format(self.name, name))
+        new_filename = os.path.join(absolute, "{}_{}.csv".format(self.solver.value, name))
         self.logger.debug("Saving data as {}".format(new_filename))
         with open(new_filename, mode='a') as fout:
             # writing header
