@@ -65,6 +65,7 @@ class OdeOutput(LogMixin):
         ts = list(self.independent)
         plt.plot(ts, ys)
         plt.show()
+        return self
 
     def save(self, name="plotdata"):
         paired = list(zip(self.independent, self.dependent))
@@ -93,6 +94,7 @@ class OdeOutput(LogMixin):
                     else:
                         fout.write("{}".format(self.dependent[i][j]))
                 fout.write("\n")
+        return self
 
 
 def _flatten(li):

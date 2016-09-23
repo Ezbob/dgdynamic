@@ -6,12 +6,12 @@ set_logging(new_session=True)
 
 matlab_ode = MatlabOde("@(t, y) y * 2 - 3", integration_range=(0, 5), initial_conditions={0: 4})
 
+matlab_ode.solve()
 output = matlab_ode.solve()
 
 output.save(name="firstordertest")
 output.plot()
-
-matlab_ode.user_function = "@(t,y) [ y(2); (1 - y(1) ^ 2) * y(2) - y(1) ]"
+matlab_ode.set_ode_function("@(t,y) [ y(2); (1 - y(1) ^ 2) * y(2) - y(1) ]")
 matlab_ode.set_initial_conditions({0: [2, 3]})
 matlab_ode.set_integration_range((-10, 10))
 

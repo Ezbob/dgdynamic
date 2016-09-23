@@ -43,6 +43,7 @@ class MatlabOde(OdePlugin, LogMixin):
         else:
             self.engine.exit()
             raise TypeError("Range not a tuple")
+        return self
 
     def set_initial_conditions(self, conditions):
         if isinstance(conditions, dict):
@@ -50,25 +51,31 @@ class MatlabOde(OdePlugin, LogMixin):
         else:
             self.engine.exit()
             raise TypeError("Initial conditions should be formulated as a dictionary t -> y")
+        return self
 
     def set_ode_method(self, name):
         if isinstance(name, MatlabOdeSolvers):
             self._ode_solver = name
+        return self
 
     def set_ode_function(self, ode_function):
-        if isinstance(ode_function, (callable, str)):
+        if isinstance(ode_function, str) or callable(ode_function):
             self.user_function = ode_function
+        return self
 
     def add_to_workspace(self, key, value):
         if isinstance(key, str):
             self.engine.workspace[key] = value
+        return self
 
     def get_from_workspace(self, key):
         if isinstance(key, str):
             return self.engine.workspace[key]
+        return self
 
     def clear_workspace(self):
         self.engine.clear()
+        return self
 
     def solve(self):
         if self.user_function is None:

@@ -62,17 +62,21 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
     def set_integration_range(self, range_tuple):
         if isinstance(range_tuple, tuple):
             self.integration_range = range_tuple
+        return self
 
     def set_ode_method(self, function):
         self.user_function = function
+        return self
 
     def set_initial_conditions(self, conditions):
         if isinstance(conditions, dict):
             self.initial_conditions = conditions
+        return self
 
     def set_ode_function(self, ode_function):
         if isinstance(ode_function, str) or callable(ode_function):
             self.user_function = ode_function
+        return self
 
 if __name__ == "__main__":
     print("Plugin not meant as standalone application", file=sys.stderr)
