@@ -3,7 +3,6 @@ from plugins.ode_plugin import OdePlugin, LogMixin, OdeOutput
 from enum import Enum
 from config import SupportedSolvers
 import sys
-import inspect
 
 
 class ScipyOdeSolvers(Enum):
