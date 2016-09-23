@@ -36,8 +36,7 @@ class ScipyOde(OdePlugin, LogMixin):
             return None
         self.logger.debug("Started solving using Scipy with method {}".format(self._solverMethod.value))
         self.logger.debug("Functions is {}, \
-initial condition: {} range: {} and dt: {} ".format(inspect.getsource(self.user_function),
-                                                    self.initial_conditions, self.integration_range, self.delta_t))
+range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, self.delta_t))
 
         self.logger.debug("Setting scipy parameters...")
         assert self.integration_range[0] <= self.integration_range[1]

@@ -4,11 +4,10 @@ from plugins.ode_plugin import set_logging
 
 set_logging(new_session=True)
 
-matlab_ode = MatlabOde("@(t, y) y * 2 - 3", integration_range=(0, 5), init_conditions={0: 4})
+matlab_ode = MatlabOde("@(t, y) y * 2 - 3", integration_range=(0, 5), initial_conditions={0: 4})
 
 output = matlab_ode.solve()
 
-#print(output)
 output.save(name="firstordertest")
 output.plot()
 
@@ -17,18 +16,21 @@ matlab_ode.set_initial_conditions({0: [2, 3]})
 matlab_ode.set_integration_range((-10, 10))
 
 output = matlab_ode.solve()
-#print(output)
 output.save(name="secondordertest")
 output.plot()
 
-scipy_ode = ScipyOde()#lambda t, y: y * 2 - 3)
+scipy_ode = ScipyOde("lambda t, y: y * 2 - 3", integration_range=(0, 5), initial_condition={0: 4})
 
-#output = scipy_ode.solve()
-#output.save("firstordertest")
-#print(output)
-#output.plot()
+output = scipy_ode.solve()
+output.save("firstordertest")
+print(output)
+output.plot()
 
-scipy_ode.set_ode_function(lambda t, y: [y[1], (1 - y[0] ** 2) * y[1] - y[0]])
+
+def f(t, y):
+    return [y[1], (1 - y[0] ** 2) * y[1] - y[0]]
+
+scipy_ode.set_ode_function(f)
 scipy_ode.set_integration_range((-10, 10))
 scipy_ode.set_initial_conditions({0: [2, 3]})
 

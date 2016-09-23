@@ -26,12 +26,12 @@ class MatlabOde(OdePlugin, LogMixin):
     """
     Wrapper for working with odes using the MATLAB python engine.
     """
-    ode_solver = MatlabOdeSolvers.ode45
+    _ode_solver = MatlabOdeSolvers.ode45
 
-    def __init__(self, eq_system="", solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), init_conditions=None):
-        super().__init__(eq_system, integration_range=integration_range,  initial_conditions=init_conditions)
+    def __init__(self, eq_system="", solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), initial_conditions=None):
+        super().__init__(eq_system, integration_range=integration_range,  initial_conditions=initial_conditions)
         if isinstance(solver, MatlabOdeSolvers):
-            self.ode_solver = solver
+            self._ode_solver = solver
 
         self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
@@ -53,7 +53,7 @@ class MatlabOde(OdePlugin, LogMixin):
 
     def set_ode_method(self, name):
         if isinstance(name, MatlabOdeSolvers):
-            self.ode_solver = name
+            self._ode_solver = name
 
     def set_ode_function(self, ode_function):
         if isinstance(ode_function, (callable, str)):
@@ -84,7 +84,7 @@ class MatlabOde(OdePlugin, LogMixin):
         self.add_to_workspace('tspan', matlab.double(self.integration_range))
 
         if len(self.user_function) > 0:
-            eval_str = "ode" + str(self.ode_solver.value) + "(" + self.user_function + ", tspan, y0)"
+            eval_str = "ode" + str(self._ode_solver.value) + "(" + self.user_function + ", tspan, y0)"
             self.logger.debug("evaluating matlab \
 expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_range, self.initial_conditions))
             tres, yres = self.engine.eval(eval_str, nargout=2)
