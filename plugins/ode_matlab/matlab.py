@@ -60,7 +60,7 @@ class MatlabOde(OdePlugin, LogMixin):
 
     def set_ode_function(self, ode_function):
         if isinstance(ode_function, str) or callable(ode_function):
-            self.user_function = ode_function
+            self._user_function = ode_function
         return self
 
     def add_to_workspace(self, key, value):
@@ -78,7 +78,7 @@ class MatlabOde(OdePlugin, LogMixin):
         return self
 
     def solve(self):
-        if self.user_function is None:
+        if self._user_function is None:
             return None
         self.logger.debug("Solving ode using MATLAB")
         conditions = self.initial_conditions.values()
@@ -90,8 +90,8 @@ class MatlabOde(OdePlugin, LogMixin):
 
         self.add_to_workspace('tspan', matlab.double(self.integration_range))
 
-        if len(self.user_function) > 0:
-            eval_str = "ode" + str(self._ode_solver.value) + "(" + self.user_function + ", tspan, y0)"
+        if len(self._user_function) > 0:
+            eval_str = "ode" + str(self._ode_solver.value) + "(" + self._user_function + ", tspan, y0)"
             self.logger.debug("evaluating matlab \
 expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_range, self.initial_conditions))
             tres, yres = self.engine.eval(eval_str, nargout=2)

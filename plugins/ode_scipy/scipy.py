@@ -31,7 +31,7 @@ class ScipyOde(OdePlugin, LogMixin):
             super().__init__(function, integration_range, initial_condition, delta_t)
 
     def solve(self):
-        if self.user_function is None or (isinstance(self.user_function, str) and len(self.user_function) == 0):
+        if self._user_function is None or (isinstance(self._user_function, str) and len(self._user_function) == 0):
             return None
         self.logger.debug("Started solving using Scipy with method {}".format(self._solverMethod.value))
         self.logger.debug("Functions is {}, \
@@ -40,7 +40,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
         self.logger.debug("Setting scipy parameters...")
         assert self.integration_range[0] <= self.integration_range[1]
 
-        self._odesolver = ode(self.user_function).set_integrator(str(self._solverMethod.value))
+        self._odesolver = ode(self._user_function).set_integrator(str(self._solverMethod.value))
         initial_t, initial_y = self.initial_conditions.popitem()
         self._odesolver.set_initial_value(initial_y, initial_t)
         self.logger.debug("Set.")
@@ -65,7 +65,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
         return self
 
     def set_ode_method(self, function):
-        self.user_function = function
+        self._user_function = function
         return self
 
     def set_initial_conditions(self, conditions):
@@ -75,7 +75,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
 
     def set_ode_function(self, ode_function):
         if isinstance(ode_function, str) or callable(ode_function):
-            self.user_function = ode_function
+            self._user_function = ode_function
         return self
 
 if __name__ == "__main__":
