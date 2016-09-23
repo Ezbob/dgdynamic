@@ -6,8 +6,6 @@ import shutil
 import config
 import abc
 from abc import abstractmethod
-import collections
-import matlab
 
 
 class LogMixin:
@@ -77,21 +75,21 @@ class OdeOutput(LogMixin):
             self.logger.debug("Count is {}".format(count))
 
         absolute = os.path.abspath(config.DATA_DIRECTORY)
-        new_filename = os.path.join(absolute, "{}_{}.csv".format(self.solver.value, name))
+        new_filename = os.path.join(absolute, "{}_{}.tsv".format(self.solver.value, name))
         self.logger.debug("Saving data as {}".format(new_filename))
         with open(new_filename, mode='w') as fout:
             # writing header
-            fout.write("t,")
+            fout.write("t\t")
             for j in range(0, count - 1):
-                fout.write("y{},".format(j))
+                fout.write("y{}\t".format(j))
             fout.write("y{}\n".format(count - 1))
 
             # now for the data
             for i in range(0, len(paired)):
-                fout.write("{},".format(self.independent[i]))
+                fout.write("{}\t".format(self.independent[i]))
                 for j in range(0, count):
                     if j < count - 1:
-                        fout.write("{},".format(self.dependent[i][j]))
+                        fout.write("{}\t".format(self.dependent[i][j]))
                     else:
                         fout.write("{}".format(self.dependent[i][j]))
                 fout.write("\n")
