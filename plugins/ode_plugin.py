@@ -136,7 +136,7 @@ class OdeOutput(LogMixin):
                     finally:
                         self.logger.exception("Could not write dependent variable to file")
                         fileout.close()
-                        raise FloatingPointError
+                        raise FloatingPointError("Could not write dependent variable to file")
 
                 fileout.write("\n")
         return self
@@ -144,11 +144,6 @@ class OdeOutput(LogMixin):
 
 def _flatten(li):
     return [item for item in li]
-
-
-def _unpack_matlab_double(double):
-    for i in range(0, len(double._data)):
-        yield double._data[i]
 
 
 def _make_directory(path, pre_delete=False):
