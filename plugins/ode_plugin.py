@@ -4,13 +4,26 @@ import os
 import os.path
 import shutil
 import config
-import abc
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
+
+
+def debug_printer(function):
+    """
+    Use this function as decorator
+    :param function: the function that has been decorated
+    :return: the wrapper that decorates the function
+    """
+    def debug_wrapper(*args, **kwargs):
+        print("Now entering function {} with arguments {} and\
+keyword arguments {}".format(function.__name__(), args, kwargs))
+        function(args, kwargs)
+        print("Leaving function {}".format(args))
+    return debug_wrapper
 
 
 class LogMixin:
     """
-    Handy code for injecting a logger instance in any class
+    Handy code for injecting a logger instance in any class.
     """
     @property
     def logger(self):
@@ -18,7 +31,11 @@ class LogMixin:
         return logging.getLogger(name)
 
 
-class OdePlugin(metaclass=abc.ABCMeta):
+class OdePlugin(metaclass=ABCMeta):
+    """
+    Super class for all the ODE plugins. This class inherits the Abstract Base Class and functions as a
+    interface for all the ODE plugins.
+    """
     def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05):
         self._user_function = function
         self.delta_t = delta_t
@@ -52,6 +69,11 @@ class OdePlugin(metaclass=abc.ABCMeta):
 
 
 class OdeOutput(LogMixin):
+    """
+    The output class for the ODE plugins. This class specifies the handling of solution output from any of the
+    ODE plugins. It is the responsibility of the individual ODE plugin to produce a set of independent and dependent
+     variables that has the right type format for the printing and plotting methods.
+    """
     def __init__(self, solved_by, dependent, independent):
         self.dependent = dependent
         self.independent = independent
@@ -61,39 +83,50 @@ class OdeOutput(LogMixin):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
     def plot(self):
-        ys = list(self.dependent)
-        ts = list(self.independent)
-        plt.plot(ts, ys)
+        plt.plot(self.independent, self.dependent)
         plt.show()
         return self
 
-    def save(self, name="plotdata"):
-        paired = list(zip(self.independent, self.dependent))
+    def save(self, name="data", float_precision=8):
+        """
+        Saves the independent and dependent variables as a Tab Separated Variables(TSV) file in the directory specified
+        by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
+        concatenation of the ODE solver name followed by a underscore, the 'name' parameter and finally the file
+        extension.
+        :param name: a name for the data file
+        :param float_precision: precision when printing out the floating point numbers
+        :return:
+        """
+        paired_data = zip(self.independent, self.dependent)
         _make_directory(config.DATA_DIRECTORY, pre_delete=False)
-        count = 0
+
+        dependent_dimension = 0
         if isinstance(self.dependent, list) and isinstance(self.dependent[0], list):
-            count = len(self.dependent[0])
-            self.logger.debug("Count is {}".format(count))
+            dependent_dimension = len(self.dependent[0])
+            self.logger.debug("Dimension of the dependent variable is {}".format(dependent_dimension))
 
         absolute = os.path.abspath(config.DATA_DIRECTORY)
         new_filename = os.path.join(absolute, "{}_{}.tsv".format(self.solver.value, name))
         self.logger.debug("Saving data as {}".format(new_filename))
-        with open(new_filename, mode='w') as fout:
+
+        with open(new_filename, mode='w') as fileout:
             # writing header
-            fout.write("t\t")
-            for j in range(0, count - 1):
-                fout.write("y{}\t".format(j))
-            fout.write("y{}\n".format(count - 1))
+            fileout.write("t\t")
+            for j in range(0, dependent_dimension - 1):
+                fileout.write("y{}\t".format(j))
+            fileout.write("y{}\n".format(dependent_dimension - 1))
 
             # now for the data
-            for i in range(0, len(paired)):
-                fout.write("{}\t".format(self.independent[i]))
-                for j in range(0, count):
-                    if j < count - 1:
-                        fout.write("{}\t".format(self.dependent[i][j]))
+            for independent, dependent in paired_data:
+                # here the dimension of the independent variable is assumed to be 1 since it's a ODE
+                fileout.write("{:.{}f}\t".format(independent, float_precision))
+
+                for index, variable in enumerate(dependent):
+                    if index < dependent_dimension - 1:
+                        fileout.write("{:.{}f}\t".format(variable, float_precision))
                     else:
-                        fout.write("{}".format(self.dependent[i][j]))
-                fout.write("\n")
+                        fileout.write("{:.{}f}".format(variable, float_precision))
+                fileout.write("\n")
         return self
 
 
