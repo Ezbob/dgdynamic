@@ -87,7 +87,7 @@ class OdeOutput(LogMixin):
         plt.show()
         return self
 
-    def save(self, name="data", float_precision=8):
+    def save(self, name="data", float_precision=12):
         """
         Saves the independent and dependent variables as a Tab Separated Variables(TSV) file in the directory specified
         by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
@@ -101,9 +101,11 @@ class OdeOutput(LogMixin):
         _make_directory(config.DATA_DIRECTORY, pre_delete=False)
 
         dependent_dimension = 0
-        if isinstance(self.dependent, list) and isinstance(self.dependent[0], list):
+        try:
             dependent_dimension = len(self.dependent[0])
             self.logger.debug("Dimension of the dependent variable is {}".format(dependent_dimension))
+        except TypeError:
+            self.logger.warn("Dimension of the dependent variable could not be determined; defaulting to 0")
 
         absolute = os.path.abspath(config.DATA_DIRECTORY)
         new_filename = os.path.join(absolute, "{}_{}.tsv".format(self.solver.value, name))
@@ -121,11 +123,21 @@ class OdeOutput(LogMixin):
                 # here the dimension of the independent variable is assumed to be 1 since it's a ODE
                 fileout.write("{:.{}f}\t".format(independent, float_precision))
 
-                for index, variable in enumerate(dependent):
-                    if index < dependent_dimension - 1:
-                        fileout.write("{:.{}f}\t".format(variable, float_precision))
-                    else:
-                        fileout.write("{:.{}f}".format(variable, float_precision))
+                try:
+                    for index, variable in enumerate(dependent):
+                        if index < dependent_dimension - 1:
+                            fileout.write("{:.{}f}\t".format(variable, float_precision))
+                        else:
+                            fileout.write("{:.{}f}".format(variable, float_precision))
+                except TypeError:
+                    self.logger.warning("Dependent variable is not iterable")
+                    try:
+                        fileout.write("{:.{}f}".format(dependent, float_precision))
+                    finally:
+                        self.logger.exception("Could not write dependent variable to file")
+                        fileout.close()
+                        raise FloatingPointError
+
                 fileout.write("\n")
         return self
 

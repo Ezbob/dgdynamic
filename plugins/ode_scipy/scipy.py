@@ -48,9 +48,9 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
         ys = list()
         ts = list()
         self._odesolver.t = self.integration_range[0]
-        while self._odesolver.successful() and self._odesolver.t < self.integration_range[1]:
+        while self._odesolver.successful() and self._odesolver.t <= self.integration_range[1]:
             ts.append(self._odesolver.t)
-            ys.append(list(self._odesolver.y))
+            ys.append(self._odesolver.y)
             self._odesolver.integrate(self._odesolver.t + self.delta_t)
 
         self.logger.debug("Solving finished")
