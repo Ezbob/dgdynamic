@@ -20,4 +20,4 @@ class AbstractOdeSystem:
 
 
 def as_lists(hyper_edges):
-    return [[[c.id for c in a.sources], [b.id for b in a.targets]] for a in hyperedges]
+    return [[[c.id for c in a.sources], [b.id for b in a.targets]] for a in hyper_edges]
