@@ -1,22 +1,23 @@
 import sympy as sp
 import functools as ft
+from mod import dgAbstract
 
 
 class AbstractOdeSystem:
 
-    def __init__(self, deviation_graph):
-        self.graph = deviation_graph
-        self.symbols = {vertex.id: sp.Symbol(vertex.graph.name) for vertex in deviation_graph.vertices}
+    def __init__(self, specification):
+        self.graph = dgAbstract(specification) if type(specification) is str else specification
+        self.symbols = {vertex.id: sp.Symbol(vertex.graph.name) for vertex in self.graph.vertices}
 
         self.reaction_count = sum(1 for _ in self.graph.edges)
-        self.parameters = (sp.Symbol("k{}".format(i)) for i in range(self.reaction_count))
+        self.parameters = tuple(sp.Symbol("k{}".format(i + 1)) for i in range(self.reaction_count))
         self.left_hands = tuple()
 
-        for edge in self.graph.edges:
+        for index, edge in enumerate(self.graph.edges):
             # create a generator for the sympy Symbols in
-            reduceMe = (self.symbols[vertex.id] for vertex in edge.sources)
-            self.left_hands += (ft.reduce(lambda a, b: a * b, reduceMe),)
+            reduce_me = (self.symbols[vertex.id] for vertex in edge.sources)
+            self.left_hands += (self.parameters[index] * ft.reduce(lambda a, b: a * b, reduce_me),)
 
 
-def as_lists(hyperedges):
+def as_lists(hyper_edges):
     return [[[c.id for c in a.sources], [b.id for b in a.targets]] for a in hyperedges]
