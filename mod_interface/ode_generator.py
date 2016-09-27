@@ -39,6 +39,9 @@ class AbstractOdeSystem:
             results += ((vertex.id, subres),)
         return results
 
+    def __repr__(self):
+        return "<Abstract Ode System {}>".format(self.left_hands)
+
 
 def as_lists(hyper_edges):
     return [[[c.id for c in a.sources], [b.id for b in a.targets]] for a in hyper_edges]
