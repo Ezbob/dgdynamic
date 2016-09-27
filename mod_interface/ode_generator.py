@@ -5,8 +5,17 @@ from utils.project_utils import LogMixin
 
 
 class AbstractOdeSystem:
-
+    """
+    This class is meant to create ODEs in SymPys abstract symbolic mathematical syntax, using deviation graphs
+    from the MØD framework.
+    """
     def __init__(self, specification):
+        """
+        The initialisation phase consist of creating Sympy Symbols for the vertices of the deviation graph,
+        and creating the rate laws for each reaction.
+        :param specification: if this is parsed as a string the init function will try and parse the string argument to
+        dgAbstract, else it just gets stored.
+        """
         self.graph = dgAbstract(specification) if type(specification) is str else specification
 
         # every vertex in the deviation graph gets a mapping from it's id to the corresponding SymPy Symbol
@@ -25,6 +34,11 @@ class AbstractOdeSystem:
             self.left_hands += (self.parameters[index] * reduced,)
 
     def generate_equations(self):
+        """
+        This function will attempt to create the symbolic ODEs using the rate laws.
+        :return: a tuple of tuples, wherein each nested tuple is a two-tuple consisting of the vertex id, of which the
+        change over time is subjective to, and the symbolic ODE.
+        """
         results = tuple()
         for vertex in self.graph.vertices:
             subres = 0
