@@ -52,19 +52,24 @@ class OdeOutput(utils.LogMixin):
     def __init__(self, solved_by, dependent, independent):
         self.dependent = dependent
         self.independent = independent
-        self.solver = solved_by
+        self.solver_used = solved_by
+        self._filename = "data"
+        self._path = os.path.abspath(config.DATA_DIRECTORY)
 
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self):
+    def plot(self, linestyle='-'):
         """
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
         """
-        plt.plot(self.independent, self.dependent)
+        plt.plot(self.independent, self.dependent, linestyle)
         plt.show()
         return self
+
+    def _get_file_prefix(self, name, extension=".tsv"):
+        return os.path.join(self._path, "{}_{}{}".format(self.solver_used.value, name, extension))
 
     def save(self, name="data", float_precision=12):
         """
@@ -76,6 +81,7 @@ class OdeOutput(utils.LogMixin):
         :param float_precision: precision when printing out the floating point numbers
         :return:
         """
+        self._filename = name if name is not None and type(name) is str else self._filename
         paired_data = zip(self.independent, self.dependent)
         utils.make_directory(config.DATA_DIRECTORY, pre_delete=False)
 
@@ -86,8 +92,7 @@ class OdeOutput(utils.LogMixin):
         except TypeError:
             self.logger.warn("Dimension of the dependent variable could not be determined; defaulting to 0")
 
-        absolute = os.path.abspath(config.DATA_DIRECTORY)
-        new_filename = os.path.join(absolute, "{}_{}.tsv".format(self.solver.value, name))
+        new_filename = self._get_file_prefix(name)
         self.logger.debug("Saving data as {}".format(new_filename))
 
         with open(new_filename, mode='w') as fileout:
