@@ -1,5 +1,6 @@
 from scipy.integrate import ode
-from plugins.ode_plugin import OdePlugin, LogMixin, OdeOutput
+from plugins.ode_plugin import OdePlugin, OdeOutput
+from utils.project_utils import LogMixin
 from enum import Enum
 from config import SupportedSolvers
 import sys

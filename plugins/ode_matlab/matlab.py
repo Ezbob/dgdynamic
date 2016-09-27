@@ -4,7 +4,8 @@
 import sys
 import matlab.engine
 import enum
-from plugins.ode_plugin import OdePlugin, LogMixin, OdeOutput
+from plugins.ode_plugin import OdePlugin, OdeOutput
+from utils.project_utils import LogMixin
 from config import SupportedSolvers
 
 
