@@ -58,6 +58,10 @@ class OdeOutput(utils.LogMixin):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
     def plot(self):
+        """
+        Tries to plot the data using the MatPlotLib
+        :return: self (chaining enabled)
+        """
         plt.plot(self.independent, self.dependent)
         plt.show()
         return self
