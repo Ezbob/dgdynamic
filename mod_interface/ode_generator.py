@@ -2,6 +2,7 @@ import sympy as sp
 import functools as ft
 from mod import dgAbstract
 from utils.project_utils import LogMixin
+from enum import Enum
 
 
 class AbstractOdeSystem:
@@ -57,5 +58,7 @@ class AbstractOdeSystem:
         return "<Abstract Ode System {}>".format(self.left_hands)
 
 
-def as_lists(hyper_edges):
-    return [[[c.id for c in a.sources], [b.id for b in a.targets]] for a in hyper_edges]
+class DefaultFunctionSymbols(Enum):
+    add = '+'
+    mul = '*'
+    pow = '**'
