@@ -29,6 +29,13 @@ class LogMixin:
 
 
 def make_directory(path, pre_delete=False):
+    """
+    This function just provides a mkdir functionality that can delete the contents of a
+    folder if so needed.
+    :param path: path the new directory
+    :param pre_delete: shall it destroy the already existing folder?
+    :return: None
+    """
     if os.path.exists(path) and pre_delete is True:
             shutil.rmtree(path)
             os.mkdir(path)

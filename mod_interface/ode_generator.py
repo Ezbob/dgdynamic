@@ -1,7 +1,7 @@
 import sympy as sp
 import functools as ft
 from mod import dgAbstract
-from plugins.ode_plugin import LogMixin
+from utils.project_utils import LogMixin
 
 
 class AbstractOdeSystem:
