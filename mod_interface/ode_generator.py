@@ -62,3 +62,13 @@ class DefaultFunctionSymbols(Enum):
     add = '+'
     mul = '*'
     pow = '**'
+
+    def convert_function(self, sympy_func):
+        if sympy_func.is_Mul:
+            return self.mul
+        elif sympy_func.is_Add:
+            return self.add
+        elif sympy_func.is_Pow:
+            return self.pow
+        else:
+            return None
