@@ -27,16 +27,15 @@ class AbstractOdeSystem:
     def generate_equations(self):
         results = tuple()
         for vertex in self.graph.vertices:
-            print(vertex.graph.name)
             subres = 0
-            for edge in self.graph.edges:
-                for source_index, source_vertex in enumerate(edge.sources):
+            for edge_index, edge in enumerate(self.graph.edges):
+                for source_vertex in edge.sources:
                     if vertex.id == source_vertex.id:
-                        subres -= self.left_hands[source_index]
+                        subres -= self.left_hands[edge_index]
 
-                for target_index, target_vertex in enumerate(edge.targets):
+                for target_vertex in edge.targets:
                     if vertex.id == target_vertex.id:
-                        subres += self.left_hands[target_index]
+                        subres += self.left_hands[edge_index]
             results += (subres,)
             print(results)
         return results
