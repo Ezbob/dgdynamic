@@ -14,12 +14,12 @@ class AbstractOdeSystem:
         # the best 'complicated' way of counting, this is needed because we can't take the length of the edges (yet?)
         self.reaction_count = sum(1 for _ in self.graph.edges)
 
-        # the mass action law parameters
+        # the mass action law parameters. For mathematical reasons the symbol indices start at 1
         self.parameters = tuple(sp.Symbol("k{}".format(i + 1)) for i in range(self.reaction_count))
         self.left_hands = tuple()
 
+        # Now we create the left hand equation according to the law of mass action
         for index, edge in enumerate(self.graph.edges):
-            # create a generator for the sympy Symbols in
             reduce_me = (self.symbols[vertex.id] for vertex in edge.sources)
             reduced = ft.reduce(lambda a, b: a * b, reduce_me)
             self.left_hands += (self.parameters[index] * reduced,)
@@ -36,8 +36,7 @@ class AbstractOdeSystem:
                 for target_vertex in edge.targets:
                     if vertex.id == target_vertex.id:
                         subres += self.left_hands[edge_index]
-            results += (subres,)
-            print(results)
+            results += ((vertex.id, subres),)
         return results
 
 
