@@ -1,8 +1,8 @@
-import sympy as sp
 import functools as ft
-from mod import dgAbstract
-from utils.project_utils import LogMixin
 from enum import Enum
+
+import sympy as sp
+from mod import dgAbstract
 
 
 class AbstractOdeSystem:

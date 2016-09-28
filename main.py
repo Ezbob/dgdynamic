@@ -1,6 +1,6 @@
-from plugins.ode_scipy.scipy import ScipyOde
-from plugins.ode_matlab.matlab import MatlabOde # linking order is important so don't make this the first import
-from utils.project_utils import set_logging
+from src.plugins.ode_scipy.scipy import ScipyOde
+from src.plugins.ode_matlab.matlab import MatlabOde # linking order is important so don't make this the first import
+from src.utils.project_utils import set_logging
 
 set_logging(new_session=True)
 

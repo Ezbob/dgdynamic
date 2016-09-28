@@ -1,12 +1,14 @@
 #  Matlab ode solver plugin
 #  This plugin uses the matlab python engine to approximate solutions to ODEs
 ##
-import sys
-import matlab.engine
 import enum
-from plugins.ode_plugin import OdePlugin, OdeOutput
-from utils.project_utils import LogMixin
+import sys
+
+import matlab.engine
+from ..ode_plugin import OdePlugin, OdeOutput
+
 from config import SupportedSolvers
+from ...utils.project_utils import LogMixin
 
 
 class MatlabOdeSolvers(enum.Enum):

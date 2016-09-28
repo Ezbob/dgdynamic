@@ -1,9 +1,9 @@
-import matplotlib.pyplot as plt
-import utils.project_utils as utils
 import os
 import os.path
-import config
 from abc import abstractmethod, ABCMeta
+import matplotlib.pyplot as plt
+import config
+from src.utils.project_utils import LogMixin, make_directory
 
 
 class OdePlugin(metaclass=ABCMeta):
@@ -43,7 +43,7 @@ class OdePlugin(metaclass=ABCMeta):
         raise NotImplementedError("Subclass must implement abstract method")
 
 
-class OdeOutput(utils.LogMixin):
+class OdeOutput(LogMixin):
     """
     The output class for the ODE plugins. This class specifies the handling of solution output from any of the
     ODE plugins. It is the responsibility of the individual ODE plugin to produce a set of independent and dependent
@@ -83,7 +83,7 @@ class OdeOutput(utils.LogMixin):
         """
         self._filename = name if name is not None and type(name) is str else self._filename
         paired_data = zip(self.independent, self.dependent)
-        utils.make_directory(config.DATA_DIRECTORY, pre_delete=False)
+        make_directory(config.DATA_DIRECTORY, pre_delete=False)
 
         dependent_dimension = 0
         try:

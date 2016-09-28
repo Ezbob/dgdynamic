@@ -1,9 +1,11 @@
-from scipy.integrate import ode
-from plugins.ode_plugin import OdePlugin, OdeOutput
-from utils.project_utils import LogMixin
-from enum import Enum
-from config import SupportedSolvers
 import sys
+from enum import Enum
+
+from ..ode_plugin import OdePlugin, OdeOutput
+from scipy.integrate import ode
+
+from config import SupportedSolvers
+from ...utils.project_utils import LogMixin
 
 
 class ScipyOdeSolvers(Enum):
