@@ -37,8 +37,11 @@ class ScipyOde(OdePlugin, LogMixin):
         super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters)
 
     def solve(self):
-        if self._user_function is None or (isinstance(self._user_function, str) and len(self._user_function) == 0):
+        if not self._user_function:
             return None
+        if type(self._user_function) is str:
+            self._user_function = eval(self._user_function)
+
         self.logger.debug("Started solving using Scipy with method {}".format(self._solverMethod.value))
         self.logger.debug("Functions is {}, \
 range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, self.delta_t))

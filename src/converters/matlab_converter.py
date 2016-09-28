@@ -1,4 +1,3 @@
-from io import StringIO
 from .converter import DefaultFunctionSymbols, substitute
 
 

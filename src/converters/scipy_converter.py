@@ -1,4 +1,3 @@
-from io import StringIO
 import sympy as sp
 from .converter import substitute
 
