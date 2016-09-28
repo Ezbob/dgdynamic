@@ -1,9 +1,9 @@
 import sys
 from enum import Enum
-
+from ...mod_interface.ode_generator import AbstractOdeSystem
 from ..ode_plugin import OdePlugin, OdeOutput
 from scipy.integrate import ode
-
+from ...converters.scipy_converter import get_scipy_lambda
 from config import SupportedSolvers
 from ...utils.project_utils import LogMixin
 
@@ -27,11 +27,14 @@ class ScipyOde(OdePlugin, LogMixin):
     _solverMethod = ScipyOdeSolvers.VODE
     _odesolver = None
 
-    def __init__(self, function=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05):
-        if isinstance(function, str):
-            super().__init__(eval(function), integration_range, initial_condition, delta_t)
-        else:
-            super().__init__(function, integration_range, initial_condition, delta_t)
+    def __init__(self, eq_system=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05, parameters=None):
+
+        if isinstance(eq_system, str):
+            eq_system = eval(eq_system)
+        elif isinstance(eq_system, AbstractOdeSystem):
+            eq_system = get_scipy_lambda(eq_system)
+
+        super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters)
 
     def solve(self):
         if self._user_function is None or (isinstance(self._user_function, str) and len(self._user_function) == 0):
@@ -69,6 +72,15 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
 
     def set_ode_method(self, function):
         self._user_function = function
+        return self
+
+    def set_parameters(self, parameters):
+        if isinstance(self.parameters, (tuple, list)):
+            self.parameters = parameters
+        return self
+
+    def from_abstract_ode_system(self, system, parameters=None):
+        self._user_function = get_scipy_lambda(system)
         return self
 
     def set_initial_conditions(self, conditions):

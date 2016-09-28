@@ -51,7 +51,7 @@ class OdePlugin(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def from_abstract_ode_system(self, system):
+    def from_abstract_ode_system(self, system, parameters=None):
         pass
 
 
