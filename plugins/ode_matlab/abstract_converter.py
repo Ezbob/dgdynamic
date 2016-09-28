@@ -1,4 +1,3 @@
-from mod_interface.ode_generator import *
 from io import StringIO
 
 
@@ -9,22 +8,39 @@ class MatlabSymbols:
     pow = ".^"
 
 
-def get_malab_lambda(abstract_ode_system):
-
+def get_malab_lambda(abstract_ode_system, parameter_substitutions=None):
+    """
+    Converts a sympy symbolic ODE system into a MatLab lambda function that can be integrated.
+    :param abstract_ode_system: should be a legal AbstractOdeSystem instance
+    :param parameter_substitutions: values that should be substituted
+    :return: string, containing a anonymous MatLab function that can be integrated
+    """
     # Parameter (also Symbol) -> parameter id
-    parameter_map = {v: k for k, v in enumerate(abstract_ode_system.parameters)}
+    if parameter_substitutions is not None:
+        parameter_map = {v: k for k, v in zip(abstract_ode_system.parameters.keys(), parameter_substitutions)}
+    else:
+        parameter_map = None
 
     substitute_me = {value: "y({})".format(key) for key, value in abstract_ode_system.symbols.items()}
 
     with StringIO() as matlab_string:
+
         matlab_string.write(MatlabSymbols.function_start)
         generated_functions = abstract_ode_system.generate_equations()
 
-        for vertex_id, equation in generated_functions:
-            matlab_string.write(str(equation.subs(substitute_me)))
+        if parameter_substitutions is None:
+            for vertex_id, equation in generated_functions:
+                matlab_string.write(str(equation.subs(substitute_me)))
 
-            if vertex_id < len(generated_functions) - 1:
-                matlab_string.write("{} ".format(MatlabSymbols.equation_separator))
+                if vertex_id < len(generated_functions) - 1:
+                    matlab_string.write("{} ".format(MatlabSymbols.equation_separator))
+        else:
+            for vertex_id, equation in generated_functions:
+                matlab_string.write(str(equation.subs(substitute_me)))
+                matlab_string.write(str(equation.subs(parameter_map)))
+
+                if vertex_id < len(generated_functions) - 1:
+                    matlab_string.write("{} ".format(MatlabSymbols.equation_separator))
 
         matlab_string.write(MatlabSymbols.function_end)
         return matlab_string.getvalue()
