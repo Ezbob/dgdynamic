@@ -12,7 +12,7 @@ def get_malab_lambda(abstract_ode_system, parameter_substitutions=None):
     """
     Converts a sympy symbolic ODE system into a MatLab lambda function that can be integrated.
     :param abstract_ode_system: should be a legal AbstractOdeSystem instance
-    :param parameter_substitutions: values that should be substituted
+    :param parameter_substitutions: list/tuple of values that should be substituted
     :return: string, containing a anonymous MatLab function that can be integrated
     """
     # Parameter (also Symbol) -> parameter id
