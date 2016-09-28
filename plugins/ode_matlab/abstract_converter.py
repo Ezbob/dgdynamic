@@ -17,7 +17,7 @@ def get_malab_lambda(abstract_ode_system, parameter_substitutions=None):
     """
     # Parameter (also Symbol) -> parameter id
     if parameter_substitutions is not None:
-        parameter_map = {v: k for k, v in zip(abstract_ode_system.parameters.keys(), parameter_substitutions)}
+        parameter_map = {k: v for k, v in zip(abstract_ode_system.parameters, parameter_substitutions)}
     else:
         parameter_map = None
 
@@ -28,7 +28,7 @@ def get_malab_lambda(abstract_ode_system, parameter_substitutions=None):
         matlab_string.write(MatlabSymbols.function_start)
         generated_functions = abstract_ode_system.generate_equations()
 
-        if parameter_substitutions is None:
+        if parameter_map is None:
             for vertex_id, equation in generated_functions:
                 matlab_string.write(str(equation.subs(substitute_me)))
 
@@ -36,12 +36,10 @@ def get_malab_lambda(abstract_ode_system, parameter_substitutions=None):
                     matlab_string.write("{} ".format(MatlabSymbols.equation_separator))
         else:
             for vertex_id, equation in generated_functions:
-                matlab_string.write(str(equation.subs(substitute_me)))
-                matlab_string.write(str(equation.subs(parameter_map)))
+                matlab_string.write(str(equation.subs(substitute_me).subs(parameter_map)))
 
                 if vertex_id < len(generated_functions) - 1:
                     matlab_string.write("{} ".format(MatlabSymbols.equation_separator))
 
         matlab_string.write(MatlabSymbols.function_end)
         return matlab_string.getvalue()
-
