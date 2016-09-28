@@ -6,7 +6,8 @@ import sys
 
 import matlab.engine
 from ..ode_plugin import OdePlugin, OdeOutput
-
+from ...converters.matlab_converter import get_matlab_lambda
+from ...mod_interface.ode_generator import AbstractOdeSystem
 from config import SupportedSolvers
 from ...utils.project_utils import LogMixin
 
@@ -31,8 +32,13 @@ class MatlabOde(OdePlugin, LogMixin):
     """
     _ode_solver = MatlabOdeSolvers.ode45
 
-    def __init__(self, eq_system="", solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), initial_conditions=None):
-        super().__init__(eq_system, integration_range=integration_range,  initial_conditions=initial_conditions)
+    def __init__(self, eq_system="", solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), initial_conditions=None,
+                 parameters=None):
+        if type(eq_system) is AbstractOdeSystem:
+            eq_system = get_matlab_lambda(eq_system, parameter_substitutions=parameters)
+
+        super().__init__(eq_system, integration_range=integration_range,  initial_conditions=initial_conditions,
+                         parameters=parameters)
         if isinstance(solver, MatlabOdeSolvers):
             self._ode_solver = solver
 
@@ -66,6 +72,10 @@ class MatlabOde(OdePlugin, LogMixin):
             self._user_function = ode_function
         return self
 
+    def set_parameters(self, parameters):
+        if isinstance(parameters, (tuple, list)):
+            self.parameters = parameters
+
     def add_to_workspace(self, key, value):
         if isinstance(key, str):
             self.engine.workspace[key] = value
@@ -78,6 +88,10 @@ class MatlabOde(OdePlugin, LogMixin):
 
     def clear_workspace(self):
         self.engine.clear()
+        return self
+
+    def from_abstract_ode_system(self, system, parameters=None):
+        self._user_function = get_matlab_lambda(system, parameters)
         return self
 
     def solve(self):

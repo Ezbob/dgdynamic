@@ -11,9 +11,13 @@ class OdePlugin(metaclass=ABCMeta):
     Super class for all the ODE plugins. This class inherits the Abstract Base Class and functions as a
     interface for all the ODE plugins.
     """
-    def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05):
+    def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05,
+                 parameters=None):
         self._user_function = function
         self.delta_t = delta_t
+
+        if isinstance(parameters, (list, tuple)) or parameters is None:
+            self.parameters = parameters
 
         if isinstance(integration_range, (tuple, list)) and len(integration_range) >= 2:
             self.integration_range = integration_range
@@ -24,23 +28,31 @@ class OdePlugin(metaclass=ABCMeta):
 
     @abstractmethod
     def set_integration_range(self, range_tuple):
-        raise NotImplementedError("Subclass must implement abstract method")
+        pass
 
     @abstractmethod
     def set_ode_method(self, name):
-        raise NotImplementedError("Subclass must implement abstract method")
+        pass
 
     @abstractmethod
     def set_initial_conditions(self, conditions):
-        raise NotImplementedError("Subclass must implement abstract method")
+        pass
 
     @abstractmethod
     def solve(self):
-        raise NotImplementedError("Subclass must implement abstract method")
+        pass
 
     @abstractmethod
     def set_ode_function(self, ode_function):
-        raise NotImplementedError("Subclass must implement abstract method")
+        pass
+
+    @abstractmethod
+    def set_parameters(self, parameters):
+        pass
+
+    @abstractmethod
+    def from_abstract_ode_system(self, system):
+        pass
 
 
 class OdeOutput(LogMixin):
