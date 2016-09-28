@@ -1,7 +1,8 @@
 from io import StringIO
+from .converter import DefaultFunctionSymbols, substitutioner
 
 
-class MatlabSymbols:
+class MatlabSymbols(DefaultFunctionSymbols):
     function_start = "@(t,y) ["
     equation_separator = ";"
     function_end = "]"
@@ -27,19 +28,5 @@ def get_matlab_lambda(abstract_ode_system, parameter_substitutions=None):
 
     substitute_me = {value: "y({})".format(key + 1) for key, value in enumerate(abstract_ode_system.symbols.values())}
 
-    with StringIO() as matlab_string:
-
-        matlab_string.write(MatlabSymbols.function_start)
-        generated_functions = abstract_ode_system.generate_equations()
-
-        if parameter_map is None:
-            for vertex_id, equation in generated_functions:
-                matlab_string.write(str(equation.subs(substitute_me)))
-                matlab_string.write("{} ".format(MatlabSymbols.equation_separator))
-        else:
-            for vertex_id, equation in generated_functions:
-                matlab_string.write(str(equation.subs(substitute_me).subs(parameter_map)))
-                matlab_string.write("{} ".format(MatlabSymbols.equation_separator))
-
-        matlab_string.write(MatlabSymbols.function_end)
-        return _postprocessor(matlab_string.getvalue())
+    return substitutioner(abstract_ode_system.generate_equations(), parameter_map, symbol_map=substitute_me,
+                          extra_symbols=MatlabSymbols(), postprocessor=_postprocessor)

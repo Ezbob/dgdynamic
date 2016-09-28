@@ -2,6 +2,7 @@ from src.mod_interface.ode_generator import AbstractOdeSystem
 from src.plugins.ode_scipy.scipy import ScipyOde
 from src.plugins.ode_matlab.matlab import MatlabOde # linking order is important so don't make this the first import
 from src.utils.project_utils import set_logging
+from src.converters.scipy_converter import get_scipy_lambda
 
 set_logging(new_session=True)
 
@@ -12,12 +13,15 @@ C -> E + F
 F + F -> B
 """)
 
-initial_conditions = {0: range(1, len(aos.symbols) + 1)}
+print(get_scipy_lambda(aos, parameter_substitutions=range(1, len(aos.symbols) + 1)))
 
-matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=(0, 10),
-                       parameters=list(range(1, len(aos.symbols) + 1)))
+# initial_conditions = {0: range(1, len(aos.symbols) + 1)}
+#
+# matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=(0, 10),
+#                        parameters=list(range(1, len(aos.symbols) + 1)))
+#
+# matlab_ode.solve().save(name="abstractReactions1").plot()
 
-matlab_ode.solve().save(name="abstractReactions1").plot()
 
 
 # matlab_ode = MatlabOde("@(t, y) y * 2 - 3", integration_range=(0, 5), initial_conditions={0: 4})
