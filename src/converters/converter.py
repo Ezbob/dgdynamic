@@ -13,8 +13,8 @@ class DefaultFunctionSymbols:
     function_end = ']'
 
 
-def substitutioner(generated_equations, parameter_map, symbol_map, extra_symbols=DefaultFunctionSymbols(),
-                   postprocessor=None):
+def substitute(generated_equations, parameter_map, symbol_map, extra_symbols=DefaultFunctionSymbols(),
+               postprocessor=None):
     """
     This function is tasked with generating a function string from the SymPy description
     :param generated_equations: equations from the AbstractOdeSystem

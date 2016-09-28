@@ -1,5 +1,5 @@
 from io import StringIO
-from .converter import DefaultFunctionSymbols, substitutioner
+from .converter import DefaultFunctionSymbols, substitute
 
 
 class MatlabSymbols(DefaultFunctionSymbols):
@@ -28,5 +28,5 @@ def get_matlab_lambda(abstract_ode_system, parameter_substitutions=None):
 
     substitute_me = {value: "y({})".format(key + 1) for key, value in enumerate(abstract_ode_system.symbols.values())}
 
-    return substitutioner(abstract_ode_system.generate_equations(), parameter_map, symbol_map=substitute_me,
-                          extra_symbols=MatlabSymbols(), postprocessor=_postprocessor)
+    return substitute(abstract_ode_system.generate_equations(), parameter_map, symbol_map=substitute_me,
+                      extra_symbols=MatlabSymbols(), postprocessor=_postprocessor)

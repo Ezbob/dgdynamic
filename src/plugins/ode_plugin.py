@@ -80,10 +80,13 @@ class OdeOutput(LogMixin):
         plt.show()
         return self
 
-    def _get_file_prefix(self, name, extension=".tsv"):
-        return os.path.join(self._path, "{}_{}{}".format(self.solver_used.value, name, extension))
+    def _get_file_prefix(self, name, extension=".tsv", prefix=None):
+        if prefix is None:
+            return os.path.join(self._path, "{}_{}{}".format(self.solver_used.value, name, extension))
+        else:
+            return os.path.join(self._path, "{}{}{}".format(prefix, name, extension))
 
-    def save(self, name="data", float_precision=12):
+    def save(self, name="data", float_precision=12, prefix=None):
         """
         Saves the independent and dependent variables as a Tab Separated Variables(TSV) file in the directory specified
         by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
@@ -104,7 +107,7 @@ class OdeOutput(LogMixin):
         except TypeError:
             self.logger.warn("Dimension of the dependent variable could not be determined; defaulting to 0")
 
-        new_filename = self._get_file_prefix(name)
+        new_filename = self._get_file_prefix(name, prefix=prefix)
         self.logger.debug("Saving data as {}".format(new_filename))
 
         with open(new_filename, mode='w') as fileout:

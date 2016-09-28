@@ -32,7 +32,7 @@ class ScipyOde(OdePlugin, LogMixin):
         if isinstance(eq_system, str):
             eq_system = eval(eq_system)
         elif isinstance(eq_system, AbstractOdeSystem):
-            eq_system = get_scipy_lambda(eq_system)
+            eq_system = get_scipy_lambda(eq_system, parameters)
 
         super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters)
 

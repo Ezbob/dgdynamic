@@ -1,6 +1,10 @@
 from io import StringIO
 import sympy as sp
-from .converter import substitutioner
+from .converter import substitute
+
+
+def _postprocessor(string_input):
+    return eval(string_input)
 
 
 def get_scipy_lambda(abstract_system, parameter_substitutions=None):
@@ -13,4 +17,4 @@ def get_scipy_lambda(abstract_system, parameter_substitutions=None):
 
     substitute_me = {value: sp.Indexed('y', key) for key, value in enumerate(abstract_system.symbols.values())}
 
-    return substitutioner(abstract_system.generate_equations(), parameter_map, substitute_me)
+    return substitute(abstract_system.generate_equations(), parameter_map, substitute_me, postprocessor=_postprocessor)

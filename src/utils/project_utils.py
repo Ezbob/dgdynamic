@@ -43,7 +43,7 @@ def make_directory(path, pre_delete=False):
         os.mkdir(path)
 
 
-def set_logging(filename="solver.log", new_session=False, level=logging.DEBUG):
+def set_logging(filename="system.log", new_session=False, level=logging.DEBUG):
     """
     This function setups the root logging system for use with the logging mixin.
     All log statements gets written to a log file
