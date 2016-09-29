@@ -14,7 +14,7 @@ class ScipyOdeSolvers(Enum):
     """
     VODE = "vode"
     ZVODE = "zvode"
-    ISODA = "isoda"
+    LSODA = "lsoda"
     DOPRI5 = "dopri5"
     DOP853 = "dop853"
 
@@ -28,6 +28,7 @@ class ScipyOde(OdePlugin, LogMixin):
     _odesolver = None
 
     def __init__(self, eq_system=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05, parameters=None):
+        self.ode_count = eq_system.ode_count if type(eq_system) is AbstractOdeSystem else 1
 
         if isinstance(eq_system, str):
             eq_system = eval(eq_system)
@@ -49,18 +50,24 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
         self.logger.debug("Setting scipy parameters...")
         assert self.integration_range[0] <= self.integration_range[1]
 
-        self._odesolver = ode(self._user_function).set_integrator(str(self._solverMethod.value))
+        self._odesolver = ode(self._user_function).set_integrator(self._solverMethod.value.upper())
         initial_t, initial_y = self.initial_conditions.popitem()
+
+        assert len(initial_y) == self.ode_count
+
         self._odesolver.set_initial_value(initial_y, initial_t)
         self.logger.debug("Set.")
 
         ys = list()
         ts = list()
         self._odesolver.t = self.integration_range[0]
-        while self._odesolver.successful() and self._odesolver.t <= self.integration_range[1]:
-            ts.append(self._odesolver.t)
-            ys.append(self._odesolver.y)
-            self._odesolver.integrate(self._odesolver.t + self.delta_t)
+        try:
+            while self._odesolver.successful() and self._odesolver.t <= self.integration_range[1]:
+                ts.append(self._odesolver.t)
+                ys.append(self._odesolver.y)
+                self._odesolver.integrate(self._odesolver.t + self.delta_t)
+        except SystemError:
+            return None
 
         self.logger.debug("Solving finished")
         if len(ys) > 0 and len(ts) > 0:
@@ -73,8 +80,8 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
             self.integration_range = range_tuple
         return self
 
-    def set_ode_method(self, function):
-        self._user_function = function
+    def set_ode_method(self, method):
+        self._solverMethod = method
         return self
 
     def set_parameters(self, parameters):
@@ -84,6 +91,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
 
     def from_abstract_ode_system(self, system, parameters=None):
         self._user_function = get_scipy_lambda(system)
+        self.ode_count = system.ode_count
         return self
 
     def set_initial_conditions(self, conditions):
