@@ -3,18 +3,24 @@ import config
 import os
 import shutil
 
+logging_handler = None
 
-def debug_printer(function):
+
+def log(function):
     """
     Use this function as decorator
     :param function: the function that has been decorated
     :return: the wrapper that decorates the function
     """
     def debug_wrapper(*args, **kwargs):
-        print("Now entering function {} with arguments {} and\
+        name = ".".join([function.__module__, function.__name__])
+        logger = logging.getLogger(name)
+
+        logger.info("Now entering function {} with arguments {} and\
 keyword arguments {}".format(function.__name__(), args, kwargs))
         function(args, kwargs)
-        print("Leaving function {}".format(args))
+        logger.info("Leaving function {}".format(args))
+        debug_wrapper.__name__ = function.__name__
     return debug_wrapper
 
 
@@ -24,8 +30,11 @@ class LogMixin:
     """
     @property
     def logger(self):
+        global logging_handler
         name = ".".join([self.__class__.__module__, self.__class__.__name__])
-        return logging.getLogger(name)
+        log_machine = logging.getLogger(name)
+        log_machine.addHandler(logging_handler)
+        return log_machine
 
 
 def make_directory(path, pre_delete=False):
@@ -51,8 +60,12 @@ def set_logging(filename="system.log", new_session=False, level=logging.DEBUG):
     :param new_session: whether to delete all previous log files in the log directory
     :param level: maximum log level to log for
     """
+    global logging_handler
     log_dir = os.path.abspath(config.LOG_DIRECTORY)
     make_directory(log_dir, pre_delete=new_session)
+
     new_file_path = os.path.join(log_dir, filename)
-    logging.basicConfig(level=level, format='%(asctime)s %(name)s %(levelname)s %(message)s',
-                        filename=new_file_path, filemode='w')
+
+    logging_handler = logging.FileHandler(new_file_path)
+    logging_handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s'))
+    logging.basicConfig(level=level)
