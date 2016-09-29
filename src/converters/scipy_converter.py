@@ -15,7 +15,6 @@ def get_scipy_lambda(abstract_system: AbstractOdeSystem, parameter_substitutions
     else:
         parameter_map = None
 
-    #not_ignored =
     substitute_me = {value: sp.Indexed('y', key) for key, value in enumerate(abstract_system.symbols.values())}
 
     return substitute(abstract_system.generate_equations(), parameter_map, substitute_me, postprocessor=_postprocessor)

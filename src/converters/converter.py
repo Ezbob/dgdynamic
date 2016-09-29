@@ -4,6 +4,7 @@ This module contains stuff relevant for all converters
 from io import StringIO
 from typing import Dict, Tuple
 
+
 class DefaultFunctionSymbols:
     add = '+'
     mul = '*'
