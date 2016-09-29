@@ -45,8 +45,8 @@ class AbstractOdeSystem:
         """
         results = tuple()
         for vertex_id, vertex in enumerate(self.graph.vertices):
-            if vertex_id in self._ignored:
-                pass
+            if sp.Symbol(vertex.graph.name) in self._ignored:
+                results += ((vertex.graph.name, 0),)
             else:
                 subres = 0
                 for edge_index, edge in enumerate(self.graph.edges):
@@ -66,15 +66,14 @@ class AbstractOdeSystem:
         :param species: list of strings symbol
         :return:
         """
-        if type(species) is str:
-            self._ignored = tuple(index for index, item in enumerate(self.symbols.values())
-                                  if sp.Symbol(species) == item)
-        elif type(species) is sp.Symbol:
-            self._ignored = tuple(index for index, item in enumerate(self.symbols.values())
-                                  if species == item)
-        else:
-            self._ignored = tuple(index for index, item in enumerate(self.symbols.values())
-                                  for element in species if sp.Symbol(element) == item)
+        if len(self._ignored) < self.ode_count:
+            if type(species) is str:
+                self._ignored = tuple(item for item in self.symbols.values() if sp.Symbol(species) == item)
+            elif type(species) is sp.Symbol:
+                self._ignored = tuple(item for item in self.symbols.values() if species == item)
+            else:
+                self._ignored = tuple(item for item in self.symbols.values()
+                                      for element in species if sp.Symbol(element) == item)
         return self
 
     def __repr__(self):
