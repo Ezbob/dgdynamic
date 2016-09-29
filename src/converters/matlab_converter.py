@@ -21,6 +21,7 @@ def get_matlab_lambda(abstract_ode_system, parameter_substitutions=None):
     """
     # Parameter (also Symbol) -> parameter id
     if parameter_substitutions is not None:
+        assert len(parameter_substitutions) >= abstract_ode_system.reaction_count
         parameter_map = {k: v for k, v in zip(abstract_ode_system.parameters, parameter_substitutions)}
     else:
         parameter_map = None

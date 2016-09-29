@@ -24,8 +24,8 @@ class ScipyOde(OdePlugin, LogMixin):
     Scipy ODE solver plugin
     """
     # the default method uses the real value solver VODE
-    _solverMethod = ScipyOdeSolvers.VODE
-    _odesolver = None
+    _solver_method = ScipyOdeSolvers.VODE
+    _ode_solver = None
 
     def __init__(self, eq_system=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05, parameters=None):
         self.ode_count = eq_system.ode_count if type(eq_system) is AbstractOdeSystem else 1
@@ -43,29 +43,29 @@ class ScipyOde(OdePlugin, LogMixin):
         if type(self._user_function) is str:
             self._user_function = eval(self._user_function)
 
-        self.logger.debug("Started solving using Scipy with method {}".format(self._solverMethod.value))
+        self.logger.debug("Started solving using Scipy with method {}".format(self._solver_method.value))
         self.logger.debug("Functions is {}, \
 range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, self.delta_t))
 
         self.logger.debug("Setting scipy parameters...")
         assert self.integration_range[0] <= self.integration_range[1]
 
-        self._odesolver = ode(self._user_function).set_integrator(self._solverMethod.value.upper())
+        self._ode_solver = ode(self._user_function).set_integrator(self._solver_method.value.upper())
         initial_t, initial_y = self.initial_conditions.popitem()
 
         assert len(initial_y) == self.ode_count
 
-        self._odesolver.set_initial_value(initial_y, initial_t)
+        self._ode_solver.set_initial_value(initial_y, initial_t)
         self.logger.debug("Set.")
 
         ys = list()
         ts = list()
-        self._odesolver.t = self.integration_range[0]
+        self._ode_solver.t = self.integration_range[0]
         try:
-            while self._odesolver.successful() and self._odesolver.t <= self.integration_range[1]:
-                ts.append(self._odesolver.t)
-                ys.append(self._odesolver.y)
-                self._odesolver.integrate(self._odesolver.t + self.delta_t)
+            while self._ode_solver.successful() and self._ode_solver.t <= self.integration_range[1]:
+                ts.append(self._ode_solver.t)
+                ys.append(self._ode_solver.y)
+                self._ode_solver.integrate(self._ode_solver.t + self.delta_t)
         except SystemError:
             return None
 
@@ -81,7 +81,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
         return self
 
     def set_ode_method(self, method):
-        self._solverMethod = method
+        self._solver_method = method
         return self
 
     def set_parameters(self, parameters):

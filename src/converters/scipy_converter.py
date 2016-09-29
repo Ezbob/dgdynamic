@@ -9,7 +9,7 @@ def _postprocessor(string_input):
 def get_scipy_lambda(abstract_system, parameter_substitutions=None):
 
     if parameter_substitutions is not None:
-        assert len(parameter_substitutions) >= len(abstract_system.symbols)
+        assert len(parameter_substitutions) >= abstract_system.reaction_count
         parameter_map = {k: v for k, v in zip(abstract_system.parameters, parameter_substitutions)}
     else:
         parameter_map = None
