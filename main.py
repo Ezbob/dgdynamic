@@ -11,20 +11,18 @@ set_logging(new_session=True)
 
 
 aos = AbstractOdeSystem("""
-A -> B + B
-B -> A
-B -> C
-C -> D + D
-D -> C
+A + B -> A + A
+C + D -> C + C
+C -> E
 """)
 
+aos.ignore_species(('A', 'D'))
+
 name = "abstractReactions1"
-init = [1.0] * aos.ode_count
+init = [random.random() for i in range(aos.ode_count)]
 parameters = [1.0] * aos.reaction_count
-parameters[2] = 5
-parameters[3] = 5
 initial_conditions = {0: init}
-integration_range = (0, 1)
+integration_range = (0, 10)
 
 #matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
 #                       parameters=parameters)

@@ -3,7 +3,9 @@ import os.path
 from abc import abstractmethod, ABCMeta
 import matplotlib.pyplot as plt
 import config
-from src.utils.project_utils import LogMixin, make_directory
+from src.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
+from src.mod_interface.ode_generator import AbstractOdeSystem
+from typing import Union, Dict, Tuple
 
 
 class OdePlugin(metaclass=ABCMeta):
@@ -29,15 +31,15 @@ class OdePlugin(metaclass=ABCMeta):
             self.initial_conditions = initial_conditions
 
     @abstractmethod
-    def set_integration_range(self, range_tuple):
+    def set_integration_range(self, range_tuple: Tuple[int, int]):
         pass
 
     @abstractmethod
-    def set_ode_method(self, name):
+    def set_ode_method(self, name: object):
         pass
 
     @abstractmethod
-    def set_initial_conditions(self, conditions):
+    def set_initial_conditions(self, conditions: Dict[Types.Real, Types.Reals]):
         pass
 
     @abstractmethod
@@ -45,15 +47,15 @@ class OdePlugin(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def set_ode_function(self, ode_function):
+    def set_ode_function(self, ode_function: Union[Types.ODE_Function, str]):
         pass
 
     @abstractmethod
-    def set_parameters(self, parameters):
+    def set_parameters(self, parameters: Types.Countable_Sequence):
         pass
 
     @abstractmethod
-    def from_abstract_ode_system(self, system, parameters=None):
+    def from_abstract_ode_system(self, system: AbstractOdeSystem, parameters=None):
         pass
 
 

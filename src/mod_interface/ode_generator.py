@@ -1,6 +1,7 @@
 import functools as ft
 from enum import Enum
-
+from typing import Union
+from ..utils.project_utils import ProjectTypeHints as Types
 import sympy as sp
 from mod import dgAbstract
 
@@ -10,7 +11,7 @@ class AbstractOdeSystem:
     This class is meant to create ODEs in SymPys abstract symbolic mathematical syntax, using deviation graphs
     from the MØD framework.
     """
-    def __init__(self, specification):
+    def __init__(self, specification: Union[dgAbstract, str]):
         """
         The initialisation phase consist of creating Sympy Symbols for the vertices of the deviation graph,
         and creating the rate laws for each reaction.
@@ -18,12 +19,13 @@ class AbstractOdeSystem:
         dgAbstract, else it just gets stored.
         """
         self.graph = dgAbstract(specification) if type(specification) is str else specification
+        self._ignored = tuple()
 
         # every vertex in the deviation graph gets a mapping from it's id to the corresponding SymPy Symbol
         self.symbols = {vertex.id: sp.Symbol(vertex.graph.name) for vertex in self.graph.vertices}
         # the best 'complicated' way of counting, this is needed because we can't take the length of the edges (yet?)
         self.reaction_count = sum(1 for _ in self.graph.edges)
-        self.ode_count = self.graph.numVertices
+        self.ode_count = self.graph.numVertices # e.g. species count
 
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
         self.parameters = tuple(sp.Symbol("k{}".format(i + 1)) for i in range(self.reaction_count))
@@ -42,18 +44,38 @@ class AbstractOdeSystem:
         change over time is subjective to, and the symbolic ODE.
         """
         results = tuple()
-        for vertex in self.graph.vertices:
-            subres = 0
-            for edge_index, edge in enumerate(self.graph.edges):
-                for source_vertex in edge.sources:
-                    if vertex.id == source_vertex.id:
-                        subres -= self.left_hands[edge_index]
+        for vertex_id, vertex in enumerate(self.graph.vertices):
+            if vertex_id in self._ignored:
+                pass
+            else:
+                subres = 0
+                for edge_index, edge in enumerate(self.graph.edges):
+                    for source_vertex in edge.sources:
+                        if vertex.id == source_vertex.id:
+                            subres -= self.left_hands[edge_index]
 
-                for target_vertex in edge.targets:
-                    if vertex.id == target_vertex.id:
-                        subres += self.left_hands[edge_index]
-            results += ((vertex.id, subres),)
+                    for target_vertex in edge.targets:
+                        if vertex.id == target_vertex.id:
+                            subres += self.left_hands[edge_index]
+                results += ((vertex.id, subres),)
         return results
+
+    def ignore_species(self, species: Union[str, sp.Symbol, Types.Countable_Sequence]):
+        """
+        Specify the list of species you don't want to see ODEs for
+        :param species: list of strings symbol
+        :return:
+        """
+        if type(species) is str:
+            self._ignored = tuple(index for index, item in enumerate(self.symbols.values())
+                                  if sp.Symbol(species) == item)
+        elif type(species) is sp.Symbol:
+            self._ignored = tuple(index for index, item in enumerate(self.symbols.values())
+                                  if species == item)
+        else:
+            self._ignored = tuple(index for index, item in enumerate(self.symbols.values())
+                                  for element in species if sp.Symbol(element) == item)
+        return self
 
     def __repr__(self):
         return "<Abstract Ode System {}>".format(self.left_hands)

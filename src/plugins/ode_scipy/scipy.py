@@ -1,5 +1,6 @@
 import sys
 from enum import Enum
+from typing import Union
 from ...mod_interface.ode_generator import AbstractOdeSystem
 from ..ode_plugin import OdePlugin, OdeOutput
 from scipy.integrate import ode
@@ -80,16 +81,15 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
             self.integration_range = range_tuple
         return self
 
-    def set_ode_method(self, method):
+    def set_ode_method(self, method: ScipyOdeSolvers):
         self._solver_method = method
         return self
 
-    def set_parameters(self, parameters):
-        if isinstance(self.parameters, (tuple, list)):
-            self.parameters = parameters
+    def set_parameters(self, parameters: Union[list, tuple]):
+        self.parameters = parameters
         return self
 
-    def from_abstract_ode_system(self, system, parameters=None):
+    def from_abstract_ode_system(self, system: AbstractOdeSystem, parameters=None):
         self._user_function = get_scipy_lambda(system)
         self.ode_count = system.ode_count
         return self

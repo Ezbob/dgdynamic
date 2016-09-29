@@ -2,6 +2,7 @@ import logging
 import config
 import os
 import shutil
+from typing import *
 
 logging_handler = None
 
@@ -71,3 +72,11 @@ def set_logging(filename="system.log", new_session=False, level=logging.DEBUG):
     logging_handler = logging.FileHandler(new_file_path)
     logging_handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s'))
     logging.basicConfig(level=level)
+
+
+class ProjectTypeHints:
+    Real = Union[float, int]
+    Reals = List[Real]
+    Numbers = Union[Reals, Real]
+    Countable_Sequence = Union[List[Any], Tuple[Any,...]]
+    ODE_Function = Callable[[Numbers, Numbers], Numbers]
