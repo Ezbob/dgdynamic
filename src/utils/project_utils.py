@@ -12,13 +12,15 @@ def log(function):
     :param function: the function that has been decorated
     :return: the wrapper that decorates the function
     """
-    def debug_wrapper(*args, **kwargs):
-        name = ".".join([function.__module__, function.__name__])
-        logger = logging.getLogger(name)
+    global logging_handler
+    name = ".".join([function.__module__, function.__name__])
+    logger = logging.getLogger(name)
+    logger.addHandler(logging_handler)
 
+    def debug_wrapper(*args, **kwargs):
         logger.info("Now entering function {} with arguments {} and\
 keyword arguments {}".format(function.__name__(), args, kwargs))
-        function(args, kwargs)
+        function(args, kwargs, logger=function)
         logger.info("Leaving function {}".format(args))
         debug_wrapper.__name__ = function.__name__
     return debug_wrapper
