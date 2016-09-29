@@ -29,14 +29,10 @@ class ScipyOde(OdePlugin, LogMixin):
     _ode_solver = None
 
     def __init__(self, eq_system=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05, parameters=None):
-        self.ode_count = eq_system.ode_count if type(eq_system) is AbstractOdeSystem else 1
-
-        if isinstance(eq_system, str):
-            eq_system = eval(eq_system)
-        elif isinstance(eq_system, AbstractOdeSystem):
-            eq_system = get_scipy_lambda(eq_system, parameters)
-
         super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters)
+
+        if isinstance(eq_system, AbstractOdeSystem):
+            self._user_function = get_scipy_lambda(eq_system, parameters)
 
     def solve(self):
         if not self._user_function:
@@ -92,6 +88,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
     def from_abstract_ode_system(self, system: AbstractOdeSystem, parameters=None):
         self._user_function = get_scipy_lambda(system)
         self.ode_count = system.ode_count
+        self.ignored_count = len(system._ignored)
         return self
 
     def set_initial_conditions(self, conditions):

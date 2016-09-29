@@ -1,12 +1,13 @@
 import sympy as sp
 from .converter import substitute
+from ..mod_interface.ode_generator import AbstractOdeSystem
 
 
-def _postprocessor(string_input):
+def _postprocessor(string_input: str):
     return eval(string_input)
 
 
-def get_scipy_lambda(abstract_system, parameter_substitutions=None):
+def get_scipy_lambda(abstract_system: AbstractOdeSystem, parameter_substitutions=None):
 
     if parameter_substitutions is not None:
         assert len(parameter_substitutions) >= abstract_system.reaction_count

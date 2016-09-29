@@ -17,6 +17,9 @@ class OdePlugin(metaclass=ABCMeta):
 
     def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05,
                  parameters=None):
+
+        self.ode_count = function.ode_count if type(function) is AbstractOdeSystem else 1
+        self.ignored_count = len(function._ignored) if type(function) is AbstractOdeSystem else 0
         self._user_function = function
         self.delta_t = delta_t
 

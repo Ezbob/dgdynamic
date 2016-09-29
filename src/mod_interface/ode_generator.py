@@ -57,7 +57,7 @@ class AbstractOdeSystem:
                     for target_vertex in edge.targets:
                         if vertex.id == target_vertex.id:
                             subres += self.left_hands[edge_index]
-                results += ((vertex.id, subres),)
+                results += ((vertex.graph.name, subres),)
         return results
 
     def ignore_species(self, species: Union[str, sp.Symbol, Types.Countable_Sequence]):
