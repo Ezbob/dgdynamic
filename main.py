@@ -16,8 +16,7 @@ C + D -> C + C
 C -> E
 """)
 
-aos.ignore_species(('A', 'D'))
-
+aos.ignore_species('A', 'D')
 
 name = "abstractReactions1"
 init = [random.random() for i in range(aos.species_count)]

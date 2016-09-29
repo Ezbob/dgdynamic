@@ -16,10 +16,17 @@ class OdePlugin(metaclass=ABCMeta):
     _ode_method = None
 
     def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05,
-                 parameters=None):
+                 parameters=None, ode_count=1):
 
-        self.ode_count = function.species_count if type(function) is AbstractOdeSystem else 1
-        self.ignored_count = len(function._ignored) if type(function) is AbstractOdeSystem else 0
+        if type(function) is AbstractOdeSystem:
+            self.ode_count = function.species_count
+            self.ignored_count = len(function._ignored)
+            self._ignored = (ignored_tuple[1] for ignored_tuple in function._ignored)
+        else:
+            self._ignored = ()
+            self.ignored_count = 0
+            self.ode_count = ode_count
+
         self._user_function = function
         self.delta_t = delta_t
 
@@ -34,32 +41,35 @@ class OdePlugin(metaclass=ABCMeta):
             self.initial_conditions = initial_conditions
 
     @abstractmethod
-    def set_integration_range(self, range_tuple: Tuple[int, int]):
+    def solve(self) -> object:
         pass
 
     @abstractmethod
     def set_ode_method(self, name: object):
         pass
 
-    @abstractmethod
-    def set_initial_conditions(self, conditions: Dict[Types.Real, Types.Reals]):
-        pass
+    def set_integration_range(self, range_tuple:Tuple[int, int]):
+        if isinstance(range_tuple, tuple):
+            self.integration_range = range_tuple
+        return self
 
-    @abstractmethod
-    def solve(self):
-        pass
+    def set_parameters(self, parameters: Union[list, tuple]):
+        self.parameters = parameters
+        return self
 
-    @abstractmethod
-    def set_ode_function(self, ode_function: Union[Types.ODE_Function, str]):
-        pass
-
-    @abstractmethod
-    def set_parameters(self, parameters: Types.Countable_Sequence):
-        pass
-
-    @abstractmethod
     def from_abstract_ode_system(self, system: AbstractOdeSystem, parameters=None):
-        pass
+        self.ode_count = system.species_count
+        self.ignored_count = len(system._ignored)
+        self._ignored = (ignored_tuple[1] for ignored_tuple in system._ignored)
+        return self
+
+    def set_initial_conditions(self, conditions:Dict[Types.Real, Types.Reals]):
+        self.initial_conditions = conditions
+        return self
+
+    def set_ode_function(self, ode_function:Types.ODE_Function):
+        self._user_function = ode_function
+        return self
 
 
 class OdeOutput(LogMixin):

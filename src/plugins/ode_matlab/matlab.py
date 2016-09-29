@@ -46,55 +46,12 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine = matlab.engine.start_matlab()
         self.logger.debug("Started.")
 
-    def set_integration_range(self, range_tuple):
-        if isinstance(range_tuple, (tuple, list)):
-            self.integration_range = range_tuple
-        else:
-            self.engine.exit()
-            raise TypeError("Range not a tuple")
-        return self
-
-    def set_initial_conditions(self, conditions):
-        if isinstance(conditions, dict):
-            self.initial_conditions = conditions
-        else:
-            self.engine.exit()
-            raise TypeError("Initial conditions should be formulated as a dictionary t -> y")
-        return self
-
-    def set_ode_method(self, name):
+    def set_ode_method(self, name: MatlabOdeSolvers):
         if isinstance(name, MatlabOdeSolvers):
             self._ode_solver = name
         return self
 
-    def set_ode_function(self, ode_function):
-        if isinstance(ode_function, str) or callable(ode_function):
-            self._user_function = ode_function
-        return self
-
-    def set_parameters(self, parameters):
-        if isinstance(parameters, (tuple, list)):
-            self.parameters = parameters
-
-    def add_to_workspace(self, key, value):
-        if isinstance(key, str):
-            self.engine.workspace[key] = value
-        return self
-
-    def get_from_workspace(self, key):
-        if isinstance(key, str):
-            return self.engine.workspace[key]
-        return self
-
-    def clear_workspace(self):
-        self.engine.clear()
-        return self
-
-    def from_abstract_ode_system(self, system, parameters=None):
-        self._user_function = get_matlab_lambda(system, parameters)
-        return self
-
-    def solve(self):
+    def solve(self) -> OdeOutput:
         if self._user_function is None:
             return None
         self.logger.debug("Solving ode using MATLAB")
@@ -138,6 +95,20 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_rang
         self.logger.debug("Closing MATLAB engine...")
         self.engine.exit()
         self.logger.debug("Closed")
+
+    def add_to_workspace(self, key, value):
+        if isinstance(key, str):
+            self.engine.workspace[key] = value
+        return self
+
+    def get_from_workspace(self, key):
+        if isinstance(key, str):
+            return self.engine.workspace[key]
+        return self
+
+    def clear_workspace(self):
+        self.engine.clear()
+        return self
 
     def __del__(self):
         self.engine.exit()

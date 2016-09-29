@@ -34,14 +34,14 @@ class ScipyOde(OdePlugin, LogMixin):
         if isinstance(eq_system, AbstractOdeSystem):
             self._user_function = get_scipy_lambda(eq_system, parameters)
 
-    def solve(self):
+    def solve(self) -> OdeOutput:
         if not self._user_function:
             return None
         if type(self._user_function) is str:
             self._user_function = eval(self._user_function)
 
         self.logger.debug("Started solving using Scipy with method {}".format(self._solver_method.value))
-        self.logger.debug("Functions is {}, \
+        self.logger.debug("Initial conditions is {}, \
 range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, self.delta_t))
 
         self.logger.debug("Setting scipy parameters...")
@@ -73,34 +73,10 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
         else:
             return None
 
-    def set_integration_range(self, range_tuple):
-        if isinstance(range_tuple, tuple):
-            self.integration_range = range_tuple
-        return self
-
     def set_ode_method(self, method: ScipyOdeSolvers):
         self._solver_method = method
         return self
 
-    def set_parameters(self, parameters: Union[list, tuple]):
-        self.parameters = parameters
-        return self
-
-    def from_abstract_ode_system(self, system: AbstractOdeSystem, parameters=None):
-        self._user_function = get_scipy_lambda(system)
-        self.ode_count = system.species_count
-        self.ignored_count = len(system._ignored)
-        return self
-
-    def set_initial_conditions(self, conditions):
-        if isinstance(conditions, dict):
-            self.initial_conditions = conditions
-        return self
-
-    def set_ode_function(self, ode_function):
-        if isinstance(ode_function, str) or callable(ode_function):
-            self._user_function = ode_function
-        return self
 
 if __name__ == "__main__":
     print("Plugin not meant as standalone application", file=sys.stderr)

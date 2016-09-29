@@ -45,7 +45,7 @@ class AbstractOdeSystem:
         """
         results = tuple()
         for vertex_id, vertex in enumerate(self.graph.vertices):
-            if sp.Symbol(vertex.graph.name) in self._ignored:
+            if sp.Symbol(vertex.graph.name) in (ignore_tuple[0] for ignore_tuple in self._ignored):
                 results += ((vertex.graph.name, 0),)
             else:
                 subres = 0
@@ -60,7 +60,7 @@ class AbstractOdeSystem:
                 results += ((vertex.graph.name, subres),)
         return results
 
-    def ignore_species(self, species: Union[str, sp.Symbol, Types.Countable_Sequence]):
+    def ignore_species(self, *species: Union[str, sp.Symbol, Types.Countable_Sequence]):
         """
         Specify the list of species you don't want to see ODEs for
         :param species: list of strings symbol
@@ -68,11 +68,13 @@ class AbstractOdeSystem:
         """
         if len(self._ignored) < self.species_count:
             if type(species) is str:
-                self._ignored = tuple(item for item in self.symbols.values() if sp.Symbol(species) == item)
+                self._ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                      if sp.Symbol(species) == item)
             elif type(species) is sp.Symbol:
-                self._ignored = tuple(item for item in self.symbols.values() if species == item)
+                self._ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                      if species == item)
             else:
-                self._ignored = tuple(item for item in self.symbols.values()
+                self._ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
                                       for element in species if sp.Symbol(element) == item)
         return self
 
