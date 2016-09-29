@@ -71,12 +71,19 @@ class OdeOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, linestyle='-'):
+    def plot(self, linestyle='-', labels=None):
         """
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
         """
-        plt.plot(self.independent, self.dependent, linestyle)
+        lines = plt.plot(self.independent, self.dependent, linestyle)
+        if labels is not None:
+            assert len(labels) >= len(lines)
+            for index, line in enumerate(lines):
+                line.set_label(labels[index])
+            plt.legend()
+
+        plt.title(self.solver_used.value)
         plt.show()
         return self
 
