@@ -20,7 +20,7 @@ aos.ignore_species(('A', 'D'))
 
 
 name = "abstractReactions1"
-init = [random.random() for i in range(aos.ode_count)]
+init = [random.random() for i in range(aos.species_count)]
 parameters = [1.0] * aos.reaction_count
 initial_conditions = {0: init}
 integration_range = (0, 10)

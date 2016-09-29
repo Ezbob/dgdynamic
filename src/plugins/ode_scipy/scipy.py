@@ -88,7 +88,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
 
     def from_abstract_ode_system(self, system: AbstractOdeSystem, parameters=None):
         self._user_function = get_scipy_lambda(system)
-        self.ode_count = system.ode_count
+        self.ode_count = system.species_count
         self.ignored_count = len(system._ignored)
         return self
 

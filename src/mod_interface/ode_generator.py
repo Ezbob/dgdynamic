@@ -25,7 +25,7 @@ class AbstractOdeSystem:
         self.symbols = {vertex.id: sp.Symbol(vertex.graph.name) for vertex in self.graph.vertices}
         # the best 'complicated' way of counting, this is needed because we can't take the length of the edges (yet?)
         self.reaction_count = sum(1 for _ in self.graph.edges)
-        self.ode_count = self.graph.numVertices # e.g. species count
+        self.species_count = self.graph.numVertices # e.g. species count
 
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
         self.parameters = tuple(sp.Symbol("k{}".format(i + 1)) for i in range(self.reaction_count))
@@ -66,7 +66,7 @@ class AbstractOdeSystem:
         :param species: list of strings symbol
         :return:
         """
-        if len(self._ignored) < self.ode_count:
+        if len(self._ignored) < self.species_count:
             if type(species) is str:
                 self._ignored = tuple(item for item in self.symbols.values() if sp.Symbol(species) == item)
             elif type(species) is sp.Symbol:
