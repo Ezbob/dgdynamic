@@ -52,7 +52,6 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
 
         assert len(initial_y) == self.ode_count
 
-
         self._ode_solver.set_initial_value(initial_y, initial_t)
         self.logger.debug("Set.")
 
@@ -69,7 +68,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
 
         self.logger.debug("Solving finished")
         if len(ys) > 0 and len(ts) > 0:
-            return OdeOutput(SupportedSolvers.Scipy, ys, ts)
+            return OdeOutput(SupportedSolvers.Scipy, ys, ts, self._ignored)
         else:
             return None
 
