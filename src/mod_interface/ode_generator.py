@@ -1,12 +1,12 @@
 import functools as ft
 from enum import Enum
 from typing import Union
-from ..utils.project_utils import ProjectTypeHints as Types
+from ..utils.project_utils import ProjectTypeHints as Types, LogMixin
 import sympy as sp
 from mod import dgAbstract
 
 
-class AbstractOdeSystem:
+class AbstractOdeSystem(LogMixin):
     """
     This class is meant to create ODEs in SymPys abstract symbolic mathematical syntax, using deviation graphs
     from the MØD framework.
@@ -76,6 +76,8 @@ class AbstractOdeSystem:
             else:
                 self._ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
                                       for element in species if sp.Symbol(element) == item)
+        else:
+            self.logger.warn("ignored species count exceeds the count of actual species")
         return self
 
     def __repr__(self):

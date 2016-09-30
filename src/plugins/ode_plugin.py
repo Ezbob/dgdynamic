@@ -147,7 +147,7 @@ class OdeOutput(LogMixin):
             self.logger.warn("Dimension of the dependent variable could not be determined; defaulting to 0")
 
         new_filename = self._get_file_prefix(name, prefix=prefix)
-        self.logger.debug("Saving data as {}".format(new_filename))
+        self.logger.info("Saving data as {}".format(new_filename))
 
         with open(new_filename, mode='w') as fileout:
             # writing header
