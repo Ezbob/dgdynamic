@@ -95,7 +95,7 @@ class OdeOutput(LogMixin):
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
         """
-        lines = plt.plot(self.independent, self.filtered_dependent, linestyle)
+        lines = plt.plot(self.independent, tuple(self.filtered_dependent), linestyle)
         if labels is not None:
             assert len(labels) >= len(lines)
             for index, line in enumerate(lines):
@@ -118,14 +118,12 @@ class OdeOutput(LogMixin):
             return os.path.join(self._path, "{}{}{}".format(prefix, name, extension))
 
     def _filter_out_ignores(self):
-        new_matrix = ()
         for rows in self.dependent:
             filtered_row = ()
             for index, item in enumerate(rows):
                 if index not in self._ignored:
                     filtered_row += (item,)
-            new_matrix += (filtered_row,)
-        return new_matrix
+            yield filtered_row
 
     def save(self, name="data", float_precision=12, prefix=None):
         """
