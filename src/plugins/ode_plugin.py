@@ -85,7 +85,6 @@ class OdeOutput(LogMixin):
         self._filename = "data"
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config.DATA_DIRECTORY)
-        self.filtered_dependent = self._filter_out_ignores()
 
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
@@ -95,7 +94,7 @@ class OdeOutput(LogMixin):
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
         """
-        lines = plt.plot(self.independent, tuple(self.filtered_dependent), linestyle)
+        lines = plt.plot(self.independent, tuple(self._filter_out_ignores()), linestyle)
         if labels is not None:
             assert len(labels) >= len(lines)
             for index, line in enumerate(lines):
@@ -137,12 +136,12 @@ class OdeOutput(LogMixin):
         """
         self._filename = name if name is not None and type(name) is str else self._filename
 
-        paired_data = zip(self.independent, self.dependent)
+        paired_data = zip(self.independent, self._filter_out_ignores())
         make_directory(config.DATA_DIRECTORY, pre_delete=False)
 
         dependent_dimension = 0
         try:
-            dependent_dimension = len(self.dependent[0])
+            dependent_dimension = abs(len(self.dependent[0]) - len(self._ignored))
             self.logger.debug("Dimension of the dependent variable is {}".format(dependent_dimension))
         except TypeError:
             self.logger.warn("Dimension of the dependent variable could not be determined; defaulting to 0")
