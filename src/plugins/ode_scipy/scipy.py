@@ -7,6 +7,7 @@ from scipy.integrate import ode
 from ...converters.scipy_converter import get_scipy_lambda
 from config import SupportedSolvers
 from ...utils.project_utils import LogMixin
+from array import array
 
 
 class ScipyOdeSolvers(Enum):
@@ -44,33 +45,59 @@ class ScipyOde(OdePlugin, LogMixin):
         self.logger.debug("Initial conditions is {}, \
 range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, self.delta_t))
 
-        self.logger.debug("Setting scipy parameters...")
-        assert self.integration_range[0] <= self.integration_range[1]
+        def fixed_step_integration():
+            self.logger.debug("Setting scipy parameters...")
+            assert self.integration_range[0] <= self.integration_range[1]
 
-        self._ode_solver = ode(self._user_function).set_integrator(self._solver_method.value.upper())
-        initial_t, initial_y = self.initial_conditions.popitem()
+            self._ode_solver = ode(self._user_function).set_integrator(self._solver_method.value.upper())
+            initial_t, initial_y = self.initial_conditions.popitem()
 
-        assert len(initial_y) == self.ode_count
+            assert len(initial_y) == self.ode_count
 
-        self._ode_solver.set_initial_value(initial_y, initial_t)
-        self.logger.debug("Set.")
+            self._ode_solver.set_initial_value(initial_y, initial_t)
+            self.logger.debug("Set.")
 
-        ys = list()
-        ts = list()
-        self._ode_solver.t = self.integration_range[0]
-        try:
-            while self._ode_solver.successful() and self._ode_solver.t <= self.integration_range[1]:
-                ts.append(self._ode_solver.t)
-                ys.append(self._ode_solver.y)
-                self._ode_solver.integrate(self._ode_solver.t + self.delta_t)
-        except SystemError:
+            ys = list()
+            ts = list()
+            self._ode_solver.t = self.integration_range[0]
+            try:
+                while self._ode_solver.successful() and self._ode_solver.t <= self.integration_range[1]:
+                    ts.append(self._ode_solver.t)
+                    ys.append(self._ode_solver.y)
+                    self._ode_solver.integrate(self._ode_solver.t + self.delta_t)
+            except SystemError:
+                return None
+
+            self.logger.debug("Solving finished")
+            if len(ys) > 0 and len(ts) > 0:
+                return OdeOutput(SupportedSolvers.Scipy, ys, ts, self._ignored)
             return None
 
-        self.logger.debug("Solving finished")
-        if len(ys) > 0 and len(ts) > 0:
-            return OdeOutput(SupportedSolvers.Scipy, ys, ts, self._ignored)
-        else:
+        def variable_step_integration():
+
+            y_solution = []
+            t_solution = []
+
+            def solution_getter(t, y):
+                y_solution.append(y)
+                t_solution.append(t)
+
+            solver = ode(self._user_function).set_integrator(self._solver_method.value)
+            initial_t, initial_y = self.initial_conditions.popitem()
+            solver.set_solout(solout=solution_getter)
+            solver.set_initial_value(y=initial_y, t=initial_t)
+
+            while solver.successful() and solver.t < self.integration_range[1]:
+                solver.integrate(self.integration_range[1], step=True)
+
+            if len(y_solution) > 0 and len(t_solution) > 0:
+                return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored)
             return None
+
+        #if self._solver_method is ScipyOdeSolvers.DOP853 or self._solver_method is ScipyOdeSolvers.DOPRI5:
+        #    return variable_step_integration()
+        #else:
+        return fixed_step_integration()
 
     def set_ode_method(self, method: ScipyOdeSolvers):
         self._solver_method = method

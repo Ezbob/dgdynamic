@@ -60,7 +60,7 @@ class AbstractOdeSystem(LogMixin):
                 results += ((vertex.graph.name, subres),)
         return results
 
-    def ignore_species(self, *species: Union[str, sp.Symbol, Types.Countable_Sequence]):
+    def unchanging_species(self, *species: Union[str, sp.Symbol, Types.Countable_Sequence]):
         """
         Specify the list of species you don't want to see ODEs for
         :param species: list of strings symbol

@@ -6,23 +6,25 @@ from src.plugins.ode_scipy.scipy import ScipyOdeSolvers
 #from src.plugins.ode_matlab.matlab import MatlabOde # linking order is important so don't make this the first import
 import random
 
-
 set_logging(new_session=True)
-
 
 aos = AbstractOdeSystem("""
 A + B -> A + A
-C + D -> C + C
-C -> E
-""")
-
-aos.ignore_species('A', 'D')
+C + A -> C + C
+B -> A
+A -> C
+C -> D
+""").unchanging_species('B', 'D')
 
 name = "abstractReactions1"
-init = [random.random() for i in range(aos.species_count)]
-parameters = [1.0] * aos.reaction_count
+#init = [random.random() for i in range(aos.species_count)]
+init = [0.5, 1, 0, 0]
+parameters = [0.01] * aos.reaction_count
+parameters[1] = 0.005
+parameters[2] = 0.001
+parameters[3] = 0.001
 initial_conditions = {0: init}
-integration_range = (0, 10)
+integration_range = (0, 6000)
 
 #matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
 #                       parameters=parameters)
