@@ -14,8 +14,8 @@ class DefaultFunctionSymbols:
     function_end = ']'
 
 
-def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_map: dict, extra_symbols=DefaultFunctionSymbols(),
-               postprocessor=None):
+def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_map: dict,
+               extra_symbols=DefaultFunctionSymbols(), postprocessor=None):
     """
     This function is tasked with generating a function string from the SymPy description
     :param generated_equations: equations from the AbstractOdeSystem
