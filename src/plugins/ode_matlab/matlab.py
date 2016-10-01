@@ -32,13 +32,15 @@ class MatlabOde(OdePlugin, LogMixin):
     """
     _ode_solver = MatlabOdeSolvers.ode45
 
-    def __init__(self, eq_system="", solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), initial_conditions=None,
+    def __init__(self, eq_system=None, solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), initial_conditions=None,
                  parameters=None):
-        if type(eq_system) is AbstractOdeSystem:
-            eq_system = get_matlab_lambda(eq_system, parameter_substitutions=parameters)
 
         super().__init__(eq_system, integration_range=integration_range,  initial_conditions=initial_conditions,
                          parameters=parameters)
+
+        if type(eq_system) is AbstractOdeSystem:
+            self._user_function = get_matlab_lambda(eq_system, parameter_substitutions=parameters)
+
         if isinstance(solver, MatlabOdeSolvers):
             self._ode_solver = solver
 
@@ -86,7 +88,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_rang
             tres = [a for i in tres for a in i]
             yres = convert_matrix(yres)
 
-            return OdeOutput(solved_by=SupportedSolvers.Matlab, dependent=yres, independent=tres)
+            return OdeOutput(solved_by=SupportedSolvers.Matlab, dependent=yres, independent=tres, ignore=self._ignored)
         else:
             self.logger.debug("Empty ode function. Aborting...")
             return None
