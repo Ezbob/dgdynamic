@@ -13,10 +13,9 @@ class OdePlugin(metaclass=ABCMeta):
     Super class for all the ODE plugins. This class inherits the Abstract Base Class and functions as a
     interface for all the ODE plugins.
     """
-    _ode_method = None
 
     def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05,
-                 parameters=None, ode_count=1):
+                 parameters=None, ode_count=1, solver_method=None):
 
         if type(function) is AbstractOdeSystem:
             self.ode_count = function.species_count

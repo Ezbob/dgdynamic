@@ -28,9 +28,11 @@ class ScipyOde(OdePlugin, LogMixin):
     # the default method uses the real value solver VODE
     _solver_method = ScipyOdeSolvers.VODE
 
-    def __init__(self, eq_system=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05, parameters=None):
+    def __init__(self, eq_system=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05, parameters=None,
+                 solver_method=ScipyOdeSolvers.VODE):
         super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters)
 
+        self._solver_method = solver_method
         if isinstance(eq_system, AbstractOdeSystem):
             self._user_function = get_scipy_lambda(eq_system, parameters)
 
