@@ -28,7 +28,6 @@ class AbstractOdeSystem(LogMixin):
         # the best 'complicated' way of counting, this is needed because we can't take the length of the edges (yet?)
         self.reaction_count = sum(1 for _ in self.graph.edges)
         self.species_count = self.graph.numVertices # e.g. species count
-        print(self.symbols)
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
         self.parameters = tuple(sp.Symbol("k{}".format(i + 1)) for i in range(self.reaction_count))
         self.left_hands = tuple()

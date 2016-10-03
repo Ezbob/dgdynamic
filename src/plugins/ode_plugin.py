@@ -6,12 +6,16 @@ import config
 from src.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
 from src.mod_interface.ode_generator import AbstractOdeSystem
 from typing import Union, Dict, Tuple
+import sympy as sp
+from collections import OrderedDict
 
 
 def sanity_check(plugin_instance, initial_values):
 
     if plugin_instance.integration_range[0] > plugin_instance.integration_range[1]:
         raise ValueError("First value exceeds second in integration range")
+    elif initial_values is None:
+        raise ValueError("No valid initial condition values where given")
     elif len(initial_values) < plugin_instance.ode_count:
         raise ValueError("Not enough initial values given")
     elif len(initial_values) > plugin_instance.ode_count:
@@ -21,9 +25,13 @@ def sanity_check(plugin_instance, initial_values):
 def get_initial_values(initial_conditions, symbols):
     if isinstance(initial_conditions, (tuple, list)):
         return initial_conditions
-    elif type(initial_conditions) is dict and type(symbols) is dict:
+    elif type(initial_conditions) is dict and type(symbols) is OrderedDict:
         translate_mapping = {val: index for index, val in enumerate(symbols.values())}
-        return []
+        results = [0] * len(translate_mapping)
+        for key, value in initial_conditions.items():
+            results[translate_mapping[sp.Symbol(key)]] = value
+
+        return results
 
 
 class OdePlugin(metaclass=ABCMeta):

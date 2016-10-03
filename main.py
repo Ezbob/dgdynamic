@@ -18,15 +18,21 @@ C -> D
 
 name = "abstractReactions1"
 #init = [random.random() for i in range(aos.species_count)]
-init = [0.5, 1, 0, 0]
+#init = [0.5, 1, 0, 0]
+
+init = {
+    'F': 0.5,
+    'B': 1,
+    'C': 0,
+    'D': 0
+}
+
 parameters = [0.01] * aos.reaction_count
 parameters[1] = 0.005
 parameters[2] = 0.001
 parameters[3] = 0.001
 initial_conditions = init
 integration_range = (0, 6000)
-
-print(aos.generate_equations())
 
 
 #matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
