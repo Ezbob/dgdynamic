@@ -18,6 +18,14 @@ def sanity_check(plugin_instance, initial_values):
         raise ValueError("Too many initial values given")
 
 
+def get_initial_values(initial_conditions, symbols):
+    if isinstance(initial_conditions, (tuple, list)):
+        return initial_conditions
+    elif type(initial_conditions) is dict and type(symbols) is dict:
+        reverse_mapping = {val: key for key, val in symbols}
+        #TODO
+
+
 class OdePlugin(metaclass=ABCMeta):
     """
     Super class for all the ODE plugins. This class inherits the Abstract Base Class and functions as a

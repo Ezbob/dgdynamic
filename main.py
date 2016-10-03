@@ -23,7 +23,7 @@ parameters = [0.01] * aos.reaction_count
 parameters[1] = 0.005
 parameters[2] = 0.001
 parameters[3] = 0.001
-initial_conditions = {0: init}
+initial_conditions = init
 integration_range = (0, 6000)
 
 

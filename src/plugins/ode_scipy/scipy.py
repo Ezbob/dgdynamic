@@ -2,7 +2,7 @@ import sys
 from enum import Enum
 from typing import Union
 from ...mod_interface.ode_generator import AbstractOdeSystem
-from ..ode_plugin import OdePlugin, OdeOutput, sanity_check
+from ..ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from scipy.integrate import ode
 from ...converters.scipy_converter import get_scipy_lambda
 from config import SupportedSolvers
@@ -36,6 +36,9 @@ class ScipyOde(OdePlugin, LogMixin):
         self._solver_method = solver_method
         if isinstance(eq_system, AbstractOdeSystem):
             self._user_function = get_scipy_lambda(eq_system, parameters)
+            self._symbols = eq_system.symbols
+        else:
+            self._symbols = None
 
     def solve(self) -> OdeOutput:
         if not self._user_function:
@@ -44,7 +47,7 @@ class ScipyOde(OdePlugin, LogMixin):
             self._user_function = eval(self._user_function)
 
         self.logger.debug("Checking scipy parameters...")
-        initial_t, initial_y = self.initial_conditions.popitem()
+        initial_y = get_initial_values(self.initial_conditions, self._symbols)
         sanity_check(self, initial_y)
 
         self.logger.debug("Started solving using Scipy with method {}".format(self._solver_method.value))
