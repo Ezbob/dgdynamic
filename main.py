@@ -33,7 +33,7 @@ integration_range = (0, 6000)
 #matlab_ode.solve().save(name).plot()
 
 scipy_ode = ScipyOde(aos, initial_condition=initial_conditions, integration_range=integration_range,
-                     parameters=parameters)
+                     parameters=parameters).set_ode_solver(ScipyOdeSolvers.DOPRI5)
 
 scipy_ode.solve().save(name).plot()
 

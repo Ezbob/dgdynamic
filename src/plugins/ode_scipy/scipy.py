@@ -29,8 +29,9 @@ class ScipyOde(OdePlugin, LogMixin):
     _solver_method = ScipyOdeSolvers.VODE
 
     def __init__(self, eq_system=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05, parameters=None,
-                 solver_method=ScipyOdeSolvers.VODE):
-        super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters)
+                 solver_method=ScipyOdeSolvers.VODE, initial_t=0):
+        super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters,
+                         initial_t=initial_t)
 
         self._solver_method = solver_method
         if isinstance(eq_system, AbstractOdeSystem):
@@ -53,7 +54,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
         y_solution = list()
         t_solution = list()
         solver = ode(self._user_function).set_integrator(self._solver_method.value.upper())
-        solver.set_initial_value(y=initial_y, t=initial_t)
+        solver.set_initial_value(y=initial_y, t=self.initial_t)
         solver.t = self.integration_range[0]
 
         def fixed_step_integration():
