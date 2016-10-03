@@ -40,8 +40,11 @@ def get_parameter_map(abstract_system, parameter_substitutions=None):
         assert len(parameter_substitutions) >= abstract_system.reaction_count
         if type(parameter_substitutions) is dict:
             translate_dictionary = dict(_get_parameter_mappings(abstract_system))
-            parameter_map = {abstract_system.parameters[translate_dictionary[key]]: value
-                             for key, value in parameter_substitutions.items()}
+            try:
+                parameter_map = {abstract_system.parameters[translate_dictionary[key]]: value
+                                 for key, value in parameter_substitutions.items()}
+            except KeyError:
+                raise KeyError("Parameter key could not be matched; check if the spelling is correct and try again")
         else:
             parameter_map = {k: v for k, v in zip(abstract_system.parameters, parameter_substitutions)}
     else:

@@ -2,7 +2,7 @@ import sys
 from enum import Enum
 from typing import Union
 from ...mod_interface.ode_generator import AbstractOdeSystem
-from ..ode_plugin import OdePlugin, OdeOutput
+from ..ode_plugin import OdePlugin, OdeOutput, sanity_check
 from scipy.integrate import ode
 from ...converters.scipy_converter import get_scipy_lambda
 from config import SupportedSolvers
@@ -42,19 +42,17 @@ class ScipyOde(OdePlugin, LogMixin):
         if type(self._user_function) is str:
             self._user_function = eval(self._user_function)
 
+        initial_t, initial_y = self.initial_conditions.popitem()
+        sanity_check(self, initial_y)
+
         self.logger.debug("Started solving using Scipy with method {}".format(self._solver_method.value))
         self.logger.debug("Initial conditions is {}, \
 range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, self.delta_t))
 
         def fixed_step_integration():
             self.logger.debug("Setting scipy parameters...")
-            assert self.integration_range[0] <= self.integration_range[1]
 
             solver = ode(self._user_function).set_integrator(self._solver_method.value.upper())
-            initial_t, initial_y = self.initial_conditions.popitem()
-
-            assert len(initial_y) == self.ode_count
-
             solver.set_initial_value(initial_y, initial_t)
             self.logger.debug("Set.")
 
@@ -84,7 +82,6 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 t_solution.append(t)
 
             solver = ode(self._user_function).set_integrator(self._solver_method.value)
-            initial_t, initial_y = self.initial_conditions.popitem()
             solver.set_solout(solout=solution_getter)
             solver.set_initial_value(y=initial_y, t=initial_t)
             solver.t = self.integration_range[0]

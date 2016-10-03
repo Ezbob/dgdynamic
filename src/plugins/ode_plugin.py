@@ -8,6 +8,16 @@ from src.mod_interface.ode_generator import AbstractOdeSystem
 from typing import Union, Dict, Tuple
 
 
+def sanity_check(plugin_instance, initial_values):
+
+    if plugin_instance.integration_range[0] > plugin_instance.integration_range[1]:
+        raise ValueError("First value exceeds second in integration range")
+    elif len(initial_values) < plugin_instance.ode_count:
+        raise ValueError("Not enough initial values given")
+    elif len(initial_values) > plugin_instance.ode_count:
+        raise ValueError("Too many initial values given")
+
+
 class OdePlugin(metaclass=ABCMeta):
     """
     Super class for all the ODE plugins. This class inherits the Abstract Base Class and functions as a

@@ -10,21 +10,25 @@ set_logging(new_session=True)
 
 aos = AbstractOdeSystem("""
 A + B -> A + A
-C + A -> C + C
-B -> A
-A -> C
-C -> D
-""").unchanging_species('B', 'D')
+B + B -> C
+""")
 
 name = "abstractReactions1"
 #init = [random.random() for i in range(aos.species_count)]
-init = [0.5, 1, 0, 0]
-parameters = [0.01] * aos.reaction_count
-parameters[1] = 0.005
-parameters[2] = 0.001
-parameters[3] = 0.001
+init = [0.5, 1, 0.1]
+
+parameters = dict()
+parameters['A + B -> A + A'] = 0.1
+parameters['B + B -> C'] = 0.2
+
+
+# parameters = [0.01] * aos.reaction_count
+# parameters[1] = 0.005
+# parameters[2] = 0.001
+# parameters[3] = 0.001
 initial_conditions = {0: init}
 integration_range = (0, 6000)
+
 
 #matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
 #                       parameters=parameters)
