@@ -42,10 +42,8 @@ class OdePlugin(metaclass=ABCMeta):
 
         if isinstance(integration_range, (tuple, list)) and len(integration_range) >= 2:
             self.integration_range = integration_range
-        if initial_conditions is None:
-            self.initial_conditions = {0: 0}
-        elif isinstance(initial_conditions, dict):
-            self.initial_conditions = initial_conditions
+
+        self.initial_conditions = initial_conditions
 
     @abstractmethod
     def solve(self) -> object:

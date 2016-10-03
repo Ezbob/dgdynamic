@@ -59,8 +59,8 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
         def fixed_step_integration():
             try:
                 while solver.successful() and solver.t <= self.integration_range[1]:
-                    y_solution.append(solver.t)
-                    t_solution.append(solver.y)
+                    y_solution.append(solver.y)
+                    t_solution.append(solver.t)
                     solver.integrate(solver.t + self.delta_t)
             except SystemError as integration_error:
                 self.logger.exception("Integration process failed", integration_error)
