@@ -27,7 +27,6 @@ class ScipyOde(OdePlugin, LogMixin):
     """
     # the default method uses the real value solver VODE
     _solver_method = ScipyOdeSolvers.VODE
-    _ode_solver = None
 
     def __init__(self, eq_system=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05, parameters=None):
         super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters)
@@ -49,22 +48,22 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
             self.logger.debug("Setting scipy parameters...")
             assert self.integration_range[0] <= self.integration_range[1]
 
-            self._ode_solver = ode(self._user_function).set_integrator(self._solver_method.value.upper())
+            solver = ode(self._user_function).set_integrator(self._solver_method.value.upper())
             initial_t, initial_y = self.initial_conditions.popitem()
 
             assert len(initial_y) == self.ode_count
 
-            self._ode_solver.set_initial_value(initial_y, initial_t)
+            solver.set_initial_value(initial_y, initial_t)
             self.logger.debug("Set.")
 
             ys = list()
             ts = list()
-            self._ode_solver.t = self.integration_range[0]
+            solver.t = self.integration_range[0]
             try:
-                while self._ode_solver.successful() and self._ode_solver.t <= self.integration_range[1]:
-                    ts.append(self._ode_solver.t)
-                    ys.append(self._ode_solver.y)
-                    self._ode_solver.integrate(self._ode_solver.t + self.delta_t)
+                while solver.successful() and solver.t <= self.integration_range[1]:
+                    ts.append(solver.t)
+                    ys.append(solver.y)
+                    solver.integrate(solver.t + self.delta_t)
             except SystemError:
                 return None
 
@@ -79,13 +78,14 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
             t_solution = []
 
             def solution_getter(t, y):
-                y_solution.append(y)
+                y_solution.append(y.copy())
                 t_solution.append(t)
 
             solver = ode(self._user_function).set_integrator(self._solver_method.value)
             initial_t, initial_y = self.initial_conditions.popitem()
             solver.set_solout(solout=solution_getter)
             solver.set_initial_value(y=initial_y, t=initial_t)
+            solver.t = self.integration_range[0]
 
             while solver.successful() and solver.t < self.integration_range[1]:
                 solver.integrate(self.integration_range[1], step=True)
@@ -94,10 +94,10 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored)
             return None
 
-        #if self._solver_method is ScipyOdeSolvers.DOP853 or self._solver_method is ScipyOdeSolvers.DOPRI5:
-        #    return variable_step_integration()
-        #else:
-        return fixed_step_integration()
+        if self._solver_method is ScipyOdeSolvers.DOP853 or self._solver_method is ScipyOdeSolvers.DOPRI5:
+            return variable_step_integration()
+        else:
+            return fixed_step_integration()
 
     def set_ode_method(self, method: ScipyOdeSolvers):
         self._solver_method = method
