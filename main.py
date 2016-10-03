@@ -9,10 +9,10 @@ import random
 set_logging(new_session=True)
 
 aos = AbstractOdeSystem("""
-A + B -> A + A
-C + A -> C + C
-B -> A
-A -> C
+F + B -> F + F
+C + F -> C + C
+B -> F
+F -> C
 C -> D
 """).unchanging_species('B', 'D')
 
@@ -25,6 +25,8 @@ parameters[2] = 0.001
 parameters[3] = 0.001
 initial_conditions = init
 integration_range = (0, 6000)
+
+print(aos.generate_equations())
 
 
 #matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,

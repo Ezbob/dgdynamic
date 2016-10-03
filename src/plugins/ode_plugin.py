@@ -22,8 +22,8 @@ def get_initial_values(initial_conditions, symbols):
     if isinstance(initial_conditions, (tuple, list)):
         return initial_conditions
     elif type(initial_conditions) is dict and type(symbols) is dict:
-        reverse_mapping = {val: key for key, val in symbols}
-        #TODO
+        translate_mapping = {val: index for index, val in enumerate(symbols.values())}
+        return []
 
 
 class OdePlugin(metaclass=ABCMeta):

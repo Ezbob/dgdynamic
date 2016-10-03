@@ -4,6 +4,7 @@ from typing import Union
 from ..utils.project_utils import ProjectTypeHints as Types, LogMixin
 import sympy as sp
 from io import StringIO
+from collections import OrderedDict
 from mod import dgAbstract
 
 
@@ -23,11 +24,11 @@ class AbstractOdeSystem(LogMixin):
         self._ignored = tuple()
 
         # every vertex in the deviation graph gets a mapping from it's id to the corresponding SymPy Symbol
-        self.symbols = {vertex.id: sp.Symbol(vertex.graph.name) for vertex in self.graph.vertices}
+        self.symbols = OrderedDict(((vertex.id, sp.Symbol(vertex.graph.name)) for vertex in self.graph.vertices))
         # the best 'complicated' way of counting, this is needed because we can't take the length of the edges (yet?)
         self.reaction_count = sum(1 for _ in self.graph.edges)
         self.species_count = self.graph.numVertices # e.g. species count
-
+        print(self.symbols)
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
         self.parameters = tuple(sp.Symbol("k{}".format(i + 1)) for i in range(self.reaction_count))
         self.left_hands = tuple()
