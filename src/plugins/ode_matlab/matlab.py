@@ -5,7 +5,7 @@ import enum
 import sys
 
 import matlab.engine
-from ..ode_plugin import OdePlugin, OdeOutput
+from ..ode_plugin import OdePlugin, OdeOutput, sanity_check
 from ...converters.matlab_converter import get_matlab_lambda
 from ...mod_interface.ode_generator import AbstractOdeSystem
 from config import SupportedSolvers
@@ -58,6 +58,7 @@ class MatlabOde(OdePlugin, LogMixin):
             return None
         self.logger.debug("Solving ode using MATLAB")
         conditions = self.initial_conditions.values()
+        sanity_check(self, list(conditions))
         if isinstance(conditions, (list, tuple)):
             self.add_to_workspace('y0', matlab.double(conditions))
         else:
@@ -70,6 +71,7 @@ class MatlabOde(OdePlugin, LogMixin):
             eval_str = "ode" + str(self._ode_solver.value) + "(" + self._user_function + ", tspan, y0)"
             self.logger.debug("evaluating matlab \
 expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_range, self.initial_conditions))
+
             tres, yres = self.engine.eval(eval_str, nargout=2)
             if len(tres) >= 2:
                 self.delta_t = tres._data[1] - tres._data[0]
