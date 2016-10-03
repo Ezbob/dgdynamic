@@ -1,5 +1,5 @@
 import sympy as sp
-from .converter import substitute
+from .converter import substitute, get_parameter_map
 from ..mod_interface.ode_generator import AbstractOdeSystem
 
 
@@ -9,11 +9,7 @@ def _postprocessor(string_input: str):
 
 def get_scipy_lambda(abstract_system: AbstractOdeSystem, parameter_substitutions=None):
 
-    if parameter_substitutions is not None:
-        assert len(parameter_substitutions) >= abstract_system.reaction_count
-        parameter_map = {k: v for k, v in zip(abstract_system.parameters, parameter_substitutions)}
-    else:
-        parameter_map = None
+    parameter_map = get_parameter_map(abstract_system, parameter_substitutions)
 
     substitute_me = {value: sp.Indexed('y', key) for key, value in enumerate(abstract_system.symbols.values())}
 

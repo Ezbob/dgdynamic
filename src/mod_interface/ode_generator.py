@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Union
 from ..utils.project_utils import ProjectTypeHints as Types, LogMixin
 import sympy as sp
+from io import StringIO
 from mod import dgAbstract
 
 

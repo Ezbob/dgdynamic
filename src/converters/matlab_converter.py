@@ -1,4 +1,4 @@
-from .converter import DefaultFunctionSymbols, substitute
+from .converter import DefaultFunctionSymbols, substitute, get_parameter_map
 from ..mod_interface.ode_generator import AbstractOdeSystem
 
 
@@ -20,12 +20,7 @@ def get_matlab_lambda(abstract_ode_system: AbstractOdeSystem, parameter_substitu
     :param parameter_substitutions: list/tuple of values that should be substituted
     :return: string, containing a anonymous MatLab function that can be integrated
     """
-    # Parameter (also Symbol) -> parameter id
-    if parameter_substitutions is not None:
-        assert len(parameter_substitutions) >= abstract_ode_system.reaction_count
-        parameter_map = {k: v for k, v in zip(abstract_ode_system.parameters, parameter_substitutions)}
-    else:
-        parameter_map = None
+    parameter_map = get_parameter_map(abstract_ode_system, parameter_substitutions)
 
     substitute_me = {value: "y({})".format(key + 1) for key, value in enumerate(abstract_ode_system.symbols.values())}
 

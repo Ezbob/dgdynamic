@@ -3,6 +3,7 @@ This module contains stuff relevant for all converters
 """
 from io import StringIO
 from typing import Dict, Tuple
+from ..mod_interface.ode_generator import AbstractOdeSystem
 
 
 class DefaultFunctionSymbols:
@@ -12,6 +13,40 @@ class DefaultFunctionSymbols:
     equation_separator = ','
     function_start = 'lambda t,y: ['
     function_end = ']'
+
+
+def _get_parameter_mappings(abstract_system: AbstractOdeSystem):
+    """
+    Maps from strings of reactions (such as 'A + C -> D') to it's reaction index
+    :return:
+    """
+    for edge_index, edge in enumerate(abstract_system.graph.edges):
+        with StringIO() as out:
+            for index, source in enumerate(edge.sources):
+                out.write(str(source.graph.name))
+                if index < edge.numSources - 1:
+                    out.write(' + ')
+            out.write(' -> ')
+            for index, target in enumerate(edge.targets):
+                out.write(str(target.graph.name))
+                if index < edge.numTargets - 1:
+                    out.write(' + ')
+            reaction = out.getvalue()
+        yield reaction, edge_index
+
+
+def get_parameter_map(abstract_system, parameter_substitutions=None):
+    if parameter_substitutions is not None:
+        assert len(parameter_substitutions) >= abstract_system.reaction_count
+        if type(parameter_substitutions) is dict:
+            translate_dictionary = dict(_get_parameter_mappings(abstract_system))
+            parameter_map = {abstract_system.parameters[translate_dictionary[key]]: value
+                             for key, value in parameter_substitutions.items()}
+        else:
+            parameter_map = {k: v for k, v in zip(abstract_system.parameters, parameter_substitutions)}
+    else:
+        parameter_map = None
+    return parameter_map
 
 
 def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_map: dict,
