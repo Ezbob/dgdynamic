@@ -48,7 +48,7 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine = matlab.engine.start_matlab()
         self.logger.debug("Started.")
 
-    def set_ode_method(self, name: MatlabOdeSolvers):
+    def set_ode_solver(self, name: MatlabOdeSolvers):
         if isinstance(name, MatlabOdeSolvers):
             self._ode_solver = name
         return self

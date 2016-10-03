@@ -45,7 +45,7 @@ class OdePlugin(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def set_ode_method(self, name: object):
+    def set_ode_solver(self, name: object):
         pass
 
     def set_integration_range(self, range_tuple:Tuple[int, int]):

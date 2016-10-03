@@ -99,7 +99,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
         else:
             return fixed_step_integration()
 
-    def set_ode_method(self, method: ScipyOdeSolvers):
+    def set_ode_solver(self, method: ScipyOdeSolvers):
         self._solver_method = method
         return self
 
