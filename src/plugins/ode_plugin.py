@@ -15,7 +15,7 @@ class OdePlugin(metaclass=ABCMeta):
     """
 
     def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05,
-                 parameters=None, ode_count=1, solver_method=None):
+                 parameters=None, species_count=1):
 
         if type(function) is AbstractOdeSystem:
             self.ode_count = function.species_count
@@ -24,13 +24,11 @@ class OdePlugin(metaclass=ABCMeta):
         else:
             self._ignored = ()
             self.ignored_count = 0
-            self.ode_count = ode_count
+            self.ode_count = species_count
 
         self._user_function = function
         self.delta_t = delta_t
-
-        if isinstance(parameters, (list, tuple)) or parameters is None:
-            self.parameters = parameters
+        self.parameters = parameters
 
         if isinstance(integration_range, (tuple, list)) and len(integration_range) >= 2:
             self.integration_range = integration_range
