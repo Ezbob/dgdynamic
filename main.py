@@ -20,7 +20,7 @@ name = "abstractReactions1"
 #init = [random.random() for i in range(aos.species_count)]
 #init = [0.5, 1, 0, 0]
 
-init = {
+initial_conditions = {
     'F': 0.5,
     'B': 1,
     'C': 0,
@@ -31,14 +31,13 @@ parameters = [0.01] * aos.reaction_count
 parameters[1] = 0.005
 parameters[2] = 0.001
 parameters[3] = 0.001
-initial_conditions = init
 integration_range = (0, 6000)
 
 
-#matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
-#                       parameters=parameters)
+matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
+                       parameters=parameters)
 
-#matlab_ode.solve().save(name).plot()
+matlab_ode.solve().save(name).plot()
 
 scipy_ode = ScipyOde(aos, initial_condition=initial_conditions, integration_range=integration_range,
                      parameters=parameters).set_ode_solver(ScipyOdeSolvers.DOPRI5)

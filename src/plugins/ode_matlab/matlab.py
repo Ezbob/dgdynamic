@@ -5,7 +5,7 @@ import enum
 import sys
 
 import matlab.engine
-from ..ode_plugin import OdePlugin, OdeOutput, sanity_check
+from ..ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from ...converters.matlab_converter import get_matlab_lambda
 from ...mod_interface.ode_generator import AbstractOdeSystem
 from config import SupportedSolvers
@@ -39,7 +39,10 @@ class MatlabOde(OdePlugin, LogMixin):
                          parameters=parameters)
 
         if type(eq_system) is AbstractOdeSystem:
+            self._symbols = eq_system.symbols
             self._user_function = get_matlab_lambda(eq_system, parameter_substitutions=parameters)
+        else:
+            self._symbols = None
 
         if isinstance(solver, MatlabOdeSolvers):
             self._ode_solver = solver
@@ -57,7 +60,7 @@ class MatlabOde(OdePlugin, LogMixin):
         if self._user_function is None:
             return None
         self.logger.debug("Solving ode using MATLAB")
-        conditions = self.initial_conditions.values()
+        conditions = get_initial_values(self.initial_conditions, self._symbols)
         sanity_check(self, list(conditions))
         if isinstance(conditions, (list, tuple)):
             self.add_to_workspace('y0', matlab.double(conditions))
