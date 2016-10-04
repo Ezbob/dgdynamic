@@ -3,7 +3,7 @@ from typing import Union
 from ..utils.project_utils import ProjectTypeHints as Types, LogMixin
 import sympy as sp
 from collections import OrderedDict
-from mod import dgAbstract
+import mod
 
 
 class AbstractOdeSystem(LogMixin):
@@ -11,14 +11,14 @@ class AbstractOdeSystem(LogMixin):
     This class is meant to create ODEs in SymPys abstract symbolic mathematical syntax, using deviation graphs
     from the MØD framework.
     """
-    def __init__(self, specification: str):
+    def __init__(self, specification: Union[str, mod.dgAbstract]):
         """
         The initialisation phase consist of creating Sympy Symbols for the vertices of the deviation graph,
         and creating the rate laws for each reaction.
         :param specification: if this is parsed as a string the init function will try and parse the string argument to
         dgAbstract, else it just gets stored.
         """
-        self.graph = dgAbstract(specification)
+        self.graph = mod.dgAbstract(specification)
         self.reaction_mapping = {reaction: index for index, reaction in enumerate(specification.strip().splitlines())}
         self._ignored = tuple()
 

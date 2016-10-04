@@ -3,6 +3,7 @@ import os.path
 from abc import abstractmethod, ABCMeta
 import matplotlib.pyplot as plt
 import config
+from enum import Enum
 from src.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
 from src.mod_interface.ode_generator import AbstractOdeSystem
 from typing import Union, Dict, Tuple
@@ -15,14 +16,17 @@ def sanity_check(plugin_instance, initial_values):
     if plugin_instance.integration_range[0] > plugin_instance.integration_range[1]:
         raise ValueError("First value exceeds second in integration range")
     elif initial_values is None:
-        raise ValueError("No valid initial condition values where given")
+        raise ValueError("No valid or no initial condition values where given")
     elif len(initial_values) < plugin_instance.ode_count:
         raise ValueError("Not enough initial values given")
     elif len(initial_values) > plugin_instance.ode_count:
         raise ValueError("Too many initial values given")
+    elif plugin_instance.parameters is None:
+        raise ValueError("Parameters not set")
 
 
 def get_initial_values(initial_conditions, symbols):
+    print(type(initial_conditions), type(symbols))
     if isinstance(initial_conditions, (tuple, list)):
         return initial_conditions
     elif type(initial_conditions) is dict and type(symbols) is OrderedDict:
@@ -41,10 +45,11 @@ class OdePlugin(metaclass=ABCMeta):
     """
 
     def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05,
-                 parameters=None, species_count=1, initial_t=0):
+                 parameters=None, species_count=1, initial_t=0, converter_function=None, solver_method=None):
 
         if type(function) is AbstractOdeSystem:
             self.ode_count = function.species_count
+            self._symbols = function.symbols
             self.ignored_count = len(function._ignored)
             self._ignored = function._ignored
         else:
@@ -53,7 +58,8 @@ class OdePlugin(metaclass=ABCMeta):
             self.ode_count = species_count
 
         self.initial_t = initial_t
-        self._user_function = function
+        self._ode_solver = solver_method
+        self._construct_to_function(function, parameters, converter_function)
         self.delta_t = delta_t
         self.parameters = parameters
 
@@ -62,24 +68,31 @@ class OdePlugin(metaclass=ABCMeta):
 
         self.initial_conditions = initial_conditions
 
+    def _construct_to_function(self, system, parameters, converter_function):
+        if type(system) is AbstractOdeSystem and converter_function is not None and parameters is not None:
+            self._symbols = system.symbols
+            self._user_function = converter_function(system, parameters)
+        else:
+            self._symbols = None
+            self._user_function = system
+
     @abstractmethod
     def solve(self) -> object:
         pass
 
-    @abstractmethod
-    def set_ode_solver(self, name: object):
-        pass
+    def set_ode_solver(self, solver: Enum):
+        self._ode_solver = solver
 
-    def set_integration_range(self, range_tuple:Tuple[int, int]):
+    def set_integration_range(self, range_tuple: Tuple[int, int]):
         if isinstance(range_tuple, tuple):
             self.integration_range = range_tuple
         return self
 
-    def set_parameters(self, parameters: Union[list, tuple]):
+    def set_parameters(self, parameters: Union[list, tuple, Dict[str, float]]):
         self.parameters = parameters
         return self
 
-    def from_abstract_ode_system(self, system: AbstractOdeSystem, parameters=None):
+    def from_abstract_ode_system(self, system: AbstractOdeSystem):
         self.ode_count = system.species_count
         self.ignored_count = len(system._ignored)
         self._ignored = system._ignored
