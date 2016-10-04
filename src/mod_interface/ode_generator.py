@@ -1,7 +1,7 @@
 import functools as ft
-from typing import Union
 from ..utils.project_utils import ProjectTypeHints as Types, LogMixin
 import sympy as sp
+from typing import Union, Dict, Iterable
 from collections import OrderedDict
 import mod
 
@@ -85,3 +85,65 @@ class AbstractOdeSystem(LogMixin):
 
     def __repr__(self):
         return "<Abstract Ode System {}>".format(self.left_hands)
+
+
+def parse_abtract_dict(abstract_system: AbstractOdeSystem, dictionary: Dict[str, float]):
+    graph = abstract_system.graph
+
+    position_dict = {edge: index for index, edge in enumerate(graph.edges)}
+
+    def parse_sides(side):
+        skip_next = False
+        the_splitting = side.split()
+        for index, char in enumerate(the_splitting):
+            if not skip_next:
+                if str.isdigit(char):
+                    skip_next = True
+                    multiplier = int(char)
+                    try:
+                        species = the_splitting[index + 1]
+                    except IndexError:
+                         raise IndexError("Index error in\
+                          specification parsing; tried index {} but length is {} ".format(index + 1, len(the_splitting)))
+                    for i in range(multiplier):
+                        yield species
+                elif '+' == char:
+                    continue
+                if str.isalpha(char):
+                    yield char
+            else:
+                skip_next = False
+                continue
+
+    def get_vertex(the_graph, symbol):
+        for vertex in the_graph.vertices:
+            if vertex.graph.name == symbol:
+                yield vertex
+
+    def break_two_way_deviations(two_wayer: str) -> Iterable[str]:
+        yield " -> ".join(two_wayer.split(" <=> "))
+        yield " -> ".join(reversed(two_wayer.split(" <=> ")))
+
+    def parse_derivation(derivation: str) -> mod.mod_.DGHyperEdge:
+        sources, _, targets = derivation.partition(" -> ")
+
+        source_vertices = tuple(get_vertex(graph, term) for term in parse_sides(sources))
+        target_vertices = tuple(get_vertex(graph, term) for term in parse_sides(targets))
+
+        return graph.findEdge(source_vertices, target_vertices)
+
+    def get_edges(reaction_strings):
+        without_two_ways = tuple()
+        for reaction in reaction_strings:
+            if reaction.find(' <=> ') != -1:
+                for new_reaction in break_two_way_deviations(reaction):
+                    without_two_ways += (new_reaction,)
+            else:
+                without_two_ways += (reaction,)
+
+        return OrderedDict({parse_derivation(graph, reaction): index for index, reaction in enumerate(without_two_ways)})
+
+    edges = tuple(edge for edge in get_edges(dictionary.keys()))
+    results = [0.0] * len(edges)
+
+
