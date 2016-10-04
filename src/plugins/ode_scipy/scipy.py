@@ -1,13 +1,11 @@
 import sys
 from enum import Enum
-from typing import Union
 from ...mod_interface.ode_generator import AbstractOdeSystem
 from ..ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from scipy.integrate import ode
 from ...converters.scipy_converter import get_scipy_lambda
 from config import SupportedSolvers
 from ...utils.project_utils import LogMixin
-from array import array
 
 
 class ScipyOdeSolvers(Enum):

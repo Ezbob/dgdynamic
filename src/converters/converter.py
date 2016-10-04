@@ -18,6 +18,8 @@ class DefaultFunctionSymbols:
 def _get_parameter_mappings(abstract_system: AbstractOdeSystem):
     """
     Maps from strings of reactions (such as 'A + C -> D') to it's reaction index
+    (the order of the reactants in the reactions may get switched around since it seems that the
+    source and targets are sorted on the index)
     :return:
     """
     for edge_index, edge in enumerate(abstract_system.graph.edges):
@@ -39,7 +41,7 @@ def get_parameter_map(abstract_system, parameter_substitutions=None):
     if parameter_substitutions is not None:
         assert len(parameter_substitutions) >= abstract_system.reaction_count
         if type(parameter_substitutions) is dict:
-            translate_dictionary = dict(_get_parameter_mappings(abstract_system))
+            translate_dictionary = abstract_system.reaction_mapping
             try:
                 parameter_map = {abstract_system.parameters[translate_dictionary[key]]: value
                                  for key, value in parameter_substitutions.items()}
