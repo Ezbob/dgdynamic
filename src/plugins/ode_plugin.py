@@ -90,9 +90,13 @@ class OdePlugin(metaclass=ABCMeta):
     def set_ode_solver(self, solver: Enum):
         self._ode_solver = solver
 
-    def set_integration_range(self, range_tuple: Tuple[int, int]):
+    def set_integration_range(self, *range_tuple: Tuple[int, int]):
+        arg = []
         if isinstance(range_tuple, tuple):
-            self.integration_range = range_tuple
+            if type(range_tuple[0]) is tuple:
+                self.integration_range = range_tuple[0]
+            else:
+                self.integration_range = range_tuple
         return self
 
     def set_parameters(self, parameters: Union[list, tuple, Dict[str, float]]):

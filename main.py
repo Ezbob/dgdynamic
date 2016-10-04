@@ -38,7 +38,6 @@ parameters = {
     'C -> D': 0.01,
 }
 
-# Set the integration range. This has to be a tuple of two numbers; a lower bound and a upper bound
 integration_range = (0, 6000)
 
 # Create Ode solver for the given abstract reaction system
@@ -48,7 +47,7 @@ scipy_ode = ScipyOde(aos)
 # If none are selected this default to the VODE method for Scipy
 scipy_ode.set_ode_solver(ScipyOdeSolvers.VODE)
 
-# Set the integration range
+# Set the integration range. This has to be a tuple of two numbers; a lower bound and a upper bound
 scipy_ode.set_integration_range(integration_range)
 
 # Set the initial conditions
