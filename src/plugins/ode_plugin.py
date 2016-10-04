@@ -8,12 +8,16 @@ from src.utils.project_utils import LogMixin, make_directory, ProjectTypeHints a
 from src.mod_interface.ode_generator import AbstractOdeSystem
 from typing import Union, Dict, Tuple
 import sympy as sp
+from ..utils.project_utils import ProjectTypeHints
 from collections import OrderedDict
 
 
 def sanity_check(plugin_instance, initial_values):
-
-    if plugin_instance.integration_range[0] > plugin_instance.integration_range[1]:
+    if plugin_instance.integration_range is None:
+        raise ValueError("Integration range not set")
+    elif len(plugin_instance.integration_range) != 2:
+        raise ValueError("Integration range; tuple is not of length 2")
+    elif plugin_instance.integration_range[0] > plugin_instance.integration_range[1]:
         raise ValueError("First value exceeds second in integration range")
     elif initial_values is None:
         raise ValueError("No valid or no initial condition values where given")
@@ -26,7 +30,6 @@ def sanity_check(plugin_instance, initial_values):
 
 
 def get_initial_values(initial_conditions, symbols):
-    print(type(initial_conditions), type(symbols))
     if isinstance(initial_conditions, (tuple, list)):
         return initial_conditions
     elif type(initial_conditions) is dict and type(symbols) is OrderedDict:
@@ -59,22 +62,26 @@ class OdePlugin(metaclass=ABCMeta):
 
         self.initial_t = initial_t
         self._ode_solver = solver_method
-        self._construct_to_function(function, parameters, converter_function)
+
+        if type(function) is AbstractOdeSystem:
+            self._abstract_system = function
+            self._symbols = function.symbols
+            self._user_function = None
+        else:
+            self._abstract_system = None
+            self._symbols = None
+            self._user_function = function
+
+        self._convert_to_function(converter_function)
         self.delta_t = delta_t
         self.parameters = parameters
-
-        if isinstance(integration_range, (tuple, list)) and len(integration_range) >= 2:
-            self.integration_range = integration_range
-
+        self.integration_range = integration_range
         self.initial_conditions = initial_conditions
 
-    def _construct_to_function(self, system, parameters, converter_function):
-        if type(system) is AbstractOdeSystem and converter_function is not None and parameters is not None:
-            self._symbols = system.symbols
-            self._user_function = converter_function(system, parameters)
-        else:
-            self._symbols = None
-            self._user_function = system
+    def _convert_to_function(self, converter_function):
+        if type(self._abstract_system) is AbstractOdeSystem and callable(converter_function) and \
+                        self.parameters is not None:
+            self._user_function = converter_function(self._abstract_system, self.parameters)
 
     @abstractmethod
     def solve(self) -> object:
@@ -93,12 +100,14 @@ class OdePlugin(metaclass=ABCMeta):
         return self
 
     def from_abstract_ode_system(self, system: AbstractOdeSystem):
+        self._abstract_system = system
         self.ode_count = system.species_count
         self.ignored_count = len(system._ignored)
         self._ignored = system._ignored
+        self._symbols = system.symbols
         return self
 
-    def set_initial_conditions(self, conditions:Dict[Types.Real, Types.Reals]):
+    def set_initial_conditions(self, conditions: Dict[str, Types.Reals]):
         self.initial_conditions = conditions
         return self
 
@@ -129,6 +138,8 @@ class OdeOutput(LogMixin):
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
         """
+        if len(self.dependent) == 0 or len(self.independent) == 0:
+            raise ValueError("No or mismatched data")
         lines = plt.plot(self.independent, tuple(self._filter_out_ignores()), linestyle)
         if labels is not None:
             assert len(labels) >= len(lines)
@@ -169,6 +180,8 @@ class OdeOutput(LogMixin):
         :param float_precision: precision when printing out the floating point numbers
         :return:
         """
+        if len(self.dependent) == 0 or len(self.independent) == 0:
+            raise ValueError("No or mismatched data")
         self._filename = name if name is not None and type(name) is str else self._filename
 
         paired_data = zip(self.independent, self._filter_out_ignores())

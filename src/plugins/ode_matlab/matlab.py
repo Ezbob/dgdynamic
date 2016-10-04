@@ -30,7 +30,7 @@ class MatlabOde(OdePlugin, LogMixin):
     """
     Wrapper for working with odes using the MATLAB python engine.
     """
-    def __init__(self, eq_system=None, solver=MatlabOdeSolvers.ode45, integration_range=(0, 0), initial_conditions=None,
+    def __init__(self, eq_system=None, solver=MatlabOdeSolvers.ode45, integration_range=None, initial_conditions=None,
                  parameters=None):
 
         super().__init__(eq_system, integration_range=integration_range,  initial_conditions=initial_conditions,

@@ -46,7 +46,10 @@ scipy_ode = ScipyOde(aos)
 
 # Set the solver method from one of the entries in the SciOdeSolvers enumeration
 # If none are selected this default to the VODE method for Scipy
-scipy_ode.set_ode_solver(ScipyOdeSolvers.DOPRI5)
+scipy_ode.set_ode_solver(ScipyOdeSolvers.VODE)
+
+# Set the integration range
+scipy_ode.set_integration_range(integration_range)
 
 # Set the initial conditions
 scipy_ode.set_initial_conditions(initial_conditions)

@@ -24,18 +24,18 @@ class ScipyOde(OdePlugin, LogMixin):
     Scipy ODE solver plugin
     """
 
-    def __init__(self, eq_system=None, integration_range=(0, 0), initial_condition=None, delta_t=0.05, parameters=None,
+    def __init__(self, eq_system=None, integration_range=None, initial_condition=None, delta_t=0.05, parameters=None,
                  solver=ScipyOdeSolvers.VODE, initial_t=0):
         super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters,
                          initial_t=initial_t, solver_method=solver)
 
     def solve(self) -> OdeOutput:
-        if not self._user_function:
+        self._convert_to_function(get_scipy_lambda)
+
+        if self._user_function is None:
             return None
         if type(self._user_function) is str:
             self._user_function = eval(self._user_function)
-        elif type(self._user_function) is AbstractOdeSystem:
-            self._user_function = get_scipy_lambda(self._user_function, self.parameters)
 
         self.logger.debug("Checking scipy parameters...")
         initial_y = get_initial_values(self.initial_conditions, self._symbols)
@@ -47,7 +47,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
 
         y_solution = list()
         t_solution = list()
-        solver = ode(self._user_function).set_integrator(self._ode_solver.value.upper())
+        solver = ode(self._user_function).set_integrator(self._ode_solver.value)
         solver.set_initial_value(y=initial_y, t=self.initial_t)
         solver.t = self.integration_range[0]
 
@@ -61,9 +61,8 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 self.logger.exception("Integration process failed", integration_error)
                 return None
 
-            if len(y_solution) > 0 and len(t_solution) > 0:
-                return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored)
-            return None
+            self.logger.debug("Solving finished using fixed step integration")
+            return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored)
 
         def variable_step_integration():
 
@@ -80,15 +79,12 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 self.logger.exception("Integration process failed", integration_error)
                 return None
 
-            if len(y_solution) > 0 and len(t_solution) > 0:
-                return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored)
-            return None
-
-        if self._ode_solver is (ScipyOdeSolvers.DOP853 or ScipyOdeSolvers.DOPRI5):
             self.logger.debug("Solving finished using variable step integration")
+            return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored)
+
+        if self._ode_solver is ScipyOdeSolvers.DOP853 or self._ode_solver is ScipyOdeSolvers.DOPRI5:
             return variable_step_integration()
         else:
-            self.logger.debug("Solving finished using fixed step integration")
             return fixed_step_integration()
 
 
