@@ -120,9 +120,9 @@ def parse_abtract_dict(abstract_system: AbstractOdeSystem, dictionary: Dict[str,
             if vertex.graph.name == symbol:
                 yield vertex
 
-    def break_two_way_deviations(two_wayer: str) -> Iterable[str]:
-        yield " -> ".join(two_wayer.split(" <=> "))
-        yield " -> ".join(reversed(two_wayer.split(" <=> ")))
+    def break_two_way_deviations(two_way: str) -> Iterable[str]:
+        yield " -> ".join(two_way.split(" <=> "))
+        yield " -> ".join(reversed(two_way.split(" <=> ")))
 
     def parse_derivation(derivation: str) -> mod.mod_.DGHyperEdge:
         sources, _, targets = derivation.partition(" -> ")
@@ -132,14 +132,16 @@ def parse_abtract_dict(abstract_system: AbstractOdeSystem, dictionary: Dict[str,
 
         return graph.findEdge(source_vertices, target_vertices)
 
-    def get_edges(reaction_strings):
-        without_two_ways = tuple()
+    def flatten_reaction_strings(reaction_strings):
         for reaction in reaction_strings:
             if reaction.find(' <=> ') != -1:
                 for new_reaction in break_two_way_deviations(reaction):
-                    without_two_ways += (new_reaction,)
+                    yield new_reaction
             else:
-                without_two_ways += (reaction,)
+                yield reaction
+
+    def get_edges(reaction_strings):
+        without_two_ways = tuple(flatten_reaction_strings(reaction_strings))
 
         return OrderedDict({parse_derivation(graph, reaction): index for index, reaction in enumerate(without_two_ways)})
 
