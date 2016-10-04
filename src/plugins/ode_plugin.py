@@ -103,7 +103,7 @@ class OdePlugin(metaclass=ABCMeta):
         self.parameters = parameters
         return self
 
-    def from_abstract_ode_system(self, system: AbstractOdeSystem):
+    def set_abstract_ode_system(self, system: AbstractOdeSystem):
         self._abstract_system = system
         self.ode_count = system.species_count
         self.ignored_count = len(system._ignored)

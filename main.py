@@ -21,7 +21,7 @@ aos.unchanging_species('B', 'D')
 # Name of the data set
 name = "abstractReactions1"
 
-# Set the initial values for each species
+# Specify the initial values for each species
 initial_conditions = {
     'F': 0.5,
     'B': 1,
@@ -29,7 +29,7 @@ initial_conditions = {
     'D': 0,
 }
 
-# Set the mass action parameters for each reaction
+# Specify the mass action parameters for each reaction
 parameters = {
     'F + B -> F + F': 0.01,
     'C + F -> C + C': 0.005,
@@ -38,10 +38,14 @@ parameters = {
     'C -> D': 0.01,
 }
 
+# Specify the integration range
 integration_range = (0, 6000)
 
 # Create Ode solver for the given abstract reaction system
-scipy_ode = ScipyOde(aos)
+scipy_ode = ScipyOde()
+
+# Set the abstract ode system
+scipy_ode.set_abstract_ode_system(aos)
 
 # Set the solver method from one of the entries in the SciOdeSolvers enumeration
 # If none are selected this default to the VODE method for Scipy
