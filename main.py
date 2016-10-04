@@ -2,17 +2,26 @@ from src.mod_interface.ode_generator import AbstractOdeSystem
 from src.plugins.ode_scipy.scipy import ScipyOdeSolvers, ScipyOde
 from src.utils.project_utils import set_logging
 from src.plugins.ode_matlab.matlab import MatlabOde, MatlabOdeSolvers
+from src.converters.converter import _get_parameter_mappings
 # linking order is important so don't make this the first import
+
+import mod
 
 set_logging(new_session=True)
 
-aos = AbstractOdeSystem("""
+dg = mod.dgAbstract("""
 F + B -> F + F
 C + F -> C + C
 B -> F
 F -> C
 C -> D
 """)
+
+aos = AbstractOdeSystem(dg)
+
+print(dict(_get_parameter_mappings(aos)))
+
+
 
 # Set the species that you wish to remain unchanged in the integration process.
 # Since these species don't contribute they don't get saved or plotted
@@ -30,13 +39,20 @@ initial_conditions = {
 }
 
 # Specify the mass action parameters for each reaction
-parameters = {
-    'F + B -> F + F': 0.01,
-    'C + F -> C + C': 0.005,
-    'B -> F': 0.001,
-    'F -> C': 0.001,
-    'C -> D': 0.01,
-}
+#parameters = {
+#    'F + B -> F + F': 0.01,
+#    'C + F -> C + C': 0.005,
+#    'B -> F': 0.001,
+#    'F -> C': 0.001,
+#    'C -> D': 0.01,
+#}
+parameters = (
+    0.01,
+    0.005,
+    0.001,
+    0.001,
+    0.01,
+)
 
 # Specify the integration range
 integration_range = (0, 6000)

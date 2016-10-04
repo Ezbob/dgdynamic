@@ -18,8 +18,11 @@ class AbstractOdeSystem(LogMixin):
         :param specification: if this is parsed as a string the init function will try and parse the string argument to
         dgAbstract, else it just gets stored.
         """
-        self.graph = mod.dgAbstract(specification)
-        self.reaction_mapping = {reaction: index for index, reaction in enumerate(specification.strip().splitlines())}
+        if type(specification) is str:
+            self.graph = mod.dgAbstract(specification)
+            self.reaction_mapping = {reaction: index for index, reaction in enumerate(specification.strip().splitlines())}
+        else:
+            self.graph = specification
         self._ignored = tuple()
 
         # every vertex in the deviation graph gets a mapping from it's id to the corresponding SymPy Symbol
