@@ -29,9 +29,7 @@ parameters = {
     'F -> C': 0.001,
     'C -> D': 0.01,
 }
-
 integration_range = (0, 6000)
-
 
 matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
                        parameters=parameters)
