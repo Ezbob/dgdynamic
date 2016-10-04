@@ -51,11 +51,17 @@ scipy_ode.set_abstract_ode_system(aos)
 # If none are selected this default to the VODE method for Scipy
 # The available solvers are (docs: http://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html):
 #    VODE   : same method as the sundials method
-#    ZVODE  : A complex variant of the VODE solver
+#    ZVODE  : A variant of the VODE solver that deals with complex numbers
 #    LSODA  : Can automatically handle stiff and non-stiff problems
 #    DOPRI5 : Has dense output and variable time step
 #    DOP853 : Has dense output and variable time step
 scipy_ode.set_ode_solver(ScipyOdeSolvers.VODE)
+
+# Set the time step
+scipy_ode.delta_t = 0.1
+
+# Set initial t value
+scipy_ode.initial_t = 0
 
 # Set the integration range. This has to be a tuple of two numbers; a lower bound and a upper bound
 scipy_ode.set_integration_range(integration_range)
