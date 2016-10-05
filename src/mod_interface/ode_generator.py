@@ -46,8 +46,9 @@ class dgODESystem:
 
         if type(plugin_name) is str:
             for plugin in SupportedSolvers:
-                if plugin_name in plugin.value:
+                if plugin.value in plugin_name.lower():
                     return get_plugin_from_enum(plugin)
+            raise ValueError("plugin name not recognized")
         elif type(plugin_name) is SupportedSolvers:
             return get_plugin_from_enum(plugin_name)
 

@@ -1,7 +1,7 @@
 import mod
 
 from src.mod_interface.ode_generator import dgODESystem
-from src.plugins.scipy import ScipyOdeSolvers, ScipyOde
+from src.plugins.scipy import ScipyOdeSolvers
 from config import SupportedSolvers
 
 # Enable logging when uncommented
@@ -61,11 +61,13 @@ parameters = {
 # Specify the integration range
 integration_range = (0, 6000)
 
-# Create Ode solver for the given abstract reaction system
+# Get ODE solver plugin for the given abstract reaction system
+# input can be either a entry in the SupportedSolvers enum, or a string (such as "scipy" or "matlab")
+# that contains a recognized plugin name
 scipy_ode = ode.get_ode_plugin(SupportedSolvers.Scipy)
 
-# Set the abstract ode system
-scipy_ode.set_abstract_ode_system(ode)
+# Set the abstract ode system, but this is already set when using the "get_ode_plugin" method
+# scipy_ode.set_abstract_ode_system(ode)
 
 # Set the solver method from one of the entries in the SciOdeSolvers enumeration
 # If none are selected this default to the VODE method for Scipy
