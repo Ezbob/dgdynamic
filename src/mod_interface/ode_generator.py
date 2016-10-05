@@ -34,16 +34,15 @@ class dgODESystem:
         self.parameters = OrderedDict((edge.id, sp.Symbol("k{}".format(index + 1)))
                                       for index, edge in enumerate(self.graph.edges))
 
-    @staticmethod
-    def get_ode_plugin(plugin_name: Union[str, SupportedSolvers], *args, **kwargs):
+    def get_ode_plugin(self, plugin_name: Union[str, SupportedSolvers], *args, **kwargs):
 
         def get_plugin_from_enum(enum_variable):
             if enum_variable == SupportedSolvers.Scipy:
                 from src.plugins.scipy import ScipyOde
-                return ScipyOde(args, kwargs)
+                return ScipyOde(self, *args, **kwargs)
             elif enum_variable == SupportedSolvers.Matlab:
                 from src.plugins.matlab import MatlabOde
-                return MatlabOde(args, kwargs)
+                return MatlabOde(self, *args, **kwargs)
 
         if type(plugin_name) is str:
             for plugin in SupportedSolvers:
