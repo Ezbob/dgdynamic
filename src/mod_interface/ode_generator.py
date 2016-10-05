@@ -29,15 +29,15 @@ class AbstractOdeSystem(LogMixin):
         self.reaction_count = sum(1 for _ in self.graph.edges)
 
         self.species_count = self.graph.numVertices # e.g. species count
+
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
         self.parameters = {edge.id: sp.Symbol("k{}".format(index + 1)) for index, edge in enumerate(self.graph.edges)}
-        self.left_hand_sides = tuple()
 
-        # Now we create the left hand equation according to the law of mass action
+    def generate_rate_laws(self):
         for index, edge in enumerate(self.graph.edges):
             reduce_me = (self.symbols[vertex.id] for vertex in edge.sources)
             reduced = ft.reduce(lambda a, b: a * b, reduce_me)
-            self.left_hand_sides += (self.parameters[edge.id] * reduced,)
+            yield self.parameters[edge.id] * reduced
 
     def generate_equations(self):
         """
@@ -45,22 +45,22 @@ class AbstractOdeSystem(LogMixin):
         :return: a tuple of tuples, wherein each nested tuple is a two-tuple consisting of the vertex id, of which the
         change over time is subjective to, and the symbolic ODE.
         """
-        results = tuple()
+        left_hand_sides = tuple(self.generate_rate_laws())
         for vertex_id, vertex in enumerate(self.graph.vertices):
             if sp.Symbol(vertex.graph.name) in (ignore_tuple[0] for ignore_tuple in self._ignored):
-                results += ((vertex.graph.name, 0),)
+                yield vertex.graph.name, 0
             else:
-                subres = 0
-                for edge_index, edge in enumerate(self.graph.edges):
-                    for source_vertex in edge.sources:
+                # Since we use numpy, we can use the left hand expresses as mathematical expressions
+                sub_result = 0
+                for reaction_index, reaction_edge in enumerate(self.graph.edges):
+                    for source_vertex in reaction_edge.sources:
                         if vertex.id == source_vertex.id:
-                            subres -= self.left_hand_sides[edge_index]
+                            sub_result -= left_hand_sides[reaction_index]
 
-                    for target_vertex in edge.targets:
+                    for target_vertex in reaction_edge.targets:
                         if vertex.id == target_vertex.id:
-                            subres += self.left_hand_sides[edge_index]
-                results += ((vertex.graph.name, subres),)
-        return results
+                            sub_result += left_hand_sides[reaction_index]
+                yield vertex.graph.name, sub_result
 
     def unchanging_species(self, *species: Union[str, sp.Symbol, Types.Countable_Sequence]):
         """

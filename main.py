@@ -17,9 +17,10 @@ F -> C
 C -> D
 """)
 
-aos = AbstractOdeSystem(dg)
+aos = AbstractOdeSystem(dg).unchanging_species('B','D')
 
-print(aos.left_hand_sides)
+print(tuple(aos.generate_rate_laws()))
+print(tuple(aos.generate_equations()))
 
 
 
