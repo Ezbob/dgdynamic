@@ -2,7 +2,9 @@ import mod
 
 from src.mod_interface.ode_generator import dgODESystem
 from src.plugins.scipy import ScipyOdeSolvers
+from src.plugins.matlab import MatlabOdeSolvers
 from config import SupportedSolvers
+from src.utils.project_utils import set_logging
 
 # Enable logging when uncommented
 # set_logging(new_session=True)
@@ -105,8 +107,8 @@ output.plot()
 
 
 # The following solver uses the matlab engine for python to compute the solutions to the ODEs
-# matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
-#                       parameters=parameters, solver=MatlabOdeSolvers.ode45)
+# matlab_ode = ode.get_ode_plugin(SupportedSolvers.Matlab, initial_conditions=initial_conditions,
+#                    integration_range=integration_range, parameters=parameters, solver=MatlabOdeSolvers.ode45)
 
 # matlab_ode.solve().save(name).plot() # solve the ODEs, save the output and plot it afterwards
 

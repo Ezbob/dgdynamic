@@ -34,18 +34,20 @@ class MatlabOde(OdePlugin, LogMixin):
                  parameters=None):
 
         super().__init__(eq_system, integration_range=integration_range,  initial_conditions=initial_conditions,
-                         parameters=parameters, solver_method=solver)
+                         parameters=parameters, solver_method=solver, converter_function=get_matlab_lambda)
 
         self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
         self.logger.debug("Started.")
 
     def solve(self) -> OdeOutput:
-        if self._user_function is None:
-            return None
-        elif type(self._user_function) is dgODESystem:
-            self._user_function = get_matlab_lambda(abstract_ode_system=self._user_function,
+        if type(self._abstract_system) is dgODESystem:
+            self._user_function = get_matlab_lambda(abstract_ode_system=self._abstract_system,
                                                     parameter_substitutions=self.parameters)
+        if self._user_function is None:
+            self.logger.error("User function was not generated")
+            return None
+
         self.logger.debug("Solving ode using MATLAB")
 
         conditions = get_initial_values(self.initial_conditions, self._symbols)
@@ -107,7 +109,8 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_rang
         return self
 
     def __del__(self):
-        self.engine.exit()
+        if hasattr(self, "engine"):
+            self.engine.exit()
 
 
 if __name__ == "__main__":

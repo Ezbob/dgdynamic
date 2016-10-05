@@ -6,7 +6,7 @@ import config
 from enum import Enum
 from src.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
 from src.mod_interface.ode_generator import dgODESystem
-from typing import Union, Dict, Tuple
+from typing import Union, Dict, Tuple, Callable
 import sympy as sp
 from ..utils.project_utils import ProjectTypeHints
 from collections import OrderedDict
@@ -47,8 +47,9 @@ class OdePlugin(metaclass=ABCMeta):
     interface for all the ODE plugins.
     """
 
-    def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05,
-                 parameters=None, species_count=1, initial_t=0, converter_function=None, solver_method=None):
+    def __init__(self, function: Union[object, Callable, str]=None, integration_range=(0, 0), initial_conditions=None,
+                 delta_t=0.05, parameters=None, species_count=1, initial_t=0, converter_function=None,
+                 solver_method=None):
 
         if type(function) is dgODESystem:
             self.ode_count = function.species_count
@@ -72,11 +73,11 @@ class OdePlugin(metaclass=ABCMeta):
             self._symbols = None
             self._user_function = function
 
-        self._convert_to_function(converter_function)
         self.delta_t = delta_t
         self.parameters = parameters
         self.integration_range = integration_range
         self.initial_conditions = initial_conditions
+        self._convert_to_function(converter_function)
 
     def _convert_to_function(self, converter_function):
         if type(self._abstract_system) is dgODESystem and callable(converter_function) and \
