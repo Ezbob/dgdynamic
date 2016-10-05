@@ -5,12 +5,13 @@ from src.plugins.scipy import ScipyOdeSolvers
 from src.plugins.matlab import MatlabOdeSolvers
 from config import SupportedSolvers
 from src.utils.project_utils import set_logging
+from src.converters.converter import get_parameter_map
 
 # Enable logging when uncommented
-# set_logging(new_session=True)
+set_logging(new_session=True)
 
 dg = mod.dgAbstract("""
-F + B -> F + F
+F + B <=> F + F
 C + F -> C + C
 B -> F
 F -> C
@@ -44,7 +45,7 @@ initial_conditions = {
 
 # Specify the mass action parameters for each reaction
 parameters = {
-   'F + B -> F + F': 0.01,
+   'F + B <=> F + F': {'->': 0.01, '<-': 0.1},
    'C + F -> C + C': 0.005,
    'B -> F': 0.001,
    'F -> C': 0.001,

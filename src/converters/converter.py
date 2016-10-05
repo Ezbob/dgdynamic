@@ -15,7 +15,23 @@ class DefaultFunctionSymbols:
     function_end = ']'
 
 
+def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, reaction_string, result_dict):
+    if not isinstance(parameter_value, (tuple, list, dict)):
+        raise ValueError("Parameters for the two-way reaction {} was not a list or tuple or a "
+                         "dictionary with '->' and '<-' as keys"
+                         .format(reaction_string))
+    if isinstance(parameter_value, (tuple, list)):
+        for edge, parameter in zip(edge_tuple, parameter_value):
+            result_dict[abstract_system.parameters[edge.id]] = parameter
+    else:
+        try:
+            result_dict[abstract_system.parameters[edge_tuple[0].id]] = parameter_value['->']
+            result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value['<-']
+        except KeyError:
+            raise KeyError("Two-way reactions keys not defined or understood")
+
 def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None):
+
     if parameter_substitutions is not None:
 
         if type(parameter_substitutions) is dict:
@@ -24,11 +40,9 @@ def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None
             for reaction_string, parameter_value in parameter_substitutions.items():
                 edges = abstract_system.parse_abstract_reaction(reaction_string.strip())
                 if type(edges) is tuple:
-                    if not isinstance(parameter_value, (tuple, list)):
-                        raise ValueError("Parameters for the two-way reaction {} was not a list or tuple"
-                                         .format(reaction_string))
-                    for edge, parameter in zip(edges, parameter_value):
-                        parameter_map[abstract_system.parameters[edge.id]] = parameter
+                    _handle_two_way_parameters(abstract_system=abstract_system, edge_tuple=edges,
+                                               result_dict=parameter_map, reaction_string=reaction_string,
+                                               parameter_value=parameter_value)
                 else:
                     parameter_map[abstract_system.parameters[edges.id]] = parameter_value
         else:
