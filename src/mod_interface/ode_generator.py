@@ -1,12 +1,12 @@
 import functools as ft
 from ..utils.project_utils import ProjectTypeHints as Types, LogMixin
 import sympy as sp
-from typing import Union, Dict, Iterable
+from typing import Union, Iterable, Tuple
 from collections import OrderedDict
 import mod
 
 
-class AbstractOdeSystem(LogMixin):
+class AbstractOdeSystem:#(LogMixin):
     """
     This class is meant to create ODEs in SymPys abstract symbolic mathematical syntax, using deviation graphs
     from the MØD framework.
@@ -63,7 +63,7 @@ class AbstractOdeSystem(LogMixin):
                             sub_result += left_hand_sides[reaction_index]
                 yield vertex.graph.name, sub_result
 
-    def unchanging_species(self, *species: Union[str, sp.Symbol, Types.Countable_Sequence]):
+    def unchanging_species(self, *species):#: Union[str, sp.Symbol, Types.Countable_Sequence]):
         """
         Specify the list of species you don't want to see ODEs for
         :param species: list of strings symbol
@@ -83,7 +83,7 @@ class AbstractOdeSystem(LogMixin):
             self.logger.warn("ignored species count exceeds the count of actual species")
         return self
 
-    def parse_abstract_reaction(self, reaction: str):
+    def parse_abstract_reaction(self, reaction: str) -> Union[object, Tuple[object,object]]:
 
         def parse_sides(side):
             skip_next = False
@@ -109,10 +109,11 @@ class AbstractOdeSystem(LogMixin):
                     skip_next = False
                     continue
 
-        def get_vertex(symbol):
-            for vertex in self.graph.vertices:
-                if vertex.graph.name == symbol:
-                    yield vertex
+        def get_side_vertices(side):
+            for sym in parse_sides(side):
+                for vertex in self.graph.vertices:
+                    if vertex.graph.name == sym:
+                        yield vertex
 
         def break_two_way_deviations(two_way: str) -> Iterable[str]:
             yield " -> ".join(two_way.split(" <=> "))
@@ -120,17 +121,14 @@ class AbstractOdeSystem(LogMixin):
 
         def parse_reaction(derivation: str):
             sources, _, targets = derivation.partition(" -> ")
-            source_vertices = tuple(get_vertex(term) for term in parse_sides(sources))
-            target_vertices = tuple(get_vertex(term) for term in parse_sides(targets))
-            yield self.graph.findEdge(source_vertices, target_vertices)
+            return self.graph.findEdge(get_side_vertices(sources.strip()), get_side_vertices(targets.strip()))
 
         if reaction.find(" <=> ") != -1:
             first_reaction, second_reaction = break_two_way_deviations(reaction)
-            yield parse_reaction(first_reaction)
-            yield parse_reaction(second_reaction)
+            return parse_reaction(first_reaction), parse_reaction(second_reaction)
 
         elif reaction.find(' -> ') != -1:
-            yield parse_reaction(reaction)
+            return parse_reaction(reaction)
 
     def __repr__(self):
         return "<Abstract Ode System {}>".format(self.left_hand_sides)
