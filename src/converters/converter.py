@@ -15,18 +15,24 @@ class DefaultFunctionSymbols:
     function_end = ']'
 
 
-def get_parameter_map(abstract_system, parameter_substitutions=None):
+def get_parameter_map(abstract_system: AbstractOdeSystem, parameter_substitutions=None):
     if parameter_substitutions is not None:
 
         if type(parameter_substitutions) is dict:
-            translate_dictionary = abstract_system.reaction_mapping
-            try:
-                parameter_map = {abstract_system.parameters[translate_dictionary[key]]: value
-                                 for key, value in parameter_substitutions.items()}
-            except KeyError:
-                raise KeyError("Parameter key could not be matched; check if the spelling is correct and try again")
+            # here the user uses a dictionary for parameter_subs with type: Dict[str, Union[Tuple[Real,Real], Real]]
+            parameter_map = dict()
+            for reaction_string, parameter_value in parameter_substitutions.items():
+                edges = abstract_system.parse_abstract_reaction(reaction_string.strip())
+                if type(edges) is tuple:
+                    if not isinstance(parameter_value, (tuple, list)):
+                        raise ValueError("Parameters for the two-way reaction {} was not a list or tuple"
+                                         .format(reaction_string))
+                    for edge, parameter in zip(edges, parameter_value):
+                        parameter_map[abstract_system.parameters[edge.id]] = parameter
+                else:
+                    parameter_map[abstract_system.parameters[edges.id]] = parameter_value
         else:
-            parameter_map = {k: v for k, v in zip(abstract_system.parameters, parameter_substitutions)}
+            parameter_map = {k: v for k, v in zip(abstract_system.parameters.values(), parameter_substitutions)}
     else:
         parameter_map = None
     return parameter_map

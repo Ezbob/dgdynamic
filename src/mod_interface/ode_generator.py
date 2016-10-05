@@ -121,7 +121,7 @@ class AbstractOdeSystem:#(LogMixin):
 
         def parse_reaction(derivation: str):
             sources, _, targets = derivation.partition(" -> ")
-            return self.graph.findEdge(get_side_vertices(sources.strip()), get_side_vertices(targets.strip()))
+            return self.graph.findEdge(get_side_vertices(sources), get_side_vertices(targets))
 
         if reaction.find(" <=> ") != -1:
             first_reaction, second_reaction = break_two_way_deviations(reaction)

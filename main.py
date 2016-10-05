@@ -44,7 +44,6 @@ parameters = {
    'C -> D': 0.01,
 }
 
-print(get_parameter_map(aos, parameters))
 # parameters = (
 #     0.01,
 #     0.005,
