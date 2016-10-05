@@ -1,10 +1,8 @@
-from src.mod_interface.ode_generator import dgODESystem
-from src.plugins.ode_scipy.scipy import ScipyOdeSolvers, ScipyOde
-from src.utils.project_utils import set_logging
-from src.plugins.ode_matlab.matlab import MatlabOde, MatlabOdeSolvers
-# linking order is important so don't make this the first import
-
 import mod
+
+from src.mod_interface.ode_generator import dgODESystem
+from src.plugins.scipy import ScipyOdeSolvers, ScipyOde
+from config import SupportedSolvers
 
 # Enable logging when uncommented
 # set_logging(new_session=True)
@@ -17,11 +15,11 @@ F -> C
 C -> D
 """)
 
-aos = dgODESystem(dg)
+ode = dgODESystem(dg)
 
 # Set the species that you wish to remain unchanged in the integration process.
 # Since these species don't contribute they don't get saved or plotted
-aos.unchanging_species('B', 'D')
+ode.unchanging_species('B', 'D')
 
 # Name of the data set
 name = "abstractReactions1"
@@ -64,10 +62,10 @@ parameters = {
 integration_range = (0, 6000)
 
 # Create Ode solver for the given abstract reaction system
-scipy_ode = ScipyOde()
+scipy_ode = ode.get_ode_plugin(SupportedSolvers.Scipy)
 
 # Set the abstract ode system
-scipy_ode.set_abstract_ode_system(aos)
+scipy_ode.set_abstract_ode_system(ode)
 
 # Set the solver method from one of the entries in the SciOdeSolvers enumeration
 # If none are selected this default to the VODE method for Scipy
@@ -103,11 +101,11 @@ output.save(name)
 # Plot the data using the MatPlotLib, also using the output object
 output.plot()
 
-#
-# # The following solver uses the matlab engine for python to compute the solutions to the ODEs
-# # matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
-# #                       parameters=parameters, solver=MatlabOdeSolvers.ode45)
-#
-# # matlab_ode.solve().save(name).plot() # solve the ODEs, save the output and plot it afterwards
+
+# The following solver uses the matlab engine for python to compute the solutions to the ODEs
+# matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
+#                       parameters=parameters, solver=MatlabOdeSolvers.ode45)
+
+# matlab_ode.solve().save(name).plot() # solve the ODEs, save the output and plot it afterwards
 
 

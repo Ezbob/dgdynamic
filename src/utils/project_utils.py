@@ -3,7 +3,6 @@ import config
 import os
 import shutil
 from typing import *
-
 logging_handler = None
 
 

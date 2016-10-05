@@ -1,12 +1,12 @@
 import functools as ft
-from ..utils.project_utils import ProjectTypeHints as Types, LogMixin
+import src.utils.project_utils as utils
 import sympy as sp
 from typing import Union, Iterable, Tuple
+from config import SupportedSolvers
 from collections import OrderedDict
-import mod
 
 
-class dgODESystem(LogMixin):
+class dgODESystem:
     """
     This class is meant to create ODEs in SymPys abstract symbolic mathematical syntax, using deviation graphs
     from the MØD framework.
@@ -33,6 +33,24 @@ class dgODESystem(LogMixin):
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
         self.parameters = OrderedDict((edge.id, sp.Symbol("k{}".format(index + 1)))
                                       for index, edge in enumerate(self.graph.edges))
+
+    @staticmethod
+    def get_ode_plugin(plugin_name: Union[str, SupportedSolvers], *args, **kwargs):
+
+        def get_plugin_from_enum(enum_variable):
+            if enum_variable == SupportedSolvers.Scipy:
+                from src.plugins.scipy import ScipyOde
+                return ScipyOde(args, kwargs)
+            elif enum_variable == SupportedSolvers.Matlab:
+                from src.plugins.matlab import MatlabOde
+                return MatlabOde(args, kwargs)
+
+        if type(plugin_name) is str:
+            for plugin in SupportedSolvers:
+                if plugin_name in plugin.value:
+                    return get_plugin_from_enum(plugin)
+        elif type(plugin_name) is SupportedSolvers:
+            return get_plugin_from_enum(plugin_name)
 
     def generate_rate_laws(self):
         for index, edge in enumerate(self.graph.edges):
@@ -64,7 +82,7 @@ class dgODESystem(LogMixin):
                             sub_result += left_hand_sides[reaction_index]
                 yield vertex.graph.name, sub_result
 
-    def unchanging_species(self, *species: Union[str, sp.Symbol, Types.Countable_Sequence]):
+    def unchanging_species(self, *species: Union[str, sp.Symbol, utils.ProjectTypeHints.Countable_Sequence]):
         """
         Specify the list of species you don't want to see ODEs for
         :param species: list of strings symbol
