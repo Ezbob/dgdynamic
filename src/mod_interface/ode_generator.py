@@ -11,34 +11,33 @@ class AbstractOdeSystem(LogMixin):
     This class is meant to create ODEs in SymPys abstract symbolic mathematical syntax, using deviation graphs
     from the MØD framework.
     """
-    def __init__(self, specification: Union[str, mod.dgAbstract]):
+    def __init__(self, graph):
         """
         The initialisation phase consist of creating Sympy Symbols for the vertices of the deviation graph,
         and creating the rate laws for each reaction.
-        :param specification: if this is parsed as a string the init function will try and parse the string argument to
+        :param graph: if this is parsed as a string the init function will try and parse the string argument to
         dgAbstract, else it just gets stored.
         """
-        if type(specification) is str:
-            self.graph = mod.dgAbstract(specification)
-            self.reaction_mapping = {reaction: index for index, reaction in enumerate(specification.strip().splitlines())}
-        else:
-            self.graph = specification
+
+        self.graph = graph
         self._ignored = tuple()
 
         # every vertex in the deviation graph gets a mapping from it's id to the corresponding SymPy Symbol
         self.symbols = OrderedDict(((vertex.id, sp.Symbol(vertex.graph.name)) for vertex in self.graph.vertices))
+
         # the best 'complicated' way of counting, this is needed because we can't take the length of the edges (yet?)
         self.reaction_count = sum(1 for _ in self.graph.edges)
+
         self.species_count = self.graph.numVertices # e.g. species count
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
-        self.parameters = tuple(sp.Symbol("k{}".format(i + 1)) for i in range(self.reaction_count))
-        self.left_hands = tuple()
+        self.parameters = {edge.id: sp.Symbol("k{}".format(index + 1)) for index, edge in enumerate(self.graph.edges)}
+        self.left_hand_sides = tuple()
 
         # Now we create the left hand equation according to the law of mass action
         for index, edge in enumerate(self.graph.edges):
             reduce_me = (self.symbols[vertex.id] for vertex in edge.sources)
             reduced = ft.reduce(lambda a, b: a * b, reduce_me)
-            self.left_hands += (self.parameters[index] * reduced,)
+            self.left_hand_sides += (self.parameters[edge.id] * reduced,)
 
     def generate_equations(self):
         """
@@ -55,11 +54,11 @@ class AbstractOdeSystem(LogMixin):
                 for edge_index, edge in enumerate(self.graph.edges):
                     for source_vertex in edge.sources:
                         if vertex.id == source_vertex.id:
-                            subres -= self.left_hands[edge_index]
+                            subres -= self.left_hand_sides[edge_index]
 
                     for target_vertex in edge.targets:
                         if vertex.id == target_vertex.id:
-                            subres += self.left_hands[edge_index]
+                            subres += self.left_hand_sides[edge_index]
                 results += ((vertex.graph.name, subres),)
         return results
 
@@ -84,7 +83,7 @@ class AbstractOdeSystem(LogMixin):
         return self
 
     def __repr__(self):
-        return "<Abstract Ode System {}>".format(self.left_hands)
+        return "<Abstract Ode System {}>".format(self.left_hand_sides)
 
 
 def parse_abtract_dict(abstract_system: AbstractOdeSystem, dictionary: Dict[str, float]):
