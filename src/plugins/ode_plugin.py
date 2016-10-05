@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import config
 from enum import Enum
 from src.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
-from src.mod_interface.ode_generator import AbstractOdeSystem
+from src.mod_interface.ode_generator import dgODESystem
 from typing import Union, Dict, Tuple
 import sympy as sp
 from ..utils.project_utils import ProjectTypeHints
@@ -50,7 +50,7 @@ class OdePlugin(metaclass=ABCMeta):
     def __init__(self, function=None, integration_range=(0, 0), initial_conditions=None, delta_t=0.05,
                  parameters=None, species_count=1, initial_t=0, converter_function=None, solver_method=None):
 
-        if type(function) is AbstractOdeSystem:
+        if type(function) is dgODESystem:
             self.ode_count = function.species_count
             self._symbols = function.symbols
             self.ignored_count = len(function.ignored)
@@ -63,7 +63,7 @@ class OdePlugin(metaclass=ABCMeta):
         self.initial_t = initial_t
         self._ode_solver = solver_method
 
-        if type(function) is AbstractOdeSystem:
+        if type(function) is dgODESystem:
             self._abstract_system = function
             self._symbols = function.symbols
             self._user_function = None
@@ -79,7 +79,7 @@ class OdePlugin(metaclass=ABCMeta):
         self.initial_conditions = initial_conditions
 
     def _convert_to_function(self, converter_function):
-        if type(self._abstract_system) is AbstractOdeSystem and callable(converter_function) and \
+        if type(self._abstract_system) is dgODESystem and callable(converter_function) and \
                         self.parameters is not None:
             self._user_function = converter_function(self._abstract_system, self.parameters)
 
@@ -103,7 +103,7 @@ class OdePlugin(metaclass=ABCMeta):
         self.parameters = parameters
         return self
 
-    def set_abstract_ode_system(self, system: AbstractOdeSystem):
+    def set_abstract_ode_system(self, system: dgODESystem):
         self._abstract_system = system
         self.ode_count = system.species_count
         self.ignored_count = len(system.ignored)

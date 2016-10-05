@@ -1,5 +1,5 @@
 from .converter import DefaultFunctionSymbols, substitute, get_parameter_map
-from ..mod_interface.ode_generator import AbstractOdeSystem
+from ..mod_interface.ode_generator import dgODESystem
 
 
 class MatlabSymbols(DefaultFunctionSymbols):
@@ -13,7 +13,7 @@ def _postprocessor(function_string: str):
     return function_string.replace('**', MatlabSymbols.pow)
 
 
-def get_matlab_lambda(abstract_ode_system: AbstractOdeSystem, parameter_substitutions=None):
+def get_matlab_lambda(abstract_ode_system: dgODESystem, parameter_substitutions=None):
     """
     Converts a sympy symbolic ODE system into a MatLab lambda function that can be integrated.
     :param abstract_ode_system: should be a legal AbstractOdeSystem instance

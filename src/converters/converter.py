@@ -3,7 +3,7 @@ This module contains stuff relevant for all converters
 """
 from io import StringIO
 from typing import Dict, Tuple
-from ..mod_interface.ode_generator import AbstractOdeSystem
+from ..mod_interface.ode_generator import dgODESystem
 
 
 class DefaultFunctionSymbols:
@@ -15,7 +15,7 @@ class DefaultFunctionSymbols:
     function_end = ']'
 
 
-def get_parameter_map(abstract_system: AbstractOdeSystem, parameter_substitutions=None):
+def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None):
     if parameter_substitutions is not None:
 
         if type(parameter_substitutions) is dict:

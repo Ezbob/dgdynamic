@@ -7,7 +7,7 @@ import sys
 import matlab.engine
 from ..ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from ...converters.matlab_converter import get_matlab_lambda
-from ...mod_interface.ode_generator import AbstractOdeSystem
+from ...mod_interface.ode_generator import dgODESystem
 from config import SupportedSolvers
 from ...utils.project_utils import LogMixin
 
@@ -43,7 +43,7 @@ class MatlabOde(OdePlugin, LogMixin):
     def solve(self) -> OdeOutput:
         if self._user_function is None:
             return None
-        elif type(self._user_function) is AbstractOdeSystem:
+        elif type(self._user_function) is dgODESystem:
             self._user_function = get_matlab_lambda(abstract_ode_system=self._user_function,
                                                     parameter_substitutions=self.parameters)
         self.logger.debug("Solving ode using MATLAB")

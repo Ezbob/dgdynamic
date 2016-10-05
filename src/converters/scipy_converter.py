@@ -1,9 +1,9 @@
 import sympy as sp
 from .converter import substitute, get_parameter_map
-from ..mod_interface.ode_generator import AbstractOdeSystem
+from ..mod_interface.ode_generator import dgODESystem
 
 
-def get_scipy_lambda(abstract_system: AbstractOdeSystem, parameter_substitutions=None):
+def get_scipy_lambda(abstract_system: dgODESystem, parameter_substitutions=None):
 
     parameter_map = get_parameter_map(abstract_system, parameter_substitutions)
 

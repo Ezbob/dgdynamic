@@ -6,7 +6,7 @@ from collections import OrderedDict
 import mod
 
 
-class AbstractOdeSystem:#(LogMixin):
+class dgODESystem(LogMixin):
     """
     This class is meant to create ODEs in SymPys abstract symbolic mathematical syntax, using deviation graphs
     from the MØD framework.
@@ -31,7 +31,8 @@ class AbstractOdeSystem:#(LogMixin):
         self.species_count = self.graph.numVertices # e.g. species count
 
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
-        self.parameters = {edge.id: sp.Symbol("k{}".format(index + 1)) for index, edge in enumerate(self.graph.edges)}
+        self.parameters = OrderedDict((edge.id, sp.Symbol("k{}".format(index + 1)))
+                                      for index, edge in enumerate(self.graph.edges))
 
     def generate_rate_laws(self):
         for index, edge in enumerate(self.graph.edges):
@@ -63,7 +64,7 @@ class AbstractOdeSystem:#(LogMixin):
                             sub_result += left_hand_sides[reaction_index]
                 yield vertex.graph.name, sub_result
 
-    def unchanging_species(self, *species):#: Union[str, sp.Symbol, Types.Countable_Sequence]):
+    def unchanging_species(self, *species: Union[str, sp.Symbol, Types.Countable_Sequence]):
         """
         Specify the list of species you don't want to see ODEs for
         :param species: list of strings symbol
@@ -132,6 +133,4 @@ class AbstractOdeSystem:#(LogMixin):
 
     def __repr__(self):
         return "<Abstract Ode System {}>".format(self.left_hand_sides)
-
-
 
