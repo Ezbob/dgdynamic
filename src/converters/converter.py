@@ -15,31 +15,9 @@ class DefaultFunctionSymbols:
     function_end = ']'
 
 
-def _get_parameter_mappings(abstract_system: AbstractOdeSystem):
-    """
-    Maps from strings of reactions (such as 'A + C -> D') to it's reaction index
-    (the order of the reactants in the reactions may get switched around since it seems that the
-    source and targets are sorted on the index)
-    :return:
-    """
-    for edge_index, edge in enumerate(abstract_system.graph.edges):
-        with StringIO() as out:
-            for index, source in enumerate(edge.sources):
-                out.write(str(source.graph.name))
-                if index < edge.numSources - 1:
-                    out.write(' + ')
-            out.write(' -> ')
-            for index, target in enumerate(edge.targets):
-                out.write(str(target.graph.name))
-                if index < edge.numTargets - 1:
-                    out.write(' + ')
-            reaction = out.getvalue()
-        yield reaction, edge_index
-
-
 def get_parameter_map(abstract_system, parameter_substitutions=None):
     if parameter_substitutions is not None:
-        assert len(parameter_substitutions) >= abstract_system.reaction_count
+
         if type(parameter_substitutions) is dict:
             translate_dictionary = abstract_system.reaction_mapping
             try:

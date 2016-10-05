@@ -20,7 +20,7 @@ class AbstractOdeSystem(LogMixin):
         """
 
         self.graph = graph
-        self._ignored = tuple()
+        self.ignored = tuple()
 
         # every vertex in the deviation graph gets a mapping from it's id to the corresponding SymPy Symbol
         self.symbols = OrderedDict(((vertex.id, sp.Symbol(vertex.graph.name)) for vertex in self.graph.vertices))
@@ -46,8 +46,9 @@ class AbstractOdeSystem(LogMixin):
         change over time is subjective to, and the symbolic ODE.
         """
         left_hand_sides = tuple(self.generate_rate_laws())
+        ignore_dict = dict(self.ignored)
         for vertex_id, vertex in enumerate(self.graph.vertices):
-            if sp.Symbol(vertex.graph.name) in (ignore_tuple[0] for ignore_tuple in self._ignored):
+            if sp.Symbol(vertex.graph.name) in ignore_dict:
                 yield vertex.graph.name, 0
             else:
                 # Since we use numpy, we can use the left hand expresses as mathematical expressions
@@ -68,83 +69,71 @@ class AbstractOdeSystem(LogMixin):
         :param species: list of strings symbol
         :return:
         """
-        if len(self._ignored) < self.species_count:
+        if len(self.ignored) < self.species_count:
             if type(species) is str:
-                self._ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
-                                      if sp.Symbol(species) == item)
+                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                     if sp.Symbol(species) == item)
             elif type(species) is sp.Symbol:
-                self._ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
-                                      if species == item)
+                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                     if species == item)
             else:
-                self._ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
-                                      for element in species if sp.Symbol(element) == item)
+                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                     for element in species if sp.Symbol(element) == item)
         else:
             self.logger.warn("ignored species count exceeds the count of actual species")
         return self
 
+    def parse_abstract_reaction(self, reaction: str):
+
+        def parse_sides(side):
+            skip_next = False
+            the_splitting = side.split()
+            for index, char in enumerate(the_splitting):
+                if not skip_next:
+                    if str.isdigit(char):
+                        skip_next = True
+                        multiplier = int(char)
+                        try:
+                            species = the_splitting[index + 1]
+                        except IndexError:
+                            raise IndexError("Index error in\
+                              specification parsing; tried index {} but length is {} ".format(index + 1,
+                                                                                              len(the_splitting)))
+                        for i in range(multiplier):
+                            yield species
+                    elif '+' == char:
+                        continue
+                    if str.isalpha(char):
+                        yield char
+                else:
+                    skip_next = False
+                    continue
+
+        def get_vertex(symbol):
+            for vertex in self.graph.vertices:
+                if vertex.graph.name == symbol:
+                    yield vertex
+
+        def break_two_way_deviations(two_way: str) -> Iterable[str]:
+            yield " -> ".join(two_way.split(" <=> "))
+            yield " -> ".join(reversed(two_way.split(" <=> ")))
+
+        def parse_reaction(derivation: str):
+            sources, _, targets = derivation.partition(" -> ")
+            source_vertices = tuple(get_vertex(term) for term in parse_sides(sources))
+            target_vertices = tuple(get_vertex(term) for term in parse_sides(targets))
+            yield self.graph.findEdge(source_vertices, target_vertices)
+
+        if reaction.find(" <=> ") != -1:
+            first_reaction, second_reaction = break_two_way_deviations(reaction)
+            yield parse_reaction(first_reaction)
+            yield parse_reaction(second_reaction)
+
+        elif reaction.find(' -> ') != -1:
+            yield parse_reaction(reaction)
+
     def __repr__(self):
         return "<Abstract Ode System {}>".format(self.left_hand_sides)
 
-
-def parse_abtract_dict(abstract_system: AbstractOdeSystem, dictionary: Dict[str, float]):
-    graph = abstract_system.graph
-
-    position_dict = {edge: index for index, edge in enumerate(graph.edges)}
-
-    def parse_sides(side):
-        skip_next = False
-        the_splitting = side.split()
-        for index, char in enumerate(the_splitting):
-            if not skip_next:
-                if str.isdigit(char):
-                    skip_next = True
-                    multiplier = int(char)
-                    try:
-                        species = the_splitting[index + 1]
-                    except IndexError:
-                         raise IndexError("Index error in\
-                          specification parsing; tried index {} but length is {} ".format(index + 1, len(the_splitting)))
-                    for i in range(multiplier):
-                        yield species
-                elif '+' == char:
-                    continue
-                if str.isalpha(char):
-                    yield char
-            else:
-                skip_next = False
-                continue
-
-    def get_vertex(the_graph, symbol):
-        for vertex in the_graph.vertices:
-            if vertex.graph.name == symbol:
-                yield vertex
-
-    def break_two_way_deviations(two_way: str) -> Iterable[str]:
-        yield " -> ".join(two_way.split(" <=> "))
-        yield " -> ".join(reversed(two_way.split(" <=> ")))
-
-    def parse_derivation(derivation: str) -> mod.mod_.DGHyperEdge:
-        sources, _, targets = derivation.partition(" -> ")
-
-        source_vertices = tuple(get_vertex(graph, term) for term in parse_sides(sources))
-        target_vertices = tuple(get_vertex(graph, term) for term in parse_sides(targets))
-
-        return graph.findEdge(source_vertices, target_vertices)
-
-    def flatten_reaction_strings(reaction_strings):
-        for reaction in reaction_strings:
-            if reaction.find(' <=> ') != -1:
-                for new_reaction in break_two_way_deviations(reaction):
-                    yield new_reaction
-            else:
-                yield reaction
-
-    def get_edges(reaction_strings):
-        without_two_ways = tuple(flatten_reaction_strings(reaction_strings))
-
-        return OrderedDict({parse_derivation(graph, reaction): index for index, reaction in enumerate(without_two_ways)})
-
-    edges = tuple(edge for edge in get_edges(dictionary.keys()))
-    results = [0.0] * len(edges)
 
 

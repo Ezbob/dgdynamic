@@ -1,8 +1,8 @@
 from src.mod_interface.ode_generator import AbstractOdeSystem
 from src.plugins.ode_scipy.scipy import ScipyOdeSolvers, ScipyOde
 from src.utils.project_utils import set_logging
+from src.converters.converter import get_parameter_map
 from src.plugins.ode_matlab.matlab import MatlabOde, MatlabOdeSolvers
-from src.converters.converter import _get_parameter_mappings
 # linking order is important so don't make this the first import
 
 import mod
@@ -19,34 +19,32 @@ C -> D
 
 aos = AbstractOdeSystem(dg).unchanging_species('B','D')
 
-print(tuple(aos.generate_rate_laws()))
-print(tuple(aos.generate_equations()))
 
+# Set the species that you wish to remain unchanged in the integration process.
+# Since these species don't contribute they don't get saved or plotted
+aos.unchanging_species('B', 'D')
 
+# Name of the data set
+name = "abstractReactions1"
 
-# # Set the species that you wish to remain unchanged in the integration process.
-# # Since these species don't contribute they don't get saved or plotted
-# aos.unchanging_species('B', 'D')
-#
-# # Name of the data set
-# name = "abstractReactions1"
-#
-# # Specify the initial values for each species
-# initial_conditions = {
-#     'F': 0.5,
-#     'B': 1,
-#     'C': 0,
-#     'D': 0,
-# }
-#
-# # Specify the mass action parameters for each reaction
-# #parameters = {
-# #    'F + B -> F + F': 0.01,
-# #    'C + F -> C + C': 0.005,
-# #    'B -> F': 0.001,
-# #    'F -> C': 0.001,
-# #    'C -> D': 0.01,
-# #}
+# Specify the initial values for each species
+initial_conditions = {
+    'F': 0.5,
+    'B': 1,
+    'C': 0,
+    'D': 0,
+}
+
+#Specify the mass action parameters for each reaction
+parameters = {
+   'F + B -> F + F': 0.01,
+   'C + F -> C + C': 0.005,
+   'B -> F': 0.001,
+   'F -> C': 0.001,
+   'C -> D': 0.01,
+}
+
+print(get_parameter_map(aos, parameters))
 # parameters = (
 #     0.01,
 #     0.005,

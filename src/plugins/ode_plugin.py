@@ -53,8 +53,8 @@ class OdePlugin(metaclass=ABCMeta):
         if type(function) is AbstractOdeSystem:
             self.ode_count = function.species_count
             self._symbols = function.symbols
-            self.ignored_count = len(function._ignored)
-            self._ignored = function._ignored
+            self.ignored_count = len(function.ignored)
+            self._ignored = function.ignored
         else:
             self._ignored = ()
             self.ignored_count = 0
@@ -106,8 +106,8 @@ class OdePlugin(metaclass=ABCMeta):
     def set_abstract_ode_system(self, system: AbstractOdeSystem):
         self._abstract_system = system
         self.ode_count = system.species_count
-        self.ignored_count = len(system._ignored)
-        self._ignored = system._ignored
+        self.ignored_count = len(system.ignored)
+        self._ignored = system.ignored
         self._symbols = system.symbols
         return self
 
