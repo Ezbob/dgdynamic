@@ -30,6 +30,7 @@ def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, rea
         except KeyError:
             raise KeyError("Two-way reactions keys not defined or understood")
 
+
 def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None):
 
     if parameter_substitutions is not None:
