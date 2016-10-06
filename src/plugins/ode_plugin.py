@@ -32,11 +32,14 @@ def sanity_check(plugin_instance, initial_values):
 def get_initial_values(initial_conditions, symbols):
     if isinstance(initial_conditions, (tuple, list)):
         return initial_conditions
-    elif type(initial_conditions) is dict and type(symbols) is OrderedDict:
+    elif isinstance(initial_conditions, dict):
         translate_mapping = {val: index for index, val in enumerate(symbols.values())}
         results = [0] * len(translate_mapping)
         for key, value in initial_conditions.items():
-            results[translate_mapping[sp.Symbol(key)]] = value
+            try:
+                results[translate_mapping[sp.Symbol(key)]] = value
+            except KeyError as error:
+                raise KeyError("Unknown initial value for symbol: {}".format(", ".join(map(str, error.args))))
 
         return results
 
