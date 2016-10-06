@@ -45,7 +45,9 @@ initial_conditions = {
 
 # Specify the mass action parameters for each reaction
 parameters = {
-   'F + B <=> F + F': {'->': 0.01, '<-': 0.1},
+   'F + B <=> F + F': {
+       '<=>': 0.01
+   },
    'C + F -> C + C': 0.005,
    'B -> F': 0.001,
    'F -> C': 0.001,

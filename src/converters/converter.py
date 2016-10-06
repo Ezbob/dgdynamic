@@ -21,14 +21,27 @@ def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, rea
                          "dictionary with '->' and '<-' as keys"
                          .format(reaction_string))
     if isinstance(parameter_value, (tuple, list)):
-        for edge, parameter in zip(edge_tuple, parameter_value):
-            result_dict[abstract_system.parameters[edge.id]] = parameter
+
+        if len(parameter_value) == 1:
+            result_dict[abstract_system.parameters[edge_tuple[0].id]] = \
+                result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value[0]
+        elif len(parameter_value) == 0:
+            raise IndexError("Cannot parse empty parameter values")
+        else:
+            for edge, parameter in zip(edge_tuple, parameter_value):
+                result_dict[abstract_system.parameters[edge.id]] = parameter
+    elif type(parameter_value) is dict:
+        if '<=>' in parameter_value:
+            result_dict[abstract_system.parameters[edge_tuple[0].id]] = \
+                result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value['<=>']
+        else:
+            try:
+                result_dict[abstract_system.parameters[edge_tuple[0].id]] = parameter_value['->']
+                result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value['<-']
+            except KeyError:
+                raise KeyError("Two-way reactions keys not defined or understood")
     else:
-        try:
-            result_dict[abstract_system.parameters[edge_tuple[0].id]] = parameter_value['->']
-            result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value['<-']
-        except KeyError:
-            raise KeyError("Two-way reactions keys not defined or understood")
+        raise TypeError("Only tuples, lists and dictionaries are supported as parameters to two-way reactions")
 
 
 def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None):
