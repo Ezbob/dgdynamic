@@ -79,7 +79,7 @@ initial_conditions = {
 # )
 
 # Specify the integration range
-integration_range = (0, 6000)
+integration_range = (0, 8000)
 
 # Get ODE solver plugin for the given abstract reaction system
 # input can be either a entry in the SupportedSolvers enum, or a string (such as "scipy" or "matlab")

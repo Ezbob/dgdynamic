@@ -99,7 +99,6 @@ def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_ma
                     eq_system_steam.write("{} ".format(extra_symbols.equation_separator))
         else:
             for vertex_id, equation in generated_equations:
-                #print(symbol_map, parameter_map, equation)
                 if type(equation) is not int:
                     eq_system_steam.write(str(equation.subs(symbol_map).subs(parameter_map)))
                     eq_system_steam.write("{} ".format(extra_symbols.equation_separator))

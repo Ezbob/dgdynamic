@@ -10,6 +10,7 @@ from typing import Union, Dict, Tuple, Callable
 import sympy as sp
 from ..utils.project_utils import ProjectTypeHints
 from collections import OrderedDict
+from os.path import commonprefix
 
 
 def sanity_check(plugin_instance, initial_values):
@@ -29,6 +30,13 @@ def sanity_check(plugin_instance, initial_values):
         raise ValueError("Parameters not set")
 
 
+def _match_and_set_on_commonprefix(translater_dict: dict, prefix: str, value: Types.Real, results: list):
+    got_prefix = (symbol_key for symbol_key in translater_dict.keys() if
+                  commonprefix((prefix, str(symbol_key))))
+    for symbol in got_prefix:
+        results[translater_dict[symbol]] = value
+
+
 def get_initial_values(initial_conditions, symbols):
     if isinstance(initial_conditions, (tuple, list)):
         return initial_conditions
@@ -39,7 +47,10 @@ def get_initial_values(initial_conditions, symbols):
             try:
                 results[translate_mapping[sp.Symbol(key)]] = value
             except KeyError as error:
-                raise KeyError("Unknown initial value for symbol: {}".format(", ".join(map(str, error.args))))
+                try:
+                    _match_and_set_on_commonprefix(translate_mapping, key, value, results)
+                except KeyError:
+                    raise KeyError("Unknown initial value for symbol: {}".format(", ".join(map(str, error.args))))
 
         return results
 
@@ -169,7 +180,6 @@ class OdeOutput(LogMixin):
 
         plt.title(self.solver_used.value)
         if filename is None or type(filename) is not str:
-            print("hello")
             plt.show()
         else:
             plt.savefig(filename, bbox_inches='tight')
