@@ -40,10 +40,12 @@ def _break_two_way_deviations(two_way: str) -> Iterable[str]:
 
 def _parse_reaction(graph: object, derivation: str):
     sources, _, targets = derivation.partition(" -> ")
+    print(sources, targets)
     return graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
 
 
 def parse(abstract_system: 'dgODESystem', reaction: str) -> object:
+    print(reaction)
     if reaction.find(" <=> ") != -1:
         first_reaction, second_reaction = _break_two_way_deviations(reaction)
         return _parse_reaction(abstract_system.graph, first_reaction), \

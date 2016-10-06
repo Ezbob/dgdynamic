@@ -4,6 +4,8 @@ import mod
 from src.mod_interface.ode_generator import dgODESystem
 from src.plugins.scipy import ScipyOdeSolvers
 from config import SupportedSolvers
+from collections import OrderedDict
+from src.mod_interface.reaction_parser import parse
 
 # Enable logging when uncommented
 # set_logging(new_session=True)
@@ -16,7 +18,7 @@ autocataRate = 0.1
 drainRate = 0.0001
 size = 4
 
-p = {}
+p = OrderedDict()
 parameters = p
 for i in range(1, size + 1):
     p["F%d -> A%d" % (i, i)] = directRate
@@ -24,19 +26,22 @@ for i in range(1, size + 1):
     p["F%d + A%d + A%d -> A%d + A%d + A%d" % (i, i, prev, i, i, prev)] = autocataRate
     p["A%d -> W" % i] = drainRate
 
-for k, v in p.items():
-    print(k, ":", v)
+#for k, v in p.items():
+#    print(k, ":", v)
 
 s = ""
 for i in parameters.keys():
     s = s + i + "\n"
 
-print(s)
+#print(s)
 dg = mod.dgAbstract(s)
 
 dg.print()
 
 ode = dgODESystem(dg)
+
+#print(tuple(ode.generate_rate_laws()))
+#print(tuple(ode.generate_equations()))
 
 # Set the species that you wish to remain unchanged in the integration process.
 # Since these species don't contribute they don't get saved or plotted
