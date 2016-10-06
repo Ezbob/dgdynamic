@@ -45,12 +45,13 @@ def get_initial_values(initial_conditions, symbols):
         results = [0] * len(translate_mapping)
         for key, value in initial_conditions.items():
             try:
-                results[translate_mapping[sp.Symbol(key)]] = value
-            except KeyError as error:
-                try:
+                key_symbol = sp.Symbol(key)
+                if key_symbol in translate_mapping:
+                    results[translate_mapping[key_symbol]] = value
+                else:
                     _match_and_set_on_commonprefix(translate_mapping, key, value, results)
-                except KeyError:
-                    raise KeyError("Unknown initial value for symbol: {}".format(", ".join(map(str, error.args))))
+            except KeyError as error:
+                raise KeyError("Unknown initial value for symbol: {}".format(", ".join(map(str, error.args))))
 
         return results
 
