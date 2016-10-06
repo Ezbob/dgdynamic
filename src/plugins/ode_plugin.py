@@ -138,14 +138,16 @@ class OdeOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, linestyle='-', labels=None, figure_size=None):
+    def plot(self, filename=None, linestyle='-', labels=None, figure_size=None):
         """
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
         """
         if len(self.dependent) == 0 or len(self.independent) == 0:
             raise ValueError("No or mismatched data")
+
         lines = plt.plot(self.independent, tuple(self._filter_out_ignores()), linestyle)
+
         if labels is not None:
             assert len(labels) >= len(lines)
             for index, line in enumerate(lines):
@@ -158,7 +160,11 @@ class OdeOutput(LogMixin):
             fig.set_size_inches(figure_size[0], figure_size[1], forward=True)
 
         plt.title(self.solver_used.value)
-        plt.show()
+        if filename is None or type(filename) is not str:
+            print("hello")
+            plt.show()
+        else:
+            plt.savefig(filename)
         return self
 
     def _get_file_prefix(self, name, extension=".tsv", prefix=None):

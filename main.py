@@ -1,38 +1,58 @@
+import sys
 import mod
 
 from src.mod_interface.ode_generator import dgODESystem
 from src.plugins.scipy import ScipyOdeSolvers
-from src.plugins.matlab import MatlabOdeSolvers
 from config import SupportedSolvers
-from src.utils.project_utils import set_logging
-from src.converters.converter import get_parameter_map
 
 # Enable logging when uncommented
-set_logging(new_session=True)
+# set_logging(new_session=True)
 
-dg = mod.dgAbstract("""
-F + B <=> F + F
-C + F -> C + C
-B -> F
-F -> C
-C -> D
-""")
+
+
+# Specify the mass action parameters for each reaction
+directRate = 0.001
+autocataRate = 0.1
+drainRate = 0.0001
+size = 4
+
+p = {}
+parameters = p
+for i in range(1, size + 1):
+    p["F%d -> A%d" % (i, i)] = directRate
+    prev = i - 1 if i > 1 else size
+    p["F%d + A%d + A%d -> A%d + A%d + A%d" % (i, i, prev, i, i, prev)] = autocataRate
+    p["A%d -> W" % i] = drainRate
+
+for k, v in p.items():
+    print(k, ":", v)
+
+s = ""
+for i in parameters.keys():
+    s = s + i + "\n"
+
+print(s)
+dg = mod.dgAbstract(s)
+
+dg.print()
 
 ode = dgODESystem(dg)
 
 # Set the species that you wish to remain unchanged in the integration process.
 # Since these species don't contribute they don't get saved or plotted
-ode.unchanging_species('B', 'D')
+ode.unchanging_species('F', 'W')
 
 # Name of the data set
 name = "abstractReactions1"
 
 # Specify the initial values for each species
 initial_conditions = {
-    'F': 0.5,
-    'B': 1,
+    'A': 0,
+    'B': 0,
     'C': 0,
     'D': 0,
+    'F': 1,
+    'W': 0,
 }
 
 # Alternative syntax for specifying initial conditions
@@ -43,16 +63,6 @@ initial_conditions = {
 #     0,
 # )
 
-# Specify the mass action parameters for each reaction
-parameters = {
-   'F + B <=> F + F': {
-       '<=>': 0.01
-   },
-   'C + F -> C + C': 0.005,
-   'B -> F': 0.001,
-   'F -> C': 0.001,
-   'C -> D': 0.01,
-}
 
 # Alternative specification of parameters
 # parameters = (
@@ -110,9 +120,7 @@ output.plot()
 
 
 # The following solver uses the matlab engine for python to compute the solutions to the ODEs
-# matlab_ode = ode.get_ode_plugin(SupportedSolvers.Matlab, initial_conditions=initial_conditions,
-#                    integration_range=integration_range, parameters=parameters, solver=MatlabOdeSolvers.ode45)
+# matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
+#                       parameters=parameters, solver=MatlabOdeSolvers.ode45)
 
 # matlab_ode.solve().save(name).plot() # solve the ODEs, save the output and plot it afterwards
-
-
