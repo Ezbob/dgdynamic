@@ -34,7 +34,8 @@ def _match_and_set_on_commonprefix(translater_dict: dict, prefix: str, value: Ty
     got_prefix = (symbol_key for symbol_key in translater_dict.keys() if
                   commonprefix((prefix, str(symbol_key))))
     for symbol in got_prefix:
-        results[translater_dict[symbol]] = value
+        if results[translater_dict[symbol]] is None:
+            results[translater_dict[symbol]] = value
 
 
 def get_initial_values(initial_conditions, symbols, fuzzy_match=False):
@@ -42,7 +43,7 @@ def get_initial_values(initial_conditions, symbols, fuzzy_match=False):
         return initial_conditions
     elif isinstance(initial_conditions, dict):
         translate_mapping = {val: index for index, val in enumerate(symbols.values())}
-        results = [0] * len(translate_mapping)
+        results = [None] * len(translate_mapping)
         for key, value in initial_conditions.items():
             try:
                 key_symbol = sp.Symbol(key)
@@ -92,6 +93,7 @@ class OdePlugin(metaclass=ABCMeta):
 
         self.delta_t = delta_t
         self.parameters = parameters
+        self.initial_condition_prefix_match = False
         self.integration_range = integration_range
         self.initial_conditions = initial_conditions
         self._convert_to_function(converter_function)

@@ -50,7 +50,8 @@ class MatlabOde(OdePlugin, LogMixin):
 
         self.logger.debug("Solving ode using MATLAB")
 
-        conditions = get_initial_values(self.initial_conditions, self._symbols)
+        conditions = get_initial_values(self.initial_conditions, self._symbols,
+                                        fuzzy_match=self.initial_condition_prefix_match)
         sanity_check(self, list(conditions))
 
         if isinstance(conditions, (list, tuple)):

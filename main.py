@@ -99,6 +99,8 @@ scipy_ode = ode.get_ode_plugin(SupportedSolvers.Scipy)
 #    DOP853 : Has dense output and variable time step
 scipy_ode.set_ode_solver(ScipyOdeSolvers.VODE)
 
+scipy_ode.initial_condition_prefix_match = True
+
 # Set the time step, default is 0.05
 scipy_ode.delta_t = 0.1
 
