@@ -37,7 +37,7 @@ def _match_and_set_on_commonprefix(translater_dict: dict, prefix: str, value: Ty
         results[translater_dict[symbol]] = value
 
 
-def get_initial_values(initial_conditions, symbols):
+def get_initial_values(initial_conditions, symbols, fuzzy_match=False):
     if isinstance(initial_conditions, (tuple, list)):
         return initial_conditions
     elif isinstance(initial_conditions, dict):
@@ -48,8 +48,10 @@ def get_initial_values(initial_conditions, symbols):
                 key_symbol = sp.Symbol(key)
                 if key_symbol in translate_mapping:
                     results[translate_mapping[key_symbol]] = value
-                else:
+                elif fuzzy_match:
                     _match_and_set_on_commonprefix(translate_mapping, key, value, results)
+                else:
+                    raise KeyError("Unknown initial value for symbol: {}".format(key))
             except KeyError as error:
                 raise KeyError("Unknown initial value for symbol: {}".format(", ".join(map(str, error.args))))
 
