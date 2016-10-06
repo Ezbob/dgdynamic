@@ -45,7 +45,7 @@ initial_conditions = {
 # Specify the mass action parameters for each reaction
 parameters = {
    'F + B -> F + F': 0.01,
-   'C + F -> C + C': 0.005,
+   'C + F -> C + C': 0.00001,
    'B -> F': 0.001,
    'F -> C': 0.001,
    'C -> D': 0.01,
@@ -61,7 +61,7 @@ parameters = {
 # )
 
 # Specify the integration range
-integration_range = (0, 6000)
+integration_range = (0, 8000)
 
 # Get ODE solver plugin for the given abstract reaction system
 # input can be either a entry in the SupportedSolvers enum, or a string (such as "scipy" or "matlab")
@@ -103,7 +103,7 @@ output = scipy_ode.solve()
 output.save(name)
 
 # Plot the data using the MatPlotLib, also using the output object
-output.plot()
+output.plot("plot.svg", figure_size=(40, 20), labels=('Cycle 1', 'Cycle 2'))
 
 
 # The following solver uses the matlab engine for python to compute the solutions to the ODEs

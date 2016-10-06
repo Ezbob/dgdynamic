@@ -131,7 +131,7 @@ class OdeOutput(LogMixin):
         self.dependent = dependent
         self.independent = independent
         self.solver_used = solved_by
-        self._filename = "data"
+        self._data_filename = "data"
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config.DATA_DIRECTORY)
 
@@ -147,6 +147,7 @@ class OdeOutput(LogMixin):
             raise ValueError("No or mismatched data")
 
         lines = plt.plot(self.independent, tuple(self._filter_out_ignores()), linestyle)
+        plt.tight_layout()
 
         if labels is not None:
             assert len(labels) >= len(lines)
@@ -156,15 +157,19 @@ class OdeOutput(LogMixin):
 
         if figure_size is not None:
             assert len(figure_size) >= 2
+
+            def cm2inch(number): return number / 2.54
+
             fig = plt.gcf()
-            fig.set_size_inches(figure_size[0], figure_size[1], forward=True)
+            fig.set_size_inches(cm2inch(figure_size[0]), cm2inch(figure_size[1]), forward=True)
+
 
         plt.title(self.solver_used.value)
         if filename is None or type(filename) is not str:
             print("hello")
             plt.show()
         else:
-            plt.savefig(filename)
+            plt.savefig(filename, bbox_inches='tight')
         return self
 
     def _get_file_prefix(self, name, extension=".tsv", prefix=None):
@@ -181,7 +186,7 @@ class OdeOutput(LogMixin):
                     filtered_row += (item,)
             yield filtered_row
 
-    def save(self, name="data", float_precision=12, prefix=None):
+    def save(self, name=None, float_precision=12, prefix=None):
         """
         Saves the independent and dependent variables as a Tab Separated Variables(TSV) file in the directory specified
         by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
@@ -191,9 +196,11 @@ class OdeOutput(LogMixin):
         :param float_precision: precision when printing out the floating point numbers
         :return:
         """
+        name = self._data_filename if name is None else name
+
         if len(self.dependent) == 0 or len(self.independent) == 0:
             raise ValueError("No or mismatched data")
-        self._filename = name if name is not None and type(name) is str else self._filename
+        self._data_filename = name if name is not None and type(name) is str else self._data_filename
 
         paired_data = zip(self.independent, self._filter_out_ignores())
         make_directory(config.DATA_DIRECTORY, pre_delete=False)
