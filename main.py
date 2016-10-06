@@ -27,7 +27,7 @@ for i in range(1, size + 1):
     p["A%d -> W" % i] = drainRate
 
 #for k, v in p.items():
-#    print(k, ":", v)
+    #print(k)#, ":", v)
 
 s = ""
 for i in parameters.keys():

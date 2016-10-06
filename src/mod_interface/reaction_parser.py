@@ -1,14 +1,14 @@
 from typing import Iterable
 
 
-def _parse_sides(side):
+def _parse_sides(side: str):
     skip_next = False
     the_splitting = side.split()
-    for index, char in enumerate(the_splitting):
+    for index, atom in enumerate(the_splitting):
         if not skip_next:
-            if str.isdigit(char):
+            if str.isdigit(atom):
                 skip_next = True
-                multiplier = int(char)
+                multiplier = int(atom)
                 try:
                     species = the_splitting[index + 1]
                 except IndexError:
@@ -17,10 +17,9 @@ def _parse_sides(side):
                                                                                       len(the_splitting)))
                 for i in range(multiplier):
                     yield species
-            elif '+' == char:
+            elif '+' == atom:
                 continue
-            if str.isalpha(char):
-                yield char
+            yield atom
         else:
             skip_next = False
             continue
@@ -40,12 +39,10 @@ def _break_two_way_deviations(two_way: str) -> Iterable[str]:
 
 def _parse_reaction(graph: object, derivation: str):
     sources, _, targets = derivation.partition(" -> ")
-    print(sources, targets)
     return graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
 
 
 def parse(abstract_system: 'dgODESystem', reaction: str) -> object:
-    print(reaction)
     if reaction.find(" <=> ") != -1:
         first_reaction, second_reaction = _break_two_way_deviations(reaction)
         return _parse_reaction(abstract_system.graph, first_reaction), \
