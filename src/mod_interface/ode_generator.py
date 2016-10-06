@@ -4,6 +4,7 @@ import sympy as sp
 from typing import Union, Iterable, Tuple
 from config import SupportedSolvers
 from collections import OrderedDict
+from .reaction_parser import parse
 
 
 class dgODESystem:
@@ -103,51 +104,7 @@ class dgODESystem:
         return self
 
     def parse_abstract_reaction(self, reaction: str) -> Union[object, Tuple[object,object]]:
-
-        def parse_sides(side):
-            skip_next = False
-            the_splitting = side.split()
-            for index, char in enumerate(the_splitting):
-                if not skip_next:
-                    if str.isdigit(char):
-                        skip_next = True
-                        multiplier = int(char)
-                        try:
-                            species = the_splitting[index + 1]
-                        except IndexError:
-                            raise IndexError("Index error in\
-                              specification parsing; tried index {} but length is {} ".format(index + 1,
-                                                                                              len(the_splitting)))
-                        for i in range(multiplier):
-                            yield species
-                    elif '+' == char:
-                        continue
-                    if str.isalpha(char):
-                        yield char
-                else:
-                    skip_next = False
-                    continue
-
-        def get_side_vertices(side):
-            for sym in parse_sides(side):
-                for vertex in self.graph.vertices:
-                    if vertex.graph.name == sym:
-                        yield vertex
-
-        def break_two_way_deviations(two_way: str) -> Iterable[str]:
-            yield " -> ".join(two_way.split(" <=> "))
-            yield " -> ".join(reversed(two_way.split(" <=> ")))
-
-        def parse_reaction(derivation: str):
-            sources, _, targets = derivation.partition(" -> ")
-            return self.graph.findEdge(get_side_vertices(sources), get_side_vertices(targets))
-
-        if reaction.find(" <=> ") != -1:
-            first_reaction, second_reaction = break_two_way_deviations(reaction)
-            return parse_reaction(first_reaction), parse_reaction(second_reaction)
-
-        elif reaction.find(' -> ') != -1:
-            return parse_reaction(reaction)
+        return parse(self, reaction)
 
     def __repr__(self):
         return "<Abstract Ode System {}>".format(self.left_hand_sides)

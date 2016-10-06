@@ -45,7 +45,7 @@ initial_conditions = {
 # Specify the mass action parameters for each reaction
 parameters = {
    'F + B -> F + F': 0.01,
-   'C + F -> C + C': 0.00001,
+   'C + F -> C + C': 0.000001,
    'B -> F': 0.001,
    'F -> C': 0.001,
    'C -> D': 0.01,
@@ -61,7 +61,7 @@ parameters = {
 # )
 
 # Specify the integration range
-integration_range = (0, 8000)
+integration_range = (0, 10000)
 
 # Get ODE solver plugin for the given abstract reaction system
 # input can be either a entry in the SupportedSolvers enum, or a string (such as "scipy" or "matlab")
