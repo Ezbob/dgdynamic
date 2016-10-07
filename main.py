@@ -1,63 +1,37 @@
-import sys
 import mod
 
 from src.mod_interface.ode_generator import dgODESystem
 from src.plugins.scipy import ScipyOdeSolvers
+from src.plugins.matlab import MatlabOdeSolvers
 from config import SupportedSolvers
-from collections import OrderedDict
-from src.mod_interface.reaction_parser import parse
+from src.utils.project_utils import set_logging
 
 # Enable logging when uncommented
 # set_logging(new_session=True)
 
-
-
-# Specify the mass action parameters for each reaction
-directRate = 0.001
-autocataRate = 0.1
-drainRate = 0.0001
-size = 4
-
-p = OrderedDict()
-parameters = p
-for i in range(1, size + 1):
-    p["F%d -> A%d" % (i, i)] = directRate
-    prev = i - 1 if i > 1 else size
-    p["F%d + A%d + A%d -> A%d + A%d + A%d" % (i, i, prev, i, i, prev)] = autocataRate
-    p["A%d -> W" % i] = drainRate
-
-#for k, v in p.items():
-    #print(k)#, ":", v)
-
-s = ""
-for i in parameters.keys():
-    s = s + i + "\n"
-
-#print(s)
-dg = mod.dgAbstract(s)
-
-dg.print()
+dg = mod.dgAbstract("""
+F + B -> F + F
+C + F -> C + C
+B -> F
+F -> C
+C -> D
+""")
 
 ode = dgODESystem(dg)
 
-#print(tuple(ode.generate_rate_laws()))
-#print(tuple(ode.generate_equations()))
-
 # Set the species that you wish to remain unchanged in the integration process.
 # Since these species don't contribute they don't get saved or plotted
-ode.unchanging_species('F', 'W')
+ode.unchanging_species('B', 'D')
 
 # Name of the data set
 name = "abstractReactions1"
 
 # Specify the initial values for each species
 initial_conditions = {
-    'A': 0,
-    'B': 0,
+    'F': 0.5,
+    'B': 1,
     'C': 0,
     'D': 0,
-    'F': 1,
-    'W': 0,
 }
 
 # Alternative syntax for specifying initial conditions
@@ -68,6 +42,14 @@ initial_conditions = {
 #     0,
 # )
 
+# Specify the mass action parameters for each reaction
+parameters = {
+   'F + B -> F + F': 0.01,
+   'C + F -> C + C': 0.000001,
+   'B -> F': 0.001,
+   'F -> C': 0.001,
+   'C -> D': 0.01,
+}
 
 # Alternative specification of parameters
 # parameters = (
@@ -79,7 +61,7 @@ initial_conditions = {
 # )
 
 # Specify the integration range
-integration_range = (0, 8000)
+integration_range = (0, 10000)
 
 # Get ODE solver plugin for the given abstract reaction system
 # input can be either a entry in the SupportedSolvers enum, or a string (such as "scipy" or "matlab")
@@ -98,8 +80,6 @@ scipy_ode = ode.get_ode_plugin(SupportedSolvers.Scipy)
 #    DOPRI5 : Has dense output and variable time step
 #    DOP853 : Has dense output and variable time step
 scipy_ode.set_ode_solver(ScipyOdeSolvers.VODE)
-
-scipy_ode.initial_condition_prefix_match = True
 
 # Set the time step, default is 0.05
 scipy_ode.delta_t = 0.1
@@ -123,11 +103,13 @@ output = scipy_ode.solve()
 output.save(name)
 
 # Plot the data using the MatPlotLib, also using the output object
-output.plot()
+output.plot("plot.svg", figure_size=(40, 20), labels=('Cycle 1', 'Cycle 2'), axis_labels=('t','y'))
 
 
 # The following solver uses the matlab engine for python to compute the solutions to the ODEs
-# matlab_ode = MatlabOde(aos, initial_conditions=initial_conditions, integration_range=integration_range,
-#                       parameters=parameters, solver=MatlabOdeSolvers.ode45)
+# matlab_ode = ode.get_ode_plugin(SupportedSolvers.Matlab, initial_conditions=initial_conditions,
+#                    integration_range=integration_range, parameters=parameters, solver=MatlabOdeSolvers.ode45)
 
 # matlab_ode.solve().save(name).plot() # solve the ODEs, save the output and plot it afterwards
+
+

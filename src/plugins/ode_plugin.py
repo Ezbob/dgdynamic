@@ -157,7 +157,7 @@ class OdeOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, filename=None, linestyle='-', labels=None, figure_size=None):
+    def plot(self, filename=None, linestyle='-', labels=None, figure_size=None, axis_labels=None):
         """
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
@@ -168,6 +168,12 @@ class OdeOutput(LogMixin):
         lines = plt.plot(self.independent, tuple(self._filter_out_ignores()), linestyle)
         plt.tight_layout()
 
+        if axis_labels is not None:
+            assert isinstance(axis_labels, (tuple,list))
+            assert len(axis_labels) >= 2
+            assert isinstance(axis_labels[0], str) and isinstance(axis_labels[1], str)
+            plt.xlabel(axis_labels[0])
+            plt.ylabel(axis_labels[1])
         if labels is not None:
             assert len(labels) >= len(lines)
             for index, line in enumerate(lines):
