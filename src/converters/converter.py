@@ -17,21 +17,20 @@ class DefaultFunctionSymbols:
 
 
 def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, reaction_string, result_dict):
-    if not isinstance(parameter_value, (tuple, list, dict)):
-        raise ValueError("Parameters for the two-way reaction {} was not a list or tuple or a "
-                         "dictionary with '->' and '<-' as keys"
-                         .format(reaction_string))
+
     if isinstance(parameter_value, (tuple, list)):
 
-        if len(parameter_value) == 1:
+        if len(parameter_value) == 0:
+            raise IndexError("Cannot parse empty parameter values")
+        elif len(parameter_value) == 1:
             result_dict[abstract_system.parameters[edge_tuple[0].id]] = \
                 result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value[0]
-        elif len(parameter_value) == 0:
-            raise IndexError("Cannot parse empty parameter values")
         else:
             for edge, parameter in zip(edge_tuple, parameter_value):
                 result_dict[abstract_system.parameters[edge.id]] = parameter
-    elif type(parameter_value) is dict:
+
+    elif isinstance(parameter_value, dict):
+
         if '<=>' in parameter_value:
             result_dict[abstract_system.parameters[edge_tuple[0].id]] = \
                 result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value['<=>']
@@ -41,8 +40,16 @@ def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, rea
                 result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value['<-']
             except KeyError:
                 raise KeyError("Two-way reactions keys not defined or understood")
+
+    elif isinstance(parameter_value, (float, int)):
+
+        result_dict[abstract_system.parameters[edge_tuple[0].id]] = \
+            result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value
+
     else:
-        raise TypeError("Only tuples, lists and dictionaries are supported as parameters to two-way reactions")
+        raise TypeError("Parameter {}; Only tuples, "
+                        "lists and dictionaries are supported as parameters to two-way reactions"
+                        .format(reaction_string))
 
 
 def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None):
