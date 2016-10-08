@@ -52,7 +52,7 @@ def get_initial_values(initial_conditions, symbols, fuzzy_match=False):
                 elif fuzzy_match:
                     _match_and_set_on_commonprefix(translate_mapping, key, value, results)
                 else:
-                    raise KeyError(key)
+                    raise KeyError(key_symbol)
             except KeyError as error:
                 raise KeyError("Unknown initial value for symbol: {}".format(", ".join(map(str, error.args))))
 

@@ -8,14 +8,14 @@ from src.utils.project_utils import set_logging
 
 import numpy
 # Enable logging when uncommented
-# set_logging(new_session=True)
+set_logging(new_session=True)
 
 root_symbol = 'A'
-species_limit = 60
+species_limit = 30
 dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
 
-integration_range = (0, 100)
+integration_range = (0, 1000)
 
 
 def get_symbols():
@@ -30,22 +30,33 @@ def get_reactions():
 
 reactions = "\n".join(get_reactions())
 
-initial_conditions = {
-    'A1': 0.8,
-    'A': epsilon,
-}
+initial_conditions = {}
+
+for symbol in get_symbols():
+    initial_conditions[symbol] = epsilon
+
+initial_conditions['A1'] = 3
 
 parameters = {}
 
 for reaction in get_reactions():
-    parameters[reaction] = 1
+    parameters[reaction] = 10
 
 parameters['A1 + A1 <=> A2'] = 0
 
 
-#dg = mod.dgAbstract(reactions)
+dg = mod.dgAbstract(reactions)
 
-#ode = dgODESystem(dg)
+ode = dgODESystem(dg)
+
+solver = ode.get_ode_plugin("scipy")
+
+solver.set_integration_range(integration_range)
+solver.set_parameters(parameters)
+solver.set_initial_conditions(initial_conditions)
+solver.set_ode_solver(ScipyOdeSolvers.DOP853)
+
+solver.solve().plot()
 
 #
 # # Set the species that you wish to remain unchanged in the integration process.

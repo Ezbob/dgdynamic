@@ -5,6 +5,7 @@ from io import StringIO
 from typing import Dict, Tuple
 from ..mod_interface.ode_generator import dgODESystem
 from collections import Iterable
+from ..utils.project_utils import log
 
 
 class DefaultFunctionSymbols:
@@ -61,15 +62,20 @@ def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None
             parameter_map = dict()
             for reaction_string, parameter_value in parameter_substitutions.items():
                 edges = abstract_system.parse_abstract_reaction(reaction_string.strip())
-                if not edges.isNull():
-                    if isinstance(edges, Iterable):
+
+                if isinstance(edges, tuple):
+                    if not edges[0].isNull() and not edges[1].isNull():
                         _handle_two_way_parameters(abstract_system=abstract_system, edge_tuple=edges,
-                                                   result_dict=parameter_map, reaction_string=reaction_string,
-                                                   parameter_value=parameter_value)
+                                               result_dict=parameter_map, reaction_string=reaction_string,
+                                               parameter_value=parameter_value)
                     else:
-                        parameter_map[abstract_system.parameters[edges.id]] = parameter_value
+                        raise ValueError("Could not find hyper edge for reaction: {}".format(reaction_string))
                 else:
-                    raise ValueError("Could not find hyper edge for reaction: {}".format(reaction_string))
+                    if not edges.isNull():
+                        parameter_map[abstract_system.parameters[edges.id]] = parameter_value
+                    else:
+                        raise ValueError("Could not find hyper edge for reaction: {}".format(reaction_string))
+
         elif isinstance(parameter_substitutions, (tuple, list)):
             parameter_map = {k: v for k, v in zip(abstract_system.parameters.values(), parameter_substitutions)}
         else:
@@ -78,7 +84,7 @@ def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None
         parameter_map = None
     return parameter_map
 
-
+@log
 def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_map: dict,
                extra_symbols=DefaultFunctionSymbols(), postprocessor=None):
     """

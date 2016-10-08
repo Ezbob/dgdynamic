@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Tuple, Union
 
 
 def _parse_sides(side: str):
@@ -42,7 +42,7 @@ def _parse_reaction(graph: object, derivation: str):
     return graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
 
 
-def parse(abstract_system: 'dgODESystem', reaction: str) -> object:
+def parse(abstract_system: 'dgODESystem', reaction: str) -> Union[object, Tuple[object,object]]:
     if reaction.find(" <=> ") != -1:
         first_reaction, second_reaction = _break_two_way_deviations(reaction)
         return _parse_reaction(abstract_system.graph, first_reaction), \

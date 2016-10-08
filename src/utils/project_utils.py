@@ -19,10 +19,11 @@ def log(function):
 
     def debug_wrapper(*args, **kwargs):
         logger.info("Now entering function {} with arguments {} and\
-keyword arguments {}".format(function.__name__(), args, kwargs))
-        function(args, kwargs, logger=function)
-        logger.info("Leaving function {}".format(args))
+keyword arguments {}".format(function.__name__, args, kwargs))
+        output = function(*args, **kwargs)
+        logger.info("Leaving function output: {}".format(output))
         debug_wrapper.__name__ = function.__name__
+        return output
     return debug_wrapper
 
 
@@ -79,3 +80,5 @@ class ProjectTypeHints:
     Numbers = Union[Reals, Real]
     Countable_Sequence = Union[List[Any], Tuple[Any,...]]
     ODE_Function = Callable[[Numbers, Numbers], Numbers]
+
+set_logging()
