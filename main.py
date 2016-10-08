@@ -8,6 +8,7 @@ from src.utils.project_utils import set_logging
 
 import numpy
 # Enable logging when uncommented
+set_logging()
 
 root_symbol = 'A'
 species_limit = 60

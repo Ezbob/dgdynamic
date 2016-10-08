@@ -5,7 +5,7 @@ from io import StringIO
 from typing import Dict, Tuple
 from ..mod_interface.ode_generator import dgODESystem
 from collections import Iterable
-from ..utils.project_utils import logit
+from ..utils.project_utils import log_it
 
 
 class DefaultFunctionSymbols:
@@ -85,7 +85,7 @@ def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None
     return parameter_map
 
 
-@logit
+@log_it
 def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_map: dict,
                extra_symbols=DefaultFunctionSymbols(), postprocessor=None):
     """

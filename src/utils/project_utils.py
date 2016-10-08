@@ -2,13 +2,14 @@ import logging
 import config
 import os
 import shutil
+import time
 from typing import *
 logging_handler = None
 
 
-def logit(function):
+def log_it(function):
     """
-    Use this function as decorator
+    Use this function as decorator, to enable logging for a function
     :param function: the function that has been decorated
     :return: the wrapper that decorates the function
     """
@@ -20,8 +21,11 @@ def logit(function):
     def debug_wrapper(*args, **kwargs):
         logger.info("Now entering function {} with arguments {} and\
 keyword arguments {}".format(function.__name__, args, kwargs))
+        started = time.time()
         output = function(*args, **kwargs)
+        ended = time.time()
         logger.info("Leaving function output: {}".format(output))
+        logger.info("Execution time was {} secs".format(ended - started))
         debug_wrapper.__name__ = function.__name__
         return output
     return debug_wrapper
@@ -55,7 +59,7 @@ def make_directory(path, pre_delete=False):
         os.mkdir(path)
 
 
-def set_logging(filename="system.log", new_session=False, level=logging.DEBUG):
+def set_logging():
     """
     This function setups the root logging system for use with the logging mixin.
     All log statements gets written to a log file
@@ -64,14 +68,20 @@ def set_logging(filename="system.log", new_session=False, level=logging.DEBUG):
     :param level: maximum log level to log for
     """
     global logging_handler
-    log_dir = os.path.abspath(config.LOG_DIRECTORY)
-    make_directory(log_dir, pre_delete=new_session)
+    if logging_handler is None:
+        log_dir_name = config.LOG_DIRECTORY if config.LOG_DIRECTORY else "logs"
+        filename = config.SYSTEM_LOG_FILE if config.SYSTEM_LOG_FILE else "system.log"
+        level = config.LOG_LEVEL if isinstance(config.LOG_LEVEL, type(logging.INFO)) else logging.INFO
+        new_session = not config.SAVE_LOGS if isinstance(config.SAVE_LOGS, bool) else False
 
-    new_file_path = os.path.join(log_dir, filename)
+        log_dir = os.path.abspath(log_dir_name)
+        make_directory(log_dir, pre_delete=new_session)
 
-    logging_handler = logging.FileHandler(new_file_path)
-    logging_handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s'))
-    logging.basicConfig(level=level)
+        new_file_path = os.path.join(log_dir, filename)
+
+        logging_handler = logging.FileHandler(new_file_path)
+        logging_handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s'))
+        logging.basicConfig(level=level)
 
 
 class ProjectTypeHints:

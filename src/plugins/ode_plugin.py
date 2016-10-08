@@ -178,6 +178,12 @@ class OdeOutput(LogMixin):
             assert len(labels) >= len(lines)
             for index, line in enumerate(lines):
                 line.set_label(labels[index])
+                if index > 20 and index <= 30:
+                    line.set_linestyle('dashed')
+                elif index > 30 and index <= 40:
+                    line.set_linestyle('dashdot')
+                elif index > 40 and index <= 50:
+                    line.set_linestyle('dotted')
 
             plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=legend_columns)
 
