@@ -15,8 +15,7 @@ species_limit = 60
 dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
 
-integration_range = (0, 1)
-
+integration_range = (0, 30)
 
 def get_symbols():
     return ('A{}'.format(i) for i in range(1, species_limit + 1))
@@ -35,12 +34,14 @@ initial_conditions = {}
 for symbol in get_symbols():
     initial_conditions[symbol] = 0.05
 
-initial_conditions['A1'] = 1
+initial_conditions['A1'] = 0.8
 
 parameters = {}
 
+# Here the <- direction of the edge means tweaking the decomposition rate
+# And -> direction means the tweaking the rate of synthesis
 for reaction in get_reactions():
-    parameters[reaction] = 1
+    parameters[reaction] = {'<-': 0.001, '->': 1}
 
 parameters['A1 + A1 <=> A2'] = 0
 
@@ -48,6 +49,8 @@ parameters['A1 + A1 <=> A2'] = 0
 dg = mod.dgAbstract(reactions)
 
 ode = dgODESystem(dg)
+
+print(next(ode.generate_equations())[1])
 
 solver = ode.get_ode_plugin("scipy")
 
