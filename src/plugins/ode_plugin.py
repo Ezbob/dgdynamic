@@ -157,7 +157,7 @@ class OdeOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, filename=None, linestyle='-', labels=None, figure_size=None, axis_labels=None):
+    def plot(self, filename=None, linestyle='-', labels=None, figure_size=None, axis_labels=None, legend_columns=1):
         """
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
@@ -178,7 +178,8 @@ class OdeOutput(LogMixin):
             assert len(labels) >= len(lines)
             for index, line in enumerate(lines):
                 line.set_label(labels[index])
-            plt.legend()
+
+            plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=legend_columns)
 
         if figure_size is not None:
             assert len(figure_size) >= 2
@@ -187,7 +188,6 @@ class OdeOutput(LogMixin):
 
             fig = plt.gcf()
             fig.set_size_inches(cm2inch(figure_size[0]), cm2inch(figure_size[1]), forward=True)
-
 
         plt.title(self.solver_used.value)
         if filename is None or type(filename) is not str:

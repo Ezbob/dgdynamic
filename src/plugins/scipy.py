@@ -28,7 +28,7 @@ class ScipyOde(OdePlugin, LogMixin):
         super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters,
                          initial_t=initial_t, solver_method=solver)
 
-    def solve(self) -> OdeOutput:
+    def solve(self, **kwargs) -> OdeOutput:
         self._convert_to_function(get_scipy_lambda)
 
         if self._user_function is None:
@@ -47,7 +47,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
 
         y_solution = list()
         t_solution = list()
-        solver = ode(self._user_function).set_integrator(self._ode_solver.value)
+        solver = ode(self._user_function).set_integrator(self._ode_solver.value, **kwargs)
         solver.set_initial_value(y=initial_y, t=self.initial_t)
         solver.t = self.integration_range[0]
 

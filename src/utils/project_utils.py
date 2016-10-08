@@ -6,7 +6,7 @@ from typing import *
 logging_handler = None
 
 
-def log(function):
+def logit(function):
     """
     Use this function as decorator
     :param function: the function that has been decorated
