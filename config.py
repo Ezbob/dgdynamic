@@ -1,3 +1,6 @@
+"""
+Application wide configuration file
+"""
 import enum
 import logging
 
