@@ -1,16 +1,16 @@
 import os
 import os.path
 from abc import abstractmethod, ABCMeta
-import matplotlib.pyplot as plt
-import config
 from enum import Enum
-from src.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
-from src.mod_interface.ode_generator import dgODESystem
-from typing import Union, Dict, Tuple, Callable
-import sympy as sp
-from ..utils.project_utils import ProjectTypeHints
-from collections import OrderedDict
 from os.path import commonprefix
+from typing import Union, Dict, Tuple, Callable
+
+import matplotlib.pyplot as plt
+import sympy as sp
+
+from dgODE import config
+from dgODE.mod_interface.ode_generator import dgODESystem
+from dgODE.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
 
 
 def sanity_check(plugin_instance, initial_values):

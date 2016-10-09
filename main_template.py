@@ -1,10 +1,8 @@
 import mod
 
-from src.mod_interface.ode_generator import dgODESystem
-from src.plugins.scipy import ScipyOdeSolvers
-from src.plugins.matlab import MatlabOdeSolvers
-from config import SupportedSolvers
-from src.utils.project_utils import set_logging
+from dgODE.config import SupportedSolvers
+from dgODE.mod_interface.ode_generator import dgODESystem
+from dgODE.plugins.scipy import ScipyOdeSolvers
 
 # Enable logging when uncommented
 # set_logging(new_session=True)

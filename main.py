@@ -1,12 +1,9 @@
 import mod
-
-from src.mod_interface.ode_generator import dgODESystem
-from src.plugins.scipy import ScipyOdeSolvers
-from src.plugins.matlab import MatlabOdeSolvers
-from config import SupportedSolvers
-from src.utils.project_utils import set_logging
-
 import numpy
+
+from dgODE.mod_interface.ode_generator import dgODESystem
+from dgODE.plugins.scipy import ScipyOdeSolvers
+from dgODE.utils.project_utils import set_logging
 # Enable logging when uncommented
 set_logging()
 
@@ -15,7 +12,8 @@ species_limit = 60
 dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
 
-integration_range = (0, 30)
+integration_range = (0, 20)
+
 
 def get_symbols():
     return ('A{}'.format(i) for i in range(1, species_limit + 1))
@@ -41,7 +39,7 @@ parameters = {}
 # Here the <- direction of the edge means tweaking the decomposition rate
 # And -> direction means the tweaking the rate of synthesis
 for reaction in get_reactions():
-    parameters[reaction] = {'<-': 0.001, '->': 1}
+    parameters[reaction] = {'<-': 0.002, '->': 1}
 
 parameters['A1 + A1 <=> A2'] = 0
 
@@ -50,7 +48,6 @@ dg = mod.dgAbstract(reactions)
 
 ode = dgODESystem(dg)
 
-print(next(ode.generate_equations())[1])
 
 solver = ode.get_ode_plugin("scipy")
 

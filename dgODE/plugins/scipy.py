@@ -1,10 +1,12 @@
 import sys
 from enum import Enum
-from src.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
+
 from scipy.integrate import ode
-from src.converters.scipy_converter import get_scipy_lambda
-from config import SupportedSolvers
-from src.utils.project_utils import LogMixin
+
+from dgODE.config import SupportedSolvers
+from dgODE.converters.scipy_converter import get_scipy_lambda
+from dgODE.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
+from dgODE.utils.project_utils import LogMixin
 
 
 class ScipyOdeSolvers(Enum):
@@ -42,7 +44,7 @@ class ScipyOde(OdePlugin, LogMixin):
         sanity_check(self, initial_y)
 
         self.logger.debug("Started solving using Scipy with method {}".format(self._ode_solver.value))
-        self.logger.debug("Initial conditions is {}, \
+        self.logger.debug("Initial conditions are {}, \
 range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, self.delta_t))
 
         y_solution = list()

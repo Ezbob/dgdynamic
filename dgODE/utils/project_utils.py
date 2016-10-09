@@ -1,9 +1,11 @@
 import logging
-import config
 import os
 import shutil
 import time
 from typing import *
+
+from dgODE import config
+
 logging_handler = None
 
 
@@ -19,7 +21,7 @@ def log_it(function):
     logger.addHandler(logging_handler)
 
     def debug_wrapper(*args, **kwargs):
-        logger.info("Now entering function {} with arguments {} and\
+        logger.info("Now entering function {} with arguments {} and \
 keyword arguments {}".format(function.__name__, args, kwargs))
         started = time.time()
         output = function(*args, **kwargs)

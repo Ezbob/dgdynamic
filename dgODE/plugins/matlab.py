@@ -5,11 +5,12 @@ import enum
 import sys
 
 import matlab.engine
-from src.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
-from src.converters.matlab_converter import get_matlab_lambda
-from src.mod_interface.ode_generator import dgODESystem
-from config import SupportedSolvers
-from src.utils.project_utils import LogMixin
+
+from dgODE.config import SupportedSolvers
+from dgODE.converters.matlab_converter import get_matlab_lambda
+from dgODE.mod_interface.ode_generator import dgODESystem
+from dgODE.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
+from dgODE.utils.project_utils import LogMixin
 
 
 class MatlabOdeSolvers(enum.Enum):
