@@ -1,6 +1,7 @@
 import sympy as sp
+
+from dgODE.ode_generator import dgODESystem
 from .converter import substitute, get_parameter_map
-from ..mod_interface.ode_generator import dgODESystem
 
 
 def get_scipy_lambda(abstract_system: dgODESystem, parameter_substitutions=None):

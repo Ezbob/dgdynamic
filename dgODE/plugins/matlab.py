@@ -8,7 +8,7 @@ import matlab.engine
 
 from dgODE.config import SupportedSolvers
 from dgODE.converters.matlab_converter import get_matlab_lambda
-from dgODE.mod_interface.ode_generator import dgODESystem
+from dgODE.ode_generator import dgODESystem
 from dgODE.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from dgODE.utils.project_utils import LogMixin
 

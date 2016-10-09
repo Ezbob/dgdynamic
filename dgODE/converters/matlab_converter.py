@@ -1,5 +1,5 @@
+from dgODE.ode_generator import dgODESystem
 from .converter import DefaultFunctionSymbols, substitute, get_parameter_map
-from ..mod_interface.ode_generator import dgODESystem
 
 
 class MatlabSymbols(DefaultFunctionSymbols):

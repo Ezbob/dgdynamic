@@ -6,7 +6,7 @@ import sympy as sp
 
 import dgODE.utils.project_utils as utils
 from dgODE.config import SupportedSolvers
-from .reaction_parser import parse
+from dgODE.converters.reaction_parser import parse
 
 
 class dgODESystem:

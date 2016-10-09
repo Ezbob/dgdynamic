@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import sympy as sp
 
 from dgODE import config
-from dgODE.mod_interface.ode_generator import dgODESystem
+from dgODE.ode_generator import dgODESystem
 from dgODE.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
 
 

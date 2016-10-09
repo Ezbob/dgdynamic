@@ -2,9 +2,9 @@
 This module contains stuff relevant for all converters
 """
 from io import StringIO
-from typing import Dict, Tuple
-from ..mod_interface.ode_generator import dgODESystem
-from collections import Iterable
+from typing import Tuple
+
+from dgODE.ode_generator import dgODESystem
 from ..utils.project_utils import log_it
 
 

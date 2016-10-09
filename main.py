@@ -1,9 +1,10 @@
 import mod
 import numpy
 
-from dgODE.mod_interface.ode_generator import dgODESystem
+from dgODE.ode_generator import dgODESystem
 from dgODE.plugins.scipy import ScipyOdeSolvers
 from dgODE.utils.project_utils import set_logging
+
 # Enable logging when uncommented
 set_logging()
 
