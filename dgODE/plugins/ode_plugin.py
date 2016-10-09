@@ -22,9 +22,9 @@ def sanity_check(plugin_instance, initial_values):
         raise ValueError("First value exceeds second in integration range")
     elif initial_values is None:
         raise ValueError("No valid or no initial condition values where given")
-    elif len(initial_values) < plugin_instance.ode_count:
+    elif len(initial_values) - initial_values.count(None) < plugin_instance.ode_count:
         raise ValueError("Not enough initial values given")
-    elif len(initial_values) > plugin_instance.ode_count:
+    elif len(initial_values) - initial_values.count(None) > plugin_instance.ode_count:
         raise ValueError("Too many initial values given")
     elif plugin_instance.parameters is None:
         raise ValueError("Parameters not set")
