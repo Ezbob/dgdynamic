@@ -28,6 +28,9 @@ def sanity_check(plugin_instance, initial_values):
         raise ValueError("Too many initial values given")
     elif plugin_instance.parameters is None:
         raise ValueError("Parameters not set")
+    elif len(plugin_instance.parameters) != plugin_instance._reaction_count:
+        raise ValueError("Expected {} parameter values, have {}".format(plugin_instance._reaction_count,
+                                                                       len(plugin_instance.parameters)))
 
 
 def _match_and_set_on_commonprefix(translater_dict: dict, prefix: str, value: Types.Real, results: list):
@@ -71,26 +74,23 @@ class OdePlugin(metaclass=ABCMeta):
 
         if type(function) is dgODESystem:
             self.ode_count = function.species_count
+            self._reaction_count = function.reaction_count
             self._symbols = function.symbols
+            self._abstract_system = function
             self.ignored_count = len(function.ignored)
             self._ignored = function.ignored
+            self._user_function = None
         else:
             self._ignored = ()
             self.ignored_count = 0
+            self._reaction_count = None
             self.ode_count = species_count
-
-        self.initial_t = initial_t
-        self._ode_solver = solver_method
-
-        if type(function) is dgODESystem:
-            self._abstract_system = function
-            self._symbols = function.symbols
-            self._user_function = None
-        else:
             self._abstract_system = None
             self._symbols = None
             self._user_function = function
 
+        self.initial_t = initial_t
+        self._ode_solver = solver_method
         self.delta_t = delta_t
         self.parameters = parameters
         self.initial_condition_prefix_match = False
