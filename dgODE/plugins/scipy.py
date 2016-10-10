@@ -64,7 +64,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 return None
 
             self.logger.debug("Solving finished using fixed step integration")
-            return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored)
+            return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored, solver_instance=self)
 
         def variable_step_integration():
 
@@ -82,7 +82,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 return None
 
             self.logger.debug("Solving finished using variable step integration")
-            return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored)
+            return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored, solver_instance=self)
 
         if self._ode_solver is ScipyOdeSolvers.DOP853 or self._ode_solver is ScipyOdeSolvers.DOPRI5:
             return variable_step_integration()

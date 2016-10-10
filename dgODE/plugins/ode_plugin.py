@@ -5,7 +5,7 @@ from enum import Enum
 from os.path import commonprefix
 from typing import Union, Dict, Tuple, Callable
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pyplt
 import sympy as sp
 
 from dgODE import config
@@ -28,9 +28,13 @@ def sanity_check(plugin_instance, initial_values):
         raise ValueError("Too many initial values given")
     elif plugin_instance.parameters is None:
         raise ValueError("Parameters not set")
-    elif len(plugin_instance.parameters) != plugin_instance._reaction_count:
+    elif plugin_instance._reaction_count != _count_parameters(plugin_instance.parameters):
         raise ValueError("Expected {} parameter values, have {}".format(plugin_instance._reaction_count,
-                                                                       len(plugin_instance.parameters)))
+                                                                        _count_parameters(plugin_instance.parameters)))
+
+
+def _count_parameters(parameters):
+    return sum(2 if "<=>" in reaction_string else 1 for reaction_string in parameters.keys())
 
 
 def _match_and_set_on_commonprefix(translater_dict: dict, prefix: str, value: Types.Real, results: list):
@@ -146,13 +150,18 @@ class OdeOutput(LogMixin):
     ODE plugins. It is the responsibility of the individual ODE plugin to produce a set of independent and dependent
      variables that has the right type format for the printing and plotting methods.
     """
-    def __init__(self, solved_by, dependent, independent, ignore=()):
+    def __init__(self, solved_by, dependent, independent, ignore=(), solver_instance=None):
         self.dependent = dependent
         self.independent = independent
         self.solver_used = solved_by
         self._data_filename = "data"
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config.DATA_DIRECTORY)
+
+        if solver_instance is not None and hasattr(solver_instance, "_abstract_system"):
+            self.symbols = tuple(solver_instance._abstract_system.symbols.values())
+        else:
+            self.symbols = None
 
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
@@ -165,41 +174,54 @@ class OdeOutput(LogMixin):
         if len(self.dependent) == 0 or len(self.independent) == 0:
             raise ValueError("No or mismatched data")
 
+        # let get a subplot that fill the whole figure area
+        plt = pyplt.subplot(111)
+
         lines = plt.plot(self.independent, tuple(self._filter_out_ignores()), linestyle)
-        plt.tight_layout()
+        pyplt.tight_layout()
 
         if axis_labels is not None:
-            assert isinstance(axis_labels, (tuple,list))
+            assert isinstance(axis_labels, (tuple, list))
             assert len(axis_labels) >= 2
             assert isinstance(axis_labels[0], str) and isinstance(axis_labels[1], str)
             plt.xlabel(axis_labels[0])
             plt.ylabel(axis_labels[1])
+
         if labels is not None:
             assert len(labels) >= len(lines)
-            for index, line in enumerate(lines):
-                line.set_label(labels[index])
-                if index > 20 and index <= 30:
-                    line.set_linestyle('dashed')
-                elif index > 30 and index <= 40:
-                    line.set_linestyle('dashdot')
-                elif index > 40 and index <= 50:
-                    line.set_linestyle('dotted')
+        else:
+            labels = self.symbols
 
-            plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=legend_columns)
+        for index, line in enumerate(lines):
+            line.set_label(labels[index])
+            if 20 < index <= 30:
+                line.set_linestyle('dashed')
+            elif 30 < index <= 40:
+                line.set_linestyle('dashdot')
+            elif 40 < index <= 50:
+                line.set_linestyle('dotted')
+
+        # shrinking the box so there is space for the left box
+        box = plt.get_position()
+        plt.set_position([box.x0, box.y0, box.width * 0.84, box.height])
+
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+        print(box.width / len(plt.get_legend_handles_labels()[1]))
 
         if figure_size is not None:
             assert len(figure_size) >= 2
 
             def cm2inch(number): return number / 2.54
 
-            fig = plt.gcf()
+            fig = pyplt.gcf()
             fig.set_size_inches(cm2inch(figure_size[0]), cm2inch(figure_size[1]), forward=True)
 
-        plt.title(self.solver_used.value)
+        pyplt.title(self.solver_used.value)
         if filename is None or type(filename) is not str:
-            plt.show()
+            pyplt.show()
         else:
-            plt.savefig(filename, bbox_inches='tight')
+            pyplt.savefig(filename, bbox_inches='tight')
         return self
 
     def _get_file_prefix(self, name, extension=".tsv", prefix=None):
