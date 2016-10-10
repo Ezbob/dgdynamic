@@ -5,6 +5,7 @@ from enum import Enum
 from os.path import commonprefix
 from typing import Union, Dict, Tuple, Callable
 
+import math
 import matplotlib.pyplot as pyplt
 import sympy as sp
 
@@ -115,7 +116,6 @@ class OdePlugin(metaclass=ABCMeta):
         self._ode_solver = solver
 
     def set_integration_range(self, *range_tuple: Tuple[int, int]):
-        arg = []
         if isinstance(range_tuple, tuple):
             if type(range_tuple[0]) is tuple:
                 self.integration_range = range_tuple[0]
@@ -204,10 +204,9 @@ class OdeOutput(LogMixin):
         # shrinking the box so there is space for the left box
         box = plt.get_position()
         plt.set_position([box.x0, box.y0, box.width * 0.84, box.height])
+        _, labels = plt.get_legend_handles_labels()
 
-        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-
-        print(box.width / len(plt.get_legend_handles_labels()[1]))
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=math.ceil(len(labels) / 32.))
 
         if figure_size is not None:
             assert len(figure_size) >= 2
