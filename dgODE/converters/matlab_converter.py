@@ -1,5 +1,6 @@
 from dgODE.ode_generator import dgODESystem
 from .converter import DefaultFunctionSymbols, substitute, get_parameter_map
+import sympy as sp
 
 
 class MatlabSymbols(DefaultFunctionSymbols):
@@ -22,7 +23,7 @@ def get_matlab_lambda(abstract_ode_system: dgODESystem, parameter_substitutions=
     """
     parameter_map = get_parameter_map(abstract_ode_system, parameter_substitutions)
 
-    substitute_me = {value: "y({})".format(key + 1) for key, value in enumerate(abstract_ode_system.symbols.values())}
+    substitute_me = {value: sp.Symbol("y({})".format(key + 1)) for key, value in enumerate(abstract_ode_system.symbols.values())}
 
     return substitute(abstract_ode_system.generate_equations(), parameter_map, symbol_map=substitute_me,
                       extra_symbols=MatlabSymbols(), postprocessor=_postprocessor)
