@@ -166,7 +166,7 @@ class OdeOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, filename=None, linestyle='-', labels=None, figure_size=None, axis_labels=None, legend_columns=1):
+    def plot(self, filename=None, linestyle='-', labels=None, figure_size=None, axis_labels=None):
         """
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
@@ -177,7 +177,8 @@ class OdeOutput(LogMixin):
         # let get a subplot that fill the whole figure area
         plt = pyplt.subplot(111)
 
-        lines = plt.plot(self.independent, tuple(self._filter_out_ignores()), linestyle)
+        lines = plt.plot(self.independent, self.dependent, linestyle)
+
         pyplt.tight_layout()
 
         if axis_labels is not None:
@@ -193,7 +194,9 @@ class OdeOutput(LogMixin):
             labels = self.symbols
 
         for index, line in enumerate(lines):
-            if index not in self._ignored:
+            if index in self._ignored:
+                line.remove()
+            else:
                 line.set_label(labels[index])
             if 20 < index <= 30:
                 line.set_linestyle('dashed')
@@ -238,7 +241,7 @@ class OdeOutput(LogMixin):
                     filtered_row += (item,)
             yield filtered_row
 
-    def save(self, name=None, float_precision=12, prefix=None, unfiltered=False):
+    def save(self, name=None, float_precision=12, prefix=None, unfiltered=False, stream=None):
         """
         Saves the independent and dependent variables as a Tab Separated Variables(TSV) file in the directory specified
         by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
@@ -271,39 +274,42 @@ class OdeOutput(LogMixin):
         new_filename = self._get_file_prefix(name, prefix=prefix)
         self.logger.info("Saving data as {}".format(new_filename))
 
-        with open(new_filename, mode='w') as fileout:
+        if stream is None:
+            stream = open(new_filename, mode='w')
+
+        with stream as out:
             # writing header underscore prefix marks that the columns where constant in the integration process
-            fileout.write("t\t")
+            out.write("t\t")
             for j in range(0, dependent_dimension - 1):
                 if unfiltered and j in self._ignored:
-                    fileout.write("_y{}\t".format(j))
+                    out.write("_y{}\t".format(j))
                 else:
-                    fileout.write("y{}\t".format(j))
+                    out.write("y{}\t".format(j))
 
             if dependent_dimension - 1 in self._ignored:
-                fileout.write("_y{}\n".format(dependent_dimension - 1))
+                out.write("_y{}\n".format(dependent_dimension - 1))
             else:
-                fileout.write("y{}\t".format(dependent_dimension - 1))
+                out.write("y{}\t".format(dependent_dimension - 1))
 
             # now for the data
             for independent, dependent in paired_data:
                 # here the dimension of the independent variable is assumed to be 1 since it's a ODE
-                fileout.write("{:.{}f}\t".format(independent, float_precision))
+                out.write("{:.{}f}\t".format(independent, float_precision))
 
                 try:
                     for index, variable in enumerate(dependent):
                         if index < dependent_dimension - 1:
-                            fileout.write("{:.{}f}\t".format(variable, float_precision))
+                            out.write("{:.{}f}\t".format(variable, float_precision))
                         else:
-                            fileout.write("{:.{}f}".format(variable, float_precision))
+                            out.write("{:.{}f}".format(variable, float_precision))
                 except TypeError:
                     self.logger.warning("Dependent variable is not iterable")
                     try:
-                        fileout.write("{:.{}f}".format(dependent, float_precision))
+                        out.write("{:.{}f}".format(dependent, float_precision))
                     finally:
                         self.logger.exception("Could not write dependent variable to file")
-                        fileout.close()
+                        out.close()
                         raise FloatingPointError("Could not write dependent variable to file")
 
-                fileout.write("\n")
+                out.write("\n")
         return self
