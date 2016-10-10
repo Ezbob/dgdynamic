@@ -1,18 +1,20 @@
+"""
+(F)oxes and (R)abbits; prey-predator model.
+    Rabbits eat grass and multiples
+    Foxes hunt and eat rabbits and multiples
+    Foxes also dies of old age
+"""
 import mod
 
 from dgODE.config import SupportedSolvers
 from dgODE.ode_generator import dgODESystem
 from dgODE.plugins.scipy import ScipyOdeSolvers
-import random
 
-# Enable logging when uncommented
-# set_logging(new_session=True)
-
-rabbit_grows = "R -> 2 R\n"
+rabbit_multiples = "R -> 2 R\n"
 foxes_hunts = "R + F -> F + F\n"
 foxes_dies = "F -> D\n"
 
-whole = rabbit_grows + foxes_hunts + foxes_dies
+whole = rabbit_multiples + foxes_hunts + foxes_dies
 
 dg = mod.dgAbstract(
     whole
@@ -24,10 +26,9 @@ initial_conditions = {
     'D': 0,
 }
 
-# Specify the mass action parameters for each reaction
 parameters = {
     foxes_hunts: 0.004,
-    rabbit_grows: 0.7,
+    rabbit_multiples: 0.7,
     foxes_dies: 0.5,
 }
 
@@ -35,62 +36,16 @@ integration_range = (0, 100)
 
 ode = dgODESystem(dg).unchanging_species('D')
 
-# Set the species that you wish to remain unchanged in the integration process.
-# Since these species don't contribute they don't get saved or plotted
-#ode.unchanging_species('D')
-
 # Name of the data set
 name = "foxesRabbits"
 
-
-# Get ODE solver plugin for the given abstract reaction system
-# input can be either a entry in the SupportedSolvers enum, or a string (such as "scipy" or "matlab")
-# that contains a recognized plugin name
 scipy_ode = ode.get_ode_plugin(SupportedSolvers.Scipy)
-#matlab_ode = ode.get_ode_plugin(SupportedSolvers.Matlab)
 
-# Set the abstract ode system, but this is already set when using the "get_ode_plugin" method
-# scipy_ode.set_abstract_ode_system(ode)
-
-# Set the solver method from one of the entries in the SciOdeSolvers enumeration
-# If none are selected this default to the VODE method for Scipy
-# The available solvers are (docs: http://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html):
-#    VODE   : Same method as the sundials method
-#    ZVODE  : A variant of the VODE solver that deals with complex numbers
-#    LSODA  : Can automatically handle stiff and non-stiff problems
-#    DOPRI5 : Has dense output and variable time step
-#    DOP853 : Has dense output and variable time step
 scipy_ode.set_ode_solver(ScipyOdeSolvers.VODE)
 
-# Set the time step, default is 0.05
 scipy_ode.delta_t = 0.1
 
-# Set initial t value, default is 0
-scipy_ode.initial_t = 0
+scipy_ode.set_integration_range(integration_range).set_initial_conditions(initial_conditions).set_parameters(parameters)
 
-# Set the integration range. This has to be a tuple of two numbers; a lower bound and a upper bound
-scipy_ode.set_integration_range(integration_range)
-
-# Set the initial conditions
-scipy_ode.set_initial_conditions(initial_conditions)
-
-# Set the parameters
-scipy_ode.set_parameters(parameters)
-
-# Solve the ODE system to get the output object
-output = scipy_ode.solve()
-
-# Save the data to a file in the data folder using the output object
-output.save(name)
-
-# Plot the data using the MatPlotLib, also using the output object
-output.plot(figure_size=(40, 20))
-
-
-# The following solver uses the matlab engine for python to compute the solutions to the ODEs
-# matlab_ode = ode.get_ode_plugin(SupportedSolvers.Matlab, initial_conditions=initial_conditions,
-#                    integration_range=integration_range, parameters=parameters, solver=MatlabOdeSolvers.ode45)
-
-# matlab_ode.solve().save(name).plot() # solve the ODEs, save the output and plot it afterwards
-
+scipy_ode.solve().save(name).plot(figure_size=(40, 20))
 

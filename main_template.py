@@ -101,7 +101,7 @@ output = scipy_ode.solve()
 output.save(name)
 
 # Plot the data using the MatPlotLib, also using the output object
-output.plot("plot.svg", figure_size=(40, 20), labels=('Cycle 1', 'Cycle 2'))
+output.plot("plot.svg", figure_size=(40, 20))
 
 
 # The following solver uses the matlab engine for python to compute the solutions to the ODEs
