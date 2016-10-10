@@ -266,7 +266,10 @@ class OdeOutput(LogMixin):
 
         dependent_dimension = 0
         try:
-            dependent_dimension = abs(len(self.dependent[0]) - len(self._ignored))
+            if unfiltered:
+                dependent_dimension = len(self.dependent[0])
+            else:
+                dependent_dimension = abs(len(self.dependent[0]) - len(self._ignored))
             self.logger.debug("Dimension of the dependent variable is {}".format(dependent_dimension))
         except TypeError:
             self.logger.warn("Dimension of the dependent variable could not be determined; defaulting to 0")
@@ -289,7 +292,7 @@ class OdeOutput(LogMixin):
             if dependent_dimension - 1 in self._ignored:
                 out.write("_y{}\n".format(dependent_dimension - 1))
             else:
-                out.write("y{}\t".format(dependent_dimension - 1))
+                out.write("y{}\n".format(dependent_dimension - 1))
 
             # now for the data
             for independent, dependent in paired_data:

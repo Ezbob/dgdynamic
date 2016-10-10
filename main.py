@@ -68,4 +68,4 @@ solver.set_ode_solver(ScipyOdeSolvers.LSODA)
 
 solver.delta_t = 0.1
 
-solver.solve().plot(figure_size=(60, 30))
+solver.solve().save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))
