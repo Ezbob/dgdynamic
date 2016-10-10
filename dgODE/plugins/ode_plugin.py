@@ -8,6 +8,7 @@ from typing import Union, Dict, Tuple, Callable
 import math
 import matplotlib.pyplot as pyplt
 import sympy as sp
+import numpy as np
 
 from dgODE import config
 from dgODE.ode_generator import dgODESystem
@@ -166,7 +167,7 @@ class OdeOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, filename=None, linestyle='-', labels=None, figure_size=None, axis_labels=None):
+    def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None):
         """
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
@@ -177,7 +178,7 @@ class OdeOutput(LogMixin):
         # let get a subplot that fill the whole figure area
         plt = pyplt.subplot(111)
 
-        lines = plt.plot(self.independent, self.dependent, linestyle)
+        lines = plt.plot(self.independent, self.dependent)
 
         pyplt.tight_layout()
 
