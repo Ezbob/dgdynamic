@@ -193,7 +193,8 @@ class OdeOutput(LogMixin):
             labels = self.symbols
 
         for index, line in enumerate(lines):
-            line.set_label(labels[index])
+            if index not in self._ignored:
+                line.set_label(labels[index])
             if 20 < index <= 30:
                 line.set_linestyle('dashed')
             elif 30 < index <= 40:
@@ -237,7 +238,7 @@ class OdeOutput(LogMixin):
                     filtered_row += (item,)
             yield filtered_row
 
-    def save(self, name=None, float_precision=12, prefix=None):
+    def save(self, name=None, float_precision=12, prefix=None, unfiltered=False):
         """
         Saves the independent and dependent variables as a Tab Separated Variables(TSV) file in the directory specified
         by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
@@ -253,7 +254,11 @@ class OdeOutput(LogMixin):
             raise ValueError("No or mismatched data")
         self._data_filename = name if name is not None and type(name) is str else self._data_filename
 
-        paired_data = zip(self.independent, self._filter_out_ignores())
+        if unfiltered:
+            paired_data = zip(self.independent, self.dependent)
+        else:
+            paired_data = zip(self.independent, self._filter_out_ignores())
+
         make_directory(config.DATA_DIRECTORY, pre_delete=False)
 
         dependent_dimension = 0
@@ -267,11 +272,18 @@ class OdeOutput(LogMixin):
         self.logger.info("Saving data as {}".format(new_filename))
 
         with open(new_filename, mode='w') as fileout:
-            # writing header
+            # writing header underscore prefix marks that the columns where constant in the integration process
             fileout.write("t\t")
             for j in range(0, dependent_dimension - 1):
-                fileout.write("y{}\t".format(j))
-            fileout.write("y{}\n".format(dependent_dimension - 1))
+                if unfiltered and j in self._ignored:
+                    fileout.write("_y{}\t".format(j))
+                else:
+                    fileout.write("y{}\t".format(j))
+
+            if dependent_dimension - 1 in self._ignored:
+                fileout.write("_y{}\n".format(dependent_dimension - 1))
+            else:
+                fileout.write("y{}\t".format(dependent_dimension - 1))
 
             # now for the data
             for independent, dependent in paired_data:
