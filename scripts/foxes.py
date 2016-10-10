@@ -9,6 +9,9 @@ import mod
 from dgODE.config import SupportedSolvers
 from dgODE.ode_generator import dgODESystem
 from dgODE.plugins.scipy import ScipyOdeSolvers
+from dgODE.utils.logger import set_logging
+
+set_logging()
 
 rabbit_multiples = "R -> 2 R\n"
 foxes_hunts = "R + F -> F + F\n"

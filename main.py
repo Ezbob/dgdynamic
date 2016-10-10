@@ -3,17 +3,17 @@ import numpy
 
 from dgODE.ode_generator import dgODESystem
 from dgODE.plugins.scipy import ScipyOdeSolvers
-from dgODE.utils.project_utils import set_logging
-
-# Enable logging when uncommented
-set_logging()
 
 root_symbol = 'A'
 species_limit = 60
 dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
 
-integration_range = (0, 20)
+integration_range = (0, 50)
+
+disabled_reactions = [
+    (1, 1)
+]
 
 
 def get_symbols():
@@ -23,26 +23,29 @@ def get_symbols():
 def get_reactions():
     for i in range(1, dimension_limit):
         for j in range(1, dimension_limit):
-            if i <= j:
+            it = (i == i_disabled and j == j_disabled for i_disabled, j_disabled in disabled_reactions)
+            if i <= j and not any(it):
                 yield "{0}{1} + {0}{2} <=> {0}{3}".format(root_symbol, i, j, i + j)
+
+print("A1 + A1 <=> A2" in tuple(get_reactions()))
 
 reactions = "\n".join(get_reactions())
 
 initial_conditions = {}
 
 for symbol in get_symbols():
-    initial_conditions[symbol] = 0.05
+    initial_conditions[symbol] = 0.0005
 
-initial_conditions['A1'] = 0.8
+initial_conditions['A1'] = 0.9
 
 parameters = {}
 
 # Here the <- direction of the edge means tweaking the decomposition rate
 # And -> direction means the tweaking the rate of synthesis
-for reaction in get_reactions():
-    parameters[reaction] = {'<-': 0.002, '->': 1}
+# k_s and k_d marks the rate of synthesis and decomposition
 
-parameters['A1 + A1 <=> A2'] = 0
+for reaction in get_reactions():
+    parameters[reaction] = 0.5
 
 
 dg = mod.dgAbstract(reactions)
@@ -57,7 +60,7 @@ solver.set_parameters(parameters)
 solver.set_initial_conditions(initial_conditions)
 solver.set_ode_solver(ScipyOdeSolvers.DOPRI5)
 
-solver.solve().plot("plot.svg", figure_size=(60, 30), labels=tuple(get_symbols()), legend_columns=2)
+solver.solve().plot(figure_size=(60, 30))
 
 #
 # # Set the species that you wish to remain unchanged in the integration process.
