@@ -254,7 +254,7 @@ class OdeOutput(LogMixin):
                     filtered_row += (item,)
             yield filtered_row
 
-    def save(self, name=None, float_precision=12, prefix=None, unfiltered=False, stream=None, asDaemon=False):
+    def save(self, name=None, float_precision=12, prefix=None, unfiltered=False, stream=None):
         """
         Saves the independent and dependent variables as a Tab Separated Variables(TSV) file in the directory specified
         by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
@@ -336,7 +336,6 @@ class OdeOutput(LogMixin):
             self.logger.info("Finished writing to disk. Took: {} secs".format(end_t - start_t))
 
         self._file_writer_thread = threading.Thread(target=write_data)
-        self._file_writer_thread.setDaemon(asDaemon)
         self._file_writer_thread.start()
 
         return self
