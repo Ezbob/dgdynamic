@@ -16,7 +16,7 @@ dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
 theta = numpy.nextafter(max_concentration, 0)
 
-integration_range = (0, 4)
+integration_range = (0, 600)
 
 # Exclude every A_3i species
 banned_set = (3 * i for i in range(species_limit))
@@ -61,9 +61,18 @@ parameters = {}
 for index, reaction in enumerate(get_reactions()):
     parameters[reaction] = {'<-': k_d, '->': k_s}
 
+fluxes = {}
+for index, symbol in enumerate(get_symbols()):
+    fluxes["{}{}".format(root_symbol, index + 1)] = "-0.01 * {}{}".format(root_symbol, index + 1)
+
+fluxes["A1"] = "0.4 * (10000 - A1)"
+
+
 dg = mod.dgAbstract(reactions)
 
-ode = dgODESystem(dg)
+ode = dgODESystem(dg).add_flux_terms(fluxes)
+
+tuple(ode.generate_equations())
 
 solver = ode.get_ode_plugin("scipy")
 
@@ -72,15 +81,15 @@ solver.set_parameters(parameters)
 solver.set_initial_conditions(initial_conditions)
 solver.set_ode_solver(ScipyOdeSolvers.LSODA)
 
-solver.delta_t = 0.08
+solver.delta_t = 0.1
 
 solver.solve().plot(figure_size=(60, 30))
-
-solver = ode.get_ode_plugin('matlab')
-
-solver.set_integration_range(integration_range)\
-    .set_parameters(parameters)\
-    .set_initial_conditions(initial_conditions)
-solver.set_ode_solver(MatlabOdeSolvers.ode23)
-
-solver.solve().plot(figure_size=(60, 30))
+#
+# solver = ode.get_ode_plugin('matlab')
+#
+# solver.set_integration_range(integration_range)\
+#     .set_parameters(parameters)\
+#     .set_initial_conditions(initial_conditions)
+# solver.set_ode_solver(MatlabOdeSolvers.ode23)
+#
+# solver.solve().plot(figure_size=(60, 30))

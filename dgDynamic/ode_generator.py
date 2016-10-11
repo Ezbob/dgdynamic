@@ -1,9 +1,7 @@
 import functools as ft
 from collections import OrderedDict
 from typing import Union, Tuple
-
 import sympy as sp
-
 import dgDynamic.utils.project_utils as utils
 from dgDynamic.config import SupportedSolvers
 from dgDynamic.converters.reaction_parser import parse
@@ -24,6 +22,7 @@ class dgODESystem:
 
         self.graph = graph
         self.ignored = tuple()
+        self.flux_terms = dict()
 
         # every vertex in the deviation graph gets a mapping from it's id to the corresponding SymPy Symbol
         self.symbols = OrderedDict(((vertex.id, sp.Symbol(vertex.graph.name)) for vertex in self.graph.vertices))
@@ -83,6 +82,10 @@ class dgODESystem:
                     for target_vertex in reaction_edge.targets:
                         if vertex.id == target_vertex.id:
                             sub_result += left_hand_sides[reaction_index]
+
+                if vertex.graph.name in self.flux_terms:
+                    sub_result += self.flux_terms[vertex.graph.name]
+
                 yield vertex.graph.name, sub_result
 
     def unchanging_species(self, *species: Union[str, sp.Symbol, utils.ProjectTypeHints.Countable_Sequence]):
@@ -92,10 +95,10 @@ class dgODESystem:
         :return:
         """
         if len(self.ignored) < self.species_count:
-            if type(species) is str:
+            if isinstance(species, str):
                 self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
                                      if sp.Symbol(species) == item)
-            elif type(species) is sp.Symbol:
+            elif isinstance(species, sp.Symbol):
                 self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
                                      if species == item)
             else:
@@ -103,6 +106,19 @@ class dgODESystem:
                                      for element in species if sp.Symbol(element) == item)
         else:
             self.logger.warn("ignored species count exceeds the count of actual species")
+        return self
+
+    def add_flux_terms(self, flux_terms: dict):
+        for key, val in flux_terms.items():
+            if not isinstance(key, (str,) + tuple(sp.core.all_classes)):
+                raise TypeError("Expected string or sympy expression for key: {}", key)
+            if isinstance(val, str):
+                self.flux_terms[key] = sp.sympify(val)
+            elif isinstance(val, tuple(sp.core.all_classes)):
+                self.flux_terms[key] = val
+            else:
+                raise TypeError("Expected values to be a string or a sympy expression")
+
         return self
 
     def parse_abstract_reaction(self, reaction: str) -> Union[object, Tuple[object,object]]:
