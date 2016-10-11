@@ -10,9 +10,9 @@ import matplotlib.pyplot as pyplt
 import sympy as sp
 import threading
 
-from dgODE import config
-from dgODE.ode_generator import dgODESystem
-from dgODE.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
+from dgDynamic import config
+from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
 import time
 
 

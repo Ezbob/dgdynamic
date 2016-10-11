@@ -6,10 +6,10 @@
 """
 import mod
 
-from dgODE.config import SupportedSolvers
-from dgODE.ode_generator import dgODESystem
-from dgODE.plugins.scipy import ScipyOdeSolvers
-from dgODE.utils.logger import set_logging
+from dgDynamic.config import SupportedSolvers
+from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.plugins.scipy import ScipyOdeSolvers
+from dgDynamic.utils.logger import set_logging
 
 set_logging()
 

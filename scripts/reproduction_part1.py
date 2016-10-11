@@ -5,8 +5,8 @@ Here we numerically solve for the first-order autocatalytic cycles as described 
 import mod
 import numpy
 
-from dgODE.ode_generator import dgODESystem
-from dgODE.plugins.scipy import ScipyOdeSolvers
+from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.plugins.scipy import ScipyOdeSolvers
 
 root_symbol = 'A'
 species_limit = 60

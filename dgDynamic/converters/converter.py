@@ -4,7 +4,7 @@ This module contains stuff relevant for all converters
 from io import StringIO
 from typing import Tuple
 
-from dgODE.ode_generator import dgODESystem
+from dgDynamic.ode_generator import dgODESystem
 from ..utils.project_utils import log_it
 
 

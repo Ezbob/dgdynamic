@@ -3,10 +3,10 @@ from enum import Enum
 
 from scipy.integrate import ode
 
-from dgODE.config import SupportedSolvers
-from dgODE.converters.scipy_converter import get_scipy_lambda
-from dgODE.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
-from dgODE.utils.project_utils import LogMixin
+from dgDynamic.config import SupportedSolvers
+from dgDynamic.converters.scipy_converter import get_scipy_lambda
+from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
+from dgDynamic.utils.project_utils import LogMixin
 
 
 class ScipyOdeSolvers(Enum):

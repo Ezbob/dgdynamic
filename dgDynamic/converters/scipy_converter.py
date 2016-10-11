@@ -1,6 +1,6 @@
 import sympy as sp
 
-from dgODE.ode_generator import dgODESystem
+from dgDynamic.ode_generator import dgODESystem
 from .converter import substitute, get_parameter_map
 
 

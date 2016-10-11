@@ -6,11 +6,11 @@ import sys
 
 import matlab.engine
 
-from dgODE.config import SupportedSolvers
-from dgODE.converters.matlab_converter import get_matlab_lambda
-from dgODE.ode_generator import dgODESystem
-from dgODE.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
-from dgODE.utils.project_utils import LogMixin
+from dgDynamic.config import SupportedSolvers
+from dgDynamic.converters.matlab_converter import get_matlab_lambda
+from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
+from dgDynamic.utils.project_utils import LogMixin
 
 
 class MatlabOdeSolvers(enum.Enum):

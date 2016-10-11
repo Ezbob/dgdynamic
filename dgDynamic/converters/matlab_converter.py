@@ -1,4 +1,4 @@
-from dgODE.ode_generator import dgODESystem
+from dgDynamic.ode_generator import dgODESystem
 from .converter import DefaultFunctionSymbols, substitute, get_parameter_map
 import sympy as sp
 

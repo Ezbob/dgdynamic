@@ -1,8 +1,8 @@
 import mod
 
-from dgODE.config import SupportedSolvers
-from dgODE.ode_generator import dgODESystem
-from dgODE.plugins.scipy import ScipyOdeSolvers
+from dgDynamic.config import SupportedSolvers
+from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.plugins.scipy import ScipyOdeSolvers
 
 # Enable logging when uncommented
 # set_logging(new_session=True)

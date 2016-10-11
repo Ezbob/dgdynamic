@@ -1,6 +1,6 @@
 import logging
 import os
-import dgODE.config as config
+import dgDynamic.config as config
 import shutil
 
 logging_handler = None

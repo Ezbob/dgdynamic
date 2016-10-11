@@ -4,9 +4,9 @@ from typing import Union, Tuple
 
 import sympy as sp
 
-import dgODE.utils.project_utils as utils
-from dgODE.config import SupportedSolvers
-from dgODE.converters.reaction_parser import parse
+import dgDynamic.utils.project_utils as utils
+from dgDynamic.config import SupportedSolvers
+from dgDynamic.converters.reaction_parser import parse
 
 
 class dgODESystem:
@@ -41,10 +41,10 @@ class dgODESystem:
 
         def get_plugin_from_enum(enum_variable):
             if enum_variable == SupportedSolvers.Scipy:
-                from dgODE.plugins.scipy import ScipyOde
+                from dgDynamic.plugins.scipy import ScipyOde
                 return ScipyOde(self, *args, **kwargs)
             elif enum_variable == SupportedSolvers.Matlab:
-                from dgODE.plugins.matlab import MatlabOde
+                from dgDynamic.plugins.matlab import MatlabOde
                 return MatlabOde(self, *args, **kwargs)
 
         if type(plugin_name) is str:
