@@ -54,7 +54,14 @@ def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, rea
 
 
 def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None):
+    """
+    Create the parameter mapping
+    :param abstract_system:
+    :param parameter_substitutions:
+    :return:
+    """
 
+    print("Sub in this: ", parameter_substitutions)
     if parameter_substitutions is not None:
 
         if isinstance(parameter_substitutions, dict):
@@ -72,7 +79,10 @@ def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None
                         raise ValueError("Could not find hyper edge for reaction: {}".format(reaction_string))
                 else:
                     if not edges.isNull():
-                        parameter_map[abstract_system.parameters[edges.id]] = parameter_value
+                        if isinstance(parameter_value, (int, float)):
+                            parameter_map[abstract_system.parameters[edges.id]] = parameter_value
+                        else:
+                            raise TypeError("Expected float or int parameter for reaction {}".format(reaction_string))
                     else:
                         raise ValueError("Could not find hyper edge for reaction: {}".format(reaction_string))
 
@@ -99,6 +109,7 @@ def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_ma
      ( f.x.: in the MatLab converter we use the processor function to replace the power operators from ** to ^ )
     :return:
     """
+    print("parameters", parameter_map)
     with StringIO() as eq_system_steam:
 
         eq_system_steam.write(extra_symbols.function_start)

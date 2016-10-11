@@ -1,6 +1,6 @@
 """
 Numerically solving non-linear case as described in the Ikegami et.al. paper
-(Figure 2)
+(Figure 3)
 """
 import mod
 import numpy
@@ -33,6 +33,11 @@ def get_symbols():
 
 
 def get_reactions():
+    yield "FIN -> {}{}".format(root_symbol, 1)
+
+    for i in range(2, species_limit + 2):
+        yield "{}{} -> FOUT{}".format(root_symbol, i, i)
+
     for i in range(1, dimension_limit):
         for j in range(1, dimension_limit):
             is_banned = i in banned_set or j in banned_set or (i + j) in banned_set
@@ -56,12 +61,19 @@ parameters = {}
 # And -> direction means the tweaking the rate of synthesis
 # k_s and k_d marks the rate of synthesis and decomposition
 
-for reaction in get_reactions():
-    parameters[reaction] = {'<-': k_d, '->': k_s}
+for index, reaction in enumerate(get_reactions()):
+    if reaction == "FIN -> A1":
+        parameters[reaction] = 0.4 * 10000
+    elif reaction == "A{0} -> FOUT{0}".format(index):
+        parameters[reaction] = -0.01
+    else:
+        parameters[reaction] = {'<-': k_d, '->': k_s}
 
 dg = mod.dgAbstract(reactions)
 
-ode = dgODESystem(dg)
+print(parameters)
+
+ode = dgODESystem(dg).unchanging_species("FIN", *tuple("FOUT{0}".format(index) for index in range(2, len(parameters))))
 
 solver = ode.get_ode_plugin("scipy")
 
