@@ -6,9 +6,10 @@ from dgODE.plugins.scipy import ScipyOdeSolvers
 
 root_symbol = 'A'
 species_limit = 60
+max_concentration = 1.0
 dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
-theta = numpy.nextafter(1, 0)
+theta = numpy.nextafter(max_concentration, 0)
 
 integration_range = (0, 10000)
 
@@ -20,6 +21,8 @@ disabled_reactions = [
 unchanging_species = (
     'A1',
 )
+
+k_s, k_d = 0.9, 0.9
 
 
 def get_symbols():
@@ -40,7 +43,7 @@ reactions = "\n".join(get_reactions())
 initial_conditions = {}
 
 for symbol in get_symbols():
-    initial_conditions[symbol] = 1.0 - theta
+    initial_conditions[symbol] = max_concentration - theta
 
 initial_conditions['A1'] = theta
 
@@ -51,13 +54,13 @@ parameters = {}
 # k_s and k_d marks the rate of synthesis and decomposition
 
 for reaction in get_reactions():
-    parameters[reaction] = 0.9
+    parameters[reaction] = {'<-': k_d, '->': k_s}
 
+print("K = {}".format(theta * (k_s / k_d)))
 
 dg = mod.dgAbstract(reactions)
 
 ode = dgODESystem(dg).unchanging_species(*unchanging_species)
-
 
 solver = ode.get_ode_plugin("scipy")
 

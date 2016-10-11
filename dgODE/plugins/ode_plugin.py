@@ -175,7 +175,6 @@ class OdeOutput(LogMixin):
         :return: self (chaining enabled)
         """
 
-
         self.logger.info("Started on plotting")
         if len(self.dependent) == 0 or len(self.independent) == 0:
             raise ValueError("No or mismatched data")
@@ -306,20 +305,20 @@ class OdeOutput(LogMixin):
 
         def gen_data_rows():
             for independent, dependent in paired_data:
-                yield "{:.{}f}\t".format(independent, float_precision)
+                result = "{:.{}f}\t".format(independent, float_precision)
                 try:
                     for index, variable in enumerate(dependent):
                         if index < dependent_dimension - 1:
-                            yield "{:.{}f}\t".format(variable, float_precision)
+                            result += "{:.{}f}\t".format(variable, float_precision)
                         else:
-                            yield "{:.{}f}".format(variable, float_precision)
+                            result += "{:.{}f}".format(variable, float_precision)
                 except TypeError:
                     self.logger.warning("Dependent variable is not iterable")
                     try:
-                        yield "{:.{}f}".format(dependent, float_precision)
+                        result += "{:.{}f}".format(dependent, float_precision)
                     finally:
                         self.logger.exception("Could not write dependent variable to file")
-                yield "\n"
+                yield result + "\n"
 
         if stream is None:
             stream = open(new_filename, mode='w')
