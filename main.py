@@ -35,8 +35,8 @@ def get_symbols():
 def get_reactions():
     yield "FIN -> {}{}".format(root_symbol, 1)
 
-    for i in range(2, species_limit + 2):
-        yield "{}{} -> FOUT{}".format(root_symbol, i, i)
+    for i in range(2, species_limit + 1):
+        yield "{0}{1} -> FOUT{1}".format(root_symbol, i)
 
     for i in range(1, dimension_limit):
         for j in range(1, dimension_limit):
@@ -46,13 +46,20 @@ def get_reactions():
 
 print("A1 + A1 <=> A2" in tuple(get_reactions()))
 
+reaction_count = len(tuple(get_reactions()))
 reactions = "\n".join(get_reactions())
 
 initial_conditions = {}
 
+print(reactions)
+
 for symbol in get_symbols():
     initial_conditions[symbol] = 1e-5
 
+for symbol in ("FOUT{}".format(index) for index in range(reaction_count)):
+    initial_conditions[symbol] = 0
+
+initial_conditions['FIN'] = 10000
 initial_conditions['A1'] = 100
 
 parameters = {}
@@ -62,12 +69,12 @@ parameters = {}
 # k_s and k_d marks the rate of synthesis and decomposition
 
 for index, reaction in enumerate(get_reactions()):
-    if reaction == "FIN -> A1":
-        parameters[reaction] = 0.4 * 10000
-    elif reaction == "A{0} -> FOUT{0}".format(index):
+    if "->" in reaction:
         parameters[reaction] = -0.01
     else:
         parameters[reaction] = {'<-': k_d, '->': k_s}
+
+parameters["FIN -> A1"] = 0.4 * 10000
 
 dg = mod.dgAbstract(reactions)
 

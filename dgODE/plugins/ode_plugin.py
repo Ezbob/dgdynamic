@@ -55,17 +55,13 @@ def get_initial_values(initial_conditions, symbols, fuzzy_match=False):
         translate_mapping = {val: index for index, val in enumerate(symbols.values())}
         results = [None] * len(translate_mapping)
         for key, value in initial_conditions.items():
-            try:
-                key_symbol = sp.Symbol(key)
-                if key_symbol in translate_mapping:
-                    results[translate_mapping[key_symbol]] = value
-                elif fuzzy_match:
-                    _match_and_set_on_commonprefix(translate_mapping, key, value, results)
-                else:
-                    raise KeyError(key_symbol)
-            except KeyError as error:
-                raise KeyError("Unknown initial value for symbol: {}".format(", ".join(map(str, error.args))))
-
+            key_symbol = sp.Symbol(key)
+            if key_symbol in translate_mapping:
+                results[translate_mapping[key_symbol]] = value
+            elif fuzzy_match:
+                _match_and_set_on_commonprefix(translate_mapping, key, value, results)
+            else:
+                raise KeyError("Unknown species in initial value map: {}".format(key_symbol))
         return results
 
 
