@@ -8,7 +8,7 @@ from typing import Union, Dict, Tuple, Callable
 import math
 import matplotlib.pyplot as pyplt
 import sympy as sp
-import numpy as np
+import threading
 
 from dgODE import config
 from dgODE.ode_generator import dgODESystem
@@ -158,6 +158,7 @@ class OdeOutput(LogMixin):
         self._data_filename = "data"
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config.DATA_DIRECTORY)
+        self._file_writer_thread = None
 
         if solver_instance is not None and hasattr(solver_instance, "_abstract_system"):
             self.symbols = tuple(solver_instance._abstract_system.symbols.values())
@@ -275,45 +276,51 @@ class OdeOutput(LogMixin):
         except TypeError:
             self.logger.warn("Dimension of the dependent variable could not be determined; defaulting to 0")
 
+        def header_row():
+            header = "t\t"
+            for j in range(0, dependent_dimension):
+                if unfiltered and j in self._ignored:
+                    header += "_y{}".format(j)
+                else:
+                    header += "y{}".format(j)
+
+                if j < dependent_dimension - 1:
+                    header += "\t"
+            header += "\n"
+            return header
+
         new_filename = self._get_file_prefix(name, prefix=prefix)
         self.logger.info("Saving data as {}".format(new_filename))
+
+        def gen_data_rows():
+            for independent, dependent in paired_data:
+                yield "{:.{}f}\t".format(independent, float_precision)
+                try:
+                    for index, variable in enumerate(dependent):
+                        if index < dependent_dimension - 1:
+                            yield "{:.{}f}\t".format(variable, float_precision)
+                        else:
+                            yield "{:.{}f}".format(variable, float_precision)
+                except TypeError:
+                    self.logger.warning("Dependent variable is not iterable")
+                    try:
+                        yield "{:.{}f}".format(dependent, float_precision)
+                    finally:
+                        self.logger.exception("Could not write dependent variable to file")
+                yield "\n"
 
         if stream is None:
             stream = open(new_filename, mode='w')
 
-        with stream as out:
-            # writing header underscore prefix marks that the columns where constant in the integration process
-            out.write("t\t")
-            for j in range(0, dependent_dimension - 1):
-                if unfiltered and j in self._ignored:
-                    out.write("_y{}\t".format(j))
-                else:
-                    out.write("y{}\t".format(j))
+        def write_data():
+            with stream as out:
+                # writing header underscore prefix marks that the columns where constant in the integration process
+                out.write(header_row())
 
-            if dependent_dimension - 1 in self._ignored:
-                out.write("_y{}\n".format(dependent_dimension - 1))
-            else:
-                out.write("y{}\n".format(dependent_dimension - 1))
+                for row in gen_data_rows():
+                    out.write(row)
 
-            # now for the data
-            for independent, dependent in paired_data:
-                # here the dimension of the independent variable is assumed to be 1 since it's a ODE
-                out.write("{:.{}f}\t".format(independent, float_precision))
+        self._file_writer_thread = threading.Thread(target=write_data)
+        self._file_writer_thread.start()
 
-                try:
-                    for index, variable in enumerate(dependent):
-                        if index < dependent_dimension - 1:
-                            out.write("{:.{}f}\t".format(variable, float_precision))
-                        else:
-                            out.write("{:.{}f}".format(variable, float_precision))
-                except TypeError:
-                    self.logger.warning("Dependent variable is not iterable")
-                    try:
-                        out.write("{:.{}f}".format(dependent, float_precision))
-                    finally:
-                        self.logger.exception("Could not write dependent variable to file")
-                        out.close()
-                        raise FloatingPointError("Could not write dependent variable to file")
-
-                out.write("\n")
         return self

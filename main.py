@@ -10,7 +10,7 @@ dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
 theta = numpy.nextafter(1, 0)
 
-integration_range = (0, 1500)
+integration_range = (0, 10000)
 
 # this corresponds to setting the r_ij values
 disabled_reactions = [
