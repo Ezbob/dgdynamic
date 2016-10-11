@@ -71,8 +71,6 @@ for index, reaction in enumerate(get_reactions()):
 
 dg = mod.dgAbstract(reactions)
 
-print(parameters)
-
 ode = dgODESystem(dg).unchanging_species("FIN", *tuple("FOUT{0}".format(index) for index in range(2, len(parameters))))
 
 solver = ode.get_ode_plugin("scipy")

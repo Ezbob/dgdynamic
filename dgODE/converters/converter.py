@@ -60,8 +60,6 @@ def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None
     :param parameter_substitutions:
     :return:
     """
-
-    print("Sub in this: ", parameter_substitutions)
     if parameter_substitutions is not None:
 
         if isinstance(parameter_substitutions, dict):
@@ -109,7 +107,6 @@ def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_ma
      ( f.x.: in the MatLab converter we use the processor function to replace the power operators from ** to ^ )
     :return:
     """
-    print("parameters", parameter_map)
     with StringIO() as eq_system_steam:
 
         eq_system_steam.write(extra_symbols.function_start)
