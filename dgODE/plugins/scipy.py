@@ -64,7 +64,8 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 return None
 
             self.logger.debug("Solving finished using fixed step integration")
-            return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution, self._ignored, solver_instance=self)
+            return OdeOutput(SupportedSolvers.Scipy, y_solution, t_solution,
+                             solver_instance=self, ignore=self._ignored)
 
         def variable_step_integration():
 

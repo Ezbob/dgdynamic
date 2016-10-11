@@ -39,7 +39,7 @@ class MatlabOde(OdePlugin, LogMixin):
 
         self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
-        self.logger.debug("Started.")
+        self.logger.debug("MATLAB engine started.")
 
     def solve(self) -> OdeOutput:
         if type(self._abstract_system) is dgODESystem:
@@ -86,7 +86,9 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_rang
             tres = [a for i in tres for a in i]
             yres = convert_matrix(yres)
 
-            return OdeOutput(solved_by=SupportedSolvers.Matlab, dependent=yres, independent=tres, ignore=self._ignored)
+            self.logger.info("Return output object")
+            return OdeOutput(solved_by=SupportedSolvers.Matlab, dependent=yres, independent=tres, ignore=self._ignored,
+                             solver_instance=self)
         else:
             self.logger.debug("Empty ode function. Aborting...")
             return None

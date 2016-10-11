@@ -1,5 +1,5 @@
 """
-Here we numerically solve for the first-order autocatalytic as described in the Ikegami et.al. paper
+Here we numerically solve for the first-order autocatalytic cycles as described in the Ikegami et.al. paper
 """
 
 import mod

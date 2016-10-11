@@ -152,7 +152,7 @@ class OdeOutput(LogMixin):
     ODE plugins. It is the responsibility of the individual ODE plugin to produce a set of independent and dependent
      variables that has the right type format for the printing and plotting methods.
     """
-    def __init__(self, solved_by, dependent, independent, ignore=(), solver_instance=None):
+    def __init__(self, solved_by, dependent, independent, solver_instance, ignore=()):
         self.dependent = dependent
         self.independent = independent
         self.solver_used = solved_by
@@ -161,7 +161,7 @@ class OdeOutput(LogMixin):
         self._path = os.path.abspath(config.DATA_DIRECTORY)
         self._file_writer_thread = None
 
-        if solver_instance is not None and hasattr(solver_instance, "_abstract_system"):
+        if hasattr(solver_instance, "_abstract_system"):
             self.symbols = tuple(solver_instance._abstract_system.symbols.values())
         else:
             self.symbols = None
