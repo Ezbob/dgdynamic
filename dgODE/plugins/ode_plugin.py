@@ -13,6 +13,7 @@ import threading
 from dgODE import config
 from dgODE.ode_generator import dgODESystem
 from dgODE.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
+import time
 
 
 def sanity_check(plugin_instance, initial_values):
@@ -173,13 +174,20 @@ class OdeOutput(LogMixin):
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
         """
+
+
+        self.logger.info("Started on plotting")
         if len(self.dependent) == 0 or len(self.independent) == 0:
             raise ValueError("No or mismatched data")
 
         # let get a subplot that fill the whole figure area
         plt = pyplt.subplot(111)
 
+        self.logger.info("parsing data to matplotlib...")
+        start_t = time.time()
         lines = plt.plot(self.independent, self.dependent)
+        end_t = time.time()
+        self.logger.info("matplotlib parsed. Took {} secs".format(end_t - start_t))
 
         pyplt.tight_layout()
 
@@ -214,6 +222,8 @@ class OdeOutput(LogMixin):
 
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=math.ceil(len(labels) / 32.))
 
+        self.logger.info("Labels are set")
+
         if figure_size is not None:
             assert len(figure_size) >= 2
 
@@ -227,6 +237,8 @@ class OdeOutput(LogMixin):
             pyplt.show()
         else:
             pyplt.savefig(filename, bbox_inches='tight')
+
+        self.logger.info("Done plotting.")
         return self
 
     def _get_file_prefix(self, name, extension=".tsv", prefix=None):
@@ -243,7 +255,7 @@ class OdeOutput(LogMixin):
                     filtered_row += (item,)
             yield filtered_row
 
-    def save(self, name=None, float_precision=12, prefix=None, unfiltered=False, stream=None):
+    def save(self, name=None, float_precision=12, prefix=None, unfiltered=False, stream=None, asDaemon=False):
         """
         Saves the independent and dependent variables as a Tab Separated Variables(TSV) file in the directory specified
         by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
@@ -313,14 +325,19 @@ class OdeOutput(LogMixin):
             stream = open(new_filename, mode='w')
 
         def write_data():
+            self.logger.info("Started on writing data to disk")
+            start_t = time.time()
             with stream as out:
                 # writing header underscore prefix marks that the columns where constant in the integration process
                 out.write(header_row())
 
                 for row in gen_data_rows():
                     out.write(row)
+            end_t = time.time()
+            self.logger.info("Finished writing to disk. Took: {} secs".format(end_t - start_t))
 
         self._file_writer_thread = threading.Thread(target=write_data)
+        self._file_writer_thread.setDaemon(asDaemon)
         self._file_writer_thread.start()
 
         return self
