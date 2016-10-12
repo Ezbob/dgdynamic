@@ -167,12 +167,14 @@ class OdeOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None, timeout=10):
+    def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None, should_wait=True,
+             timeout=10):
         process = Process(target=plot, args=(self.independent, self.dependent, self.symbols, self._ignored,
                                              self.solver_used.value, filename, labels, figure_size, axis_labels,
                                              axis_limits))
         process.start()
-        process.join(timeout=timeout)
+        if should_wait:
+            process.join(timeout=timeout)
         return self
 
     def _get_file_prefix(self, name, extension=".tsv", prefix=None):
