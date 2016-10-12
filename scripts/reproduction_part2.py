@@ -16,7 +16,7 @@ dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
 theta = numpy.nextafter(max_concentration, 0)
 
-integration_range = (0, 50)
+integration_range = (0, 10)
 
 # Exclude every A_3i species
 banned_set = (3 * i for i in range(species_limit))
@@ -25,7 +25,7 @@ banned_set = (3 * i for i in range(species_limit))
 #     'A1',
 # )
 
-k_s = k_d = 0.1
+k_s = k_d = 1
 
 
 def get_symbols():
