@@ -1,7 +1,7 @@
 from typing import Iterable, Tuple, Union
 
 
-def _parse_sides(side: str):
+def _parse_sides(side: str) -> str:
     skip_next = False
     the_splitting = side.split()
     for index, atom in enumerate(the_splitting):
@@ -25,7 +25,7 @@ def _parse_sides(side: str):
             continue
 
 
-def _get_side_vertices(graph: object, side):
+def _get_side_vertices(graph: "mod.mod_.DG", side: str) -> "mod.mod_.DGVertex":
     for sym in _parse_sides(side):
         for vertex in graph.vertices:
             if vertex.graph.name == sym:
@@ -37,7 +37,7 @@ def _break_two_way_deviations(two_way: str) -> Iterable[str]:
     yield " -> ".join(reversed(two_way.split(" <=> ")))
 
 
-def _parse_reaction(graph: object, derivation: str):
+def _parse_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHyperEdge":
     sources, _, targets = derivation.partition(" -> ")
     return graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
 

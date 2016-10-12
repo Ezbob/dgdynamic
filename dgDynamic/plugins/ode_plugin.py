@@ -165,7 +165,7 @@ class OdeOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None):
+    def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None):
         """
         Tries to plot the data using the MatPlotLib
         :return: self (chaining enabled)
@@ -185,6 +185,12 @@ class OdeOutput(LogMixin):
         self.logger.info("matplotlib parsed. Took {} secs".format(end_t - start_t))
 
         pyplt.tight_layout()
+
+        if axis_limits is not None:
+            assert isinstance(axis_limits, (tuple, list))
+            assert len(axis_limits) == 2
+            plt.set_ylim(axis_limits[1])
+            plt.set_xlim(axis_limits[0])
 
         if axis_labels is not None:
             assert isinstance(axis_labels, (tuple, list))

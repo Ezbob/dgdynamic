@@ -21,9 +21,9 @@ integration_range = (0, 4)
 # Exclude every A_3i species
 banned_set = (3 * i for i in range(species_limit))
 
-unchanging_species = (
-    'A1',
-)
+# unchanging_species = (
+#     'A1',
+# )
 
 k_s = k_d = 1
 
@@ -72,7 +72,7 @@ solver.set_ode_solver(ScipyOdeSolvers.LSODA)
 
 solver.delta_t = 0.08
 
-solver.solve().plot(figure_size=(60, 30))
+solver.solve().plot(filename="scipy2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
 
 solver = ode.get_ode_plugin('matlab')
 
@@ -81,4 +81,4 @@ solver.set_integration_range(integration_range)\
     .set_initial_conditions(initial_conditions)
 solver.set_ode_solver(MatlabOdeSolvers.ode45)
 
-solver.solve().plot(figure_size=(60, 30))
+solver.solve().plot(filename="matlab2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
