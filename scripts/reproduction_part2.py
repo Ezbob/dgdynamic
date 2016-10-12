@@ -21,10 +21,6 @@ integration_range = (0, 10)
 # Exclude every A_3i species
 banned_set = (3 * i for i in range(species_limit))
 
-# unchanging_species = (
-#     'A1',
-# )
-
 k_s = k_d = 1
 
 
