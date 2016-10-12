@@ -108,7 +108,7 @@ class dgODESystem:
             self.logger.warn("ignored species count exceeds the count of actual species")
         return self
 
-    def add_flux_terms(self, flux_terms: dict):
+    def add_terms(self, flux_terms: dict):
         for key, val in flux_terms.items():
             if not isinstance(key, (str,) + tuple(sp.core.all_classes)):
                 raise TypeError("Expected string or sympy expression for key: {}", key)

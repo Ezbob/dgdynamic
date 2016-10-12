@@ -70,7 +70,7 @@ fluxes["A1"] = "0.4 * (10000 - A1)"
 
 dg = mod.dgAbstract(reactions)
 
-ode = dgODESystem(dg).add_flux_terms(fluxes)
+ode = dgODESystem(dg).add_terms(fluxes)
 
 tuple(ode.generate_equations())
 
