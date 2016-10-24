@@ -6,8 +6,6 @@ from os.path import commonprefix
 from typing import Union, Dict, Tuple, Callable
 from multiprocessing import Process
 
-import math
-import matplotlib.pyplot as pyplt
 from ..utils.plotter import plot
 import sympy as sp
 import threading
