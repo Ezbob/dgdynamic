@@ -39,8 +39,7 @@ class ScipyOde(OdePlugin, LogMixin):
             self._user_function = eval(self._user_function)
 
         self.logger.debug("Checking scipy parameters...")
-        initial_y = get_initial_values(self.initial_conditions, self._symbols,
-                                       fuzzy_match=self.initial_condition_prefix_match)
+        initial_y = get_initial_values(self.initial_conditions, self._symbols)
         sanity_check(self, initial_y)
 
         self.logger.debug("Started solving using Scipy with method {}".format(self._ode_solver.value))

@@ -2,7 +2,6 @@ import os
 import os.path
 from abc import abstractmethod, ABCMeta
 from enum import Enum
-from os.path import commonprefix
 from typing import Union, Dict, Tuple, Callable
 from multiprocessing import Process
 
@@ -40,28 +39,16 @@ def _count_parameters(parameters):
     return sum(2 if "<=>" in reaction_string else 1 for reaction_string in parameters.keys())
 
 
-def _match_and_set_on_commonprefix(translater_dict: dict, prefix: str, value: Types.Real, results: list):
-    got_prefix = (symbol_key for symbol_key in translater_dict.keys() if
-                  commonprefix((prefix, str(symbol_key))))
-    for symbol in got_prefix:
-        if results[translater_dict[symbol]] is None:
-            results[translater_dict[symbol]] = value
-
-
-def get_initial_values(initial_conditions, symbols, fuzzy_match=False):
+def get_initial_values(initial_conditions, symbols):
     if isinstance(initial_conditions, (tuple, list)):
         return initial_conditions
     elif isinstance(initial_conditions, dict):
         translate_mapping = {val: index for index, val in enumerate(symbols.values())}
-        results = [None] * len(translate_mapping)
+        results = [0] * len(translate_mapping)
         for key, value in initial_conditions.items():
             key_symbol = sp.Symbol(key)
             if key_symbol in translate_mapping:
                 results[translate_mapping[key_symbol]] = value
-            elif fuzzy_match:
-                _match_and_set_on_commonprefix(translate_mapping, key, value, results)
-            else:
-                raise KeyError("Unknown species in initial value map: {}".format(key_symbol))
         return results
 
 
@@ -96,7 +83,6 @@ class OdePlugin(metaclass=ABCMeta):
         self._ode_solver = solver_method
         self.delta_t = delta_t
         self.parameters = parameters
-        self.initial_condition_prefix_match = False
         self.integration_range = integration_range
         self.initial_conditions = initial_conditions
         self._convert_to_function(converter_function)
