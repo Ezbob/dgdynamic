@@ -134,17 +134,18 @@ class OdeOutput(LogMixin):
     ODE plugins. It is the responsibility of the individual ODE plugin to produce a set of independent and dependent
      variables that has the right type format for the printing and plotting methods.
     """
-    def __init__(self, solved_by, dependent, independent, solver_instance, ignore=()):
+    def __init__(self, solved_by, dependent, independent, ignore=(), solver_method=None, abstract_system=None):
         self.dependent = dependent
         self.independent = independent
         self.solver_used = solved_by
+        self.solver_method_used = solver_method
         self._data_filename = "data"
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config.DATA_DIRECTORY)
         self._file_writer_thread = None
 
-        if hasattr(solver_instance, "_abstract_system"):
-            self.symbols = tuple(solver_instance._abstract_system.symbols.values())
+        if abstract_system is not None:
+            self.symbols = tuple(abstract_system.symbols.values())
         else:
             self.symbols = None
 
@@ -153,8 +154,11 @@ class OdeOutput(LogMixin):
 
     def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None, should_wait=True,
              timeout=10):
+        title = self.solver_used.value.title()
+        if self.solver_method_used is not None:
+            title += (" - " + self.solver_method_used.value)
         process = Process(target=plot, args=(self.independent, self.dependent, self.symbols, self._ignored,
-                                             self.solver_used.value, filename, labels, figure_size, axis_labels,
+                                             title, filename, labels, figure_size, axis_labels,
                                              axis_limits))
         process.start()
         if should_wait:

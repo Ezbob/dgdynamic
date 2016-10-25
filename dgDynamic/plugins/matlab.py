@@ -87,7 +87,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_rang
 
             self.logger.info("Return output object")
             return OdeOutput(solved_by=SupportedSolvers.Matlab, dependent=yres, independent=tres, ignore=self._ignored,
-                             solver_instance=self)
+                             solver_method=self._ode_solver, abstract_system=self._abstract_system)
         else:
             self.logger.debug("Empty ode function. Aborting...")
             return None
