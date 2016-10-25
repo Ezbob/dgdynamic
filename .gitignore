@@ -1,5 +1,7 @@
 .idea
-**.pyc
 **.log
 plots
 data
+logs
+**__pycache__/
+
