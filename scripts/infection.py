@@ -52,6 +52,7 @@ scipy_ode.solve().save(name).plot(figure_size=(40, 20))
 
 matlab_solver = ode.get_ode_plugin(SupportedSolvers.Matlab)
 
-matlab_solver.set_integration_range(integration_range).set_initial_conditions(initial_conditions).set_parameters(parameters)
+matlab_solver.set_integration_range(integration_range).set_initial_conditions(initial_conditions)\
+    .set_parameters(parameters)
 
 matlab_solver.solve().save(name).plot(figure_size=(40, 20))

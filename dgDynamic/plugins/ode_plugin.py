@@ -154,9 +154,9 @@ class OdeOutput(LogMixin):
 
     def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None, should_wait=True,
              timeout=10):
-        title = self.solver_used.value.title()
+        title = self.solver_used.name.title()
         if self.solver_method_used is not None:
-            title += (" - " + self.solver_method_used.value)
+            title += (" - " + self.solver_method_used.name)
         process = Process(target=plot, args=(self.independent, self.dependent, self.symbols, self._ignored,
                                              title, filename, labels, figure_size, axis_labels,
                                              axis_limits))
