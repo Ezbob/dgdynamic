@@ -42,7 +42,7 @@ def _parse_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHyperE
     return graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
 
 
-def parse(abstract_system: 'dgODESystem', reaction: str) -> Union[object, Tuple[object,object]]:
+def parse(abstract_system: "DynamicSimulator", reaction: str) -> Union[object, Tuple[object,object]]:
     if reaction.find(" <=> ") != -1:
         first_reaction, second_reaction = _break_two_way_deviations(reaction)
         return _parse_reaction(abstract_system.graph, first_reaction), \

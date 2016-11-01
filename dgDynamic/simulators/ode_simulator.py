@@ -1,11 +1,10 @@
 import functools as ft
 from collections import OrderedDict
-from typing import Union, Tuple
+from typing import Union
 import sympy as sp
-import dgDynamic.utils.project_utils as utils
 from dgDynamic.config import SupportedSolvers
-from dgDynamic.converters.reaction_parser import parse
 from .simulator import DynamicSimulator
+from dgDynamic.utils.project_utils import ProjectTypeHints
 
 
 class ODESystem(DynamicSimulator):
@@ -82,26 +81,6 @@ class ODESystem(DynamicSimulator):
 
                 yield vertex.graph.name, sub_result
 
-    def unchanging_species(self, *species: Union[str, sp.Symbol, utils.ProjectTypeHints.Countable_Sequence]):
-        """
-        Specify the list of species you don't want to see ODEs for
-        :param species: list of strings symbol
-        :return:
-        """
-        if len(self.ignored) < self.species_count:
-            if isinstance(species, str):
-                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
-                                     if sp.Symbol(species) == item)
-            elif isinstance(species, sp.Symbol):
-                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
-                                     if species == item)
-            else:
-                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
-                                     for element in species if sp.Symbol(element) == item)
-        else:
-            self.logger.warn("ignored species count exceeds the count of actual species")
-        return self
-
     def add_terms(self, flux_terms: dict):
         for key, val in flux_terms.items():
             if not isinstance(key, (str,) + tuple(sp.core.all_classes)):
@@ -115,8 +94,20 @@ class ODESystem(DynamicSimulator):
 
         return self
 
-    def parse_abstract_reaction(self, reaction: str) -> Union[object, Tuple[object,object]]:
-        return parse(self, reaction)
+    def unchanging_species(self, *species: Union[str, sp.Symbol, ProjectTypeHints.Countable_Sequence]):
+        if len(self.ignored) < self.species_count:
+            if isinstance(species, str):
+                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                     if sp.Symbol(species) == item)
+            elif isinstance(species, sp.Symbol):
+                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                     if species == item)
+            else:
+                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                     for element in species if sp.Symbol(element) == item)
+        else:
+            self.logger.warn("ignored species count exceeds the count of actual species")
+        return self
 
     def __repr__(self):
         return "<Abstract Ode System {}>".format(self.left_hand_sides)
