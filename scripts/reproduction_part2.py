@@ -5,7 +5,7 @@ Numerically solving non-linear case as described in the Ikegami et.al. paper
 import mod
 import numpy
 
-from dgDynamic.generators.ode_generator import ODESystem
+from dgDynamic.mod_dynamics import dgDynamicSim
 from dgDynamic.plugins.matlab import MatlabOdeSolvers
 from dgDynamic.plugins.scipy import ScipyOdeSolvers
 
@@ -57,7 +57,7 @@ for reaction in get_reactions():
 
 dg = mod.dgAbstract(reactions)
 
-ode = ODESystem(dg)
+ode = dgDynamicSim(dg)
 
 solver = ode.get_ode_plugin("scipy")
 
