@@ -1,7 +1,7 @@
 import mod
 
 from dgDynamic.config import SupportedSolvers
-from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.generators.ode_generator import ODESystem
 from dgDynamic.plugins.scipy import ScipyOdeSolvers
 
 # Enable logging when uncommented
@@ -15,7 +15,7 @@ F -> C
 C -> D
 """)
 
-ode = dgODESystem(dg)
+ode = ODESystem(dg)
 
 # Set the species that you wish to remain unchanged in the integration process.
 # Since these species don't contribute they don't get saved or plotted

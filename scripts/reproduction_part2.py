@@ -5,9 +5,9 @@ Numerically solving non-linear case as described in the Ikegami et.al. paper
 import mod
 import numpy
 
-from dgDynamic.ode_generator import dgODESystem
-from dgDynamic.plugins.scipy import ScipyOdeSolvers
+from dgDynamic.generators.ode_generator import ODESystem
 from dgDynamic.plugins.matlab import MatlabOdeSolvers
+from dgDynamic.plugins.scipy import ScipyOdeSolvers
 
 root_symbol = 'A'
 species_limit = 60
@@ -57,7 +57,7 @@ for reaction in get_reactions():
 
 dg = mod.dgAbstract(reactions)
 
-ode = dgODESystem(dg)
+ode = ODESystem(dg)
 
 solver = ode.get_ode_plugin("scipy")
 

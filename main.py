@@ -5,9 +5,8 @@ Numerically solving non-linear case as described in the Ikegami et.al. paper
 import mod
 import numpy
 
-from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.generators.ode_generator import ODESystem
 from dgDynamic.plugins.scipy import ScipyOdeSolvers
-from dgDynamic.plugins.matlab import MatlabOdeSolvers
 
 root_symbol = 'A'
 species_limit = 60
@@ -70,7 +69,7 @@ fluxes["A1"] = "0.4 * (10000 - A1)"
 
 dg = mod.dgAbstract(reactions)
 
-ode = dgODESystem(dg).add_terms(fluxes)
+ode = ODESystem(dg).add_terms(fluxes)
 
 tuple(ode.generate_equations())
 

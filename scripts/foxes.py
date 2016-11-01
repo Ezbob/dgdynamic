@@ -7,7 +7,7 @@
 import mod
 
 from dgDynamic.config import SupportedSolvers
-from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.mod_dynamics import dgDynamicSim
 from dgDynamic.plugins.scipy import ScipyOdeSolvers
 from dgDynamic.utils.logger import set_logging
 
@@ -36,7 +36,7 @@ parameters = {
 
 integration_range = (0, 100)
 
-ode = dgODESystem(dg).unchanging_species('D')
+ode = dgDynamicSim(dg).unchanging_species('D')
 
 # Name of the data set
 name = "foxesRabbits"

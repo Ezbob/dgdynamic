@@ -4,7 +4,7 @@ Infection model
 import mod
 
 from dgDynamic.config import SupportedSolvers
-from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.mod_dynamics import dgDynamicSim
 from dgDynamic.plugins.scipy import ScipyOdeSolvers
 from dgDynamic.utils.logger import set_logging
 
@@ -23,7 +23,7 @@ dg = mod.dgAbstract(
 
 initial_conditions = {
     'S': 200,
-    'I': 2,
+    'I': 1,
 }
 
 parameters = {
@@ -35,7 +35,7 @@ parameters = {
 
 integration_range = (0, 200)
 
-ode = dgODESystem(dg)
+ode = dgDynamicSim(dg)
 
 # Name of the data set
 name = "infected"

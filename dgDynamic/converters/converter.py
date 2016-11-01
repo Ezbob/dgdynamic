@@ -4,7 +4,7 @@ This module contains stuff relevant for all converters
 from io import StringIO
 from typing import Tuple
 
-from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.simulators.ode_simulator import ODESystem
 from ..utils.project_utils import log_it
 
 
@@ -53,7 +53,7 @@ def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, rea
                         .format(reaction_string))
 
 
-def get_parameter_map(abstract_system: dgODESystem, parameter_substitutions=None):
+def get_parameter_map(abstract_system: ODESystem, parameter_substitutions=None):
     """
     Create the parameter mapping
     :param abstract_system:

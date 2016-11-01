@@ -5,7 +5,7 @@ Here we numerically solve for the first-order autocatalytic cycles as described 
 import mod
 import numpy
 
-from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.generators.ode_generator import ODESystem
 from dgDynamic.plugins.scipy import ScipyOdeSolvers
 
 root_symbol = 'A'
@@ -64,7 +64,7 @@ print("K = {}".format(theta * (k_s / k_d)))
 
 dg = mod.dgAbstract(reactions)
 
-ode = dgODESystem(dg).unchanging_species(*unchanging_species)
+ode = ODESystem(dg).unchanging_species(*unchanging_species)
 
 solver = ode.get_ode_plugin("scipy")
 

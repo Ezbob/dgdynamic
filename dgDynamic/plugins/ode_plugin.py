@@ -1,18 +1,18 @@
 import os
 import os.path
+import threading
+import time
 from abc import abstractmethod, ABCMeta
 from enum import Enum
-from typing import Union, Dict, Tuple, Callable
 from multiprocessing import Process
+from typing import Union, Dict, Tuple, Callable
 
-from ..utils.plotter import plot
 import sympy as sp
-import threading
 
 from dgDynamic import config
-from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
-import time
+from ..utils.plotter import plot
 
 
 def sanity_check(plugin_instance, initial_values):
@@ -62,7 +62,7 @@ class OdePlugin(metaclass=ABCMeta):
                  delta_t=0.05, parameters=None, species_count=1, initial_t=0, converter_function=None,
                  solver_method=None):
 
-        if type(function) is dgODESystem:
+        if type(function) is ODESystem:
             self.ode_count = function.species_count
             self._reaction_count = function.reaction_count
             self._symbols = function.symbols
@@ -88,7 +88,7 @@ class OdePlugin(metaclass=ABCMeta):
         self._convert_to_function(converter_function)
 
     def _convert_to_function(self, converter_function):
-        if type(self._abstract_system) is dgODESystem and callable(converter_function) and \
+        if type(self._abstract_system) is ODESystem and callable(converter_function) and \
                         self.parameters is not None:
             self._user_function = converter_function(self._abstract_system, self.parameters)
 
@@ -111,7 +111,7 @@ class OdePlugin(metaclass=ABCMeta):
         self.parameters = parameters
         return self
 
-    def set_abstract_ode_system(self, system: dgODESystem):
+    def set_abstract_ode_system(self, system: ODESystem):
         self._abstract_system = system
         self.ode_count = system.species_count
         self.ignored_count = len(system.ignored)

@@ -8,7 +8,7 @@ import matlab.engine
 
 from dgDynamic.config import SupportedSolvers
 from dgDynamic.converters.matlab_converter import get_matlab_lambda
-from dgDynamic.ode_generator import dgODESystem
+from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from dgDynamic.utils.project_utils import LogMixin
 
@@ -42,7 +42,7 @@ class MatlabOde(OdePlugin, LogMixin):
         self.logger.debug("MATLAB engine started.")
 
     def solve(self) -> OdeOutput:
-        if type(self._abstract_system) is dgODESystem:
+        if type(self._abstract_system) is ODESystem:
             self._user_function = get_matlab_lambda(abstract_ode_system=self._abstract_system,
                                                     parameter_substitutions=self.parameters)
         if self._user_function is None:

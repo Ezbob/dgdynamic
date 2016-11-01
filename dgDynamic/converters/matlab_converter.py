@@ -1,6 +1,7 @@
-from dgDynamic.ode_generator import dgODESystem
-from .converter import DefaultFunctionSymbols, substitute, get_parameter_map
 import sympy as sp
+
+from dgDynamic.simulators.ode_simulator import ODESystem
+from .converter import DefaultFunctionSymbols, substitute, get_parameter_map
 
 
 class MatlabSymbols(DefaultFunctionSymbols):
@@ -14,7 +15,7 @@ def _postprocessor(function_string: str):
     return function_string.replace('**', MatlabSymbols.pow)
 
 
-def get_matlab_lambda(abstract_ode_system: dgODESystem, parameter_substitutions=None):
+def get_matlab_lambda(abstract_ode_system: ODESystem, parameter_substitutions=None):
     """
     Converts a sympy symbolic ODE system into a MatLab lambda function that can be integrated.
     :param abstract_ode_system: should be a legal AbstractOdeSystem instance
