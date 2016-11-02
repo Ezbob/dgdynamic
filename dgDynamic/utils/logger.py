@@ -1,25 +1,31 @@
 import logging
 import os
-import dgDynamic.config as config
+import dgDynamic.utils.config as project_config
 import shutil
 
 logging_handler = None
 
 
-def set_logging():
+def set_logging(config_file="default_config.ini"):
     """
     This function setups the root logging system for use with the logging mixin.
     All log statements gets written to a log file
+    :param config_file:
     :param filename: the name of the log file
     :param new_session: whether to delete all previous log files in the log directory
     :param level: maximum log level to log for
     """
     global logging_handler
     if logging_handler is None:
-        log_dir_name = config.LOG_DIRECTORY if config.LOG_DIRECTORY else "logs"
-        filename = config.SYSTEM_LOG_FILE if config.SYSTEM_LOG_FILE else "system.log"
-        level = config.LOG_LEVEL if isinstance(config.LOG_LEVEL, type(logging.INFO)) else logging.INFO
-        new_session = not config.SAVE_LOGS if isinstance(config.SAVE_LOGS, bool) else False
+        project_config.set_config(filename=config_file)
+        log_config = project_config.config['Logging']
+
+        log_dir_name = project_config.config['Output Paths']['LOG_DIRECTORY']
+        filename = log_config['SYSTEM_LOG_FILE']
+
+        level = logging.getLevelName(log_config['LOG_LEVEL']) \
+            if isinstance(logging.getLevelName(log_config['LOG_LEVEL']), int) else logging.INFO
+        new_session = not bool(log_config['SAVE_LOGS'])
 
         log_dir = os.path.abspath(log_dir_name)
         make_directory(log_dir, pre_delete=new_session)
@@ -44,5 +50,3 @@ def make_directory(path, pre_delete=False):
             os.mkdir(path)
     elif not os.path.exists(path):
         os.mkdir(path)
-
-set_logging()

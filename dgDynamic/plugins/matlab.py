@@ -1,30 +1,13 @@
 #  Matlab ode solver plugin
 #  This plugin uses the matlab python engine to approximate solutions to ODEs
 ##
-import enum
 import sys
-
 import matlab.engine
-
-from dgDynamic.config import SupportedSolvers
 from dgDynamic.converters.matlab_converter import get_matlab_lambda
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from dgDynamic.utils.project_utils import LogMixin
-
-
-class MatlabOdeSolvers(enum.Enum):
-    """
-    Choose your MATLAB ode solver from this enum.
-    """
-    ode45 = "45"
-    ode23 = "23"
-    ode113 = "113"
-    ode15s = "15s"
-    ode23s = "23s"
-    ode23t = "23t"
-    ode23tb = "23tb"
-    ode15i = "15i"
+from dgDynamic.choices import MatlabOdeSolvers, SupportedSolvers
 
 
 class MatlabOde(OdePlugin, LogMixin):

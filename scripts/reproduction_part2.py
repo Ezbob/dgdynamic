@@ -6,8 +6,7 @@ import mod
 import numpy
 
 from dgDynamic.mod_dynamics import dgDynamicSim
-from dgDynamic.plugins.matlab import MatlabOdeSolvers
-from dgDynamic.plugins.scipy import ScipyOdeSolvers
+from dgDynamic.choices import MatlabOdeSolvers, ScipyOdeSolvers
 
 root_symbol = 'A'
 species_limit = 60

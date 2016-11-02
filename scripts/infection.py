@@ -1,24 +1,25 @@
 """
 Infection model
+This model, models the relationship between the
+(I)fected, (R)ecovered and the (S)usceptible under the outbreak of some decease.
+The recovered becomes immune to the infected once they recover,
+and the model starts out with some infected.
 """
 import mod
 
-from dgDynamic.config import SupportedSolvers
+from dgDynamic.choices import SupportedSolvers
 from dgDynamic.mod_dynamics import dgDynamicSim
 from dgDynamic.plugins.scipy import ScipyOdeSolvers
-from dgDynamic.utils.logger import set_logging
-
-set_logging()
 
 susceptible_infected = "S + I -> 2 I\n"
 recovered = "I -> R\n"
 infected_stays_infected = "2 I -> 2 I\n"
 recovered_stays_recovered = "R + I -> R + I\n"
 
-whole = susceptible_infected + recovered + infected_stays_infected + recovered_stays_recovered
+whole_model = susceptible_infected + recovered + infected_stays_infected + recovered_stays_recovered
 
 dg = mod.dgAbstract(
-    whole
+    whole_model
 )
 
 initial_conditions = {

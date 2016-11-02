@@ -9,7 +9,7 @@ from typing import Union, Dict, Tuple, Callable
 
 import sympy as sp
 
-from dgDynamic import config
+from dgDynamic.utils.config import config, set_config
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
 from ..utils.plotter import plot
@@ -141,7 +141,7 @@ class OdeOutput(LogMixin):
         self.solver_method_used = solver_method
         self._data_filename = "data"
         self._ignored = tuple(item[1] for item in ignore)
-        self._path = os.path.abspath(config.DATA_DIRECTORY)
+        self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])
         self._file_writer_thread = None
 
         if abstract_system is not None:
@@ -200,7 +200,7 @@ class OdeOutput(LogMixin):
         else:
             paired_data = zip(self.independent, self._filter_out_ignores())
 
-        make_directory(config.DATA_DIRECTORY, pre_delete=False)
+        make_directory(config['Output Paths']['DATA_DIRECTORY'], pre_delete=False)
 
         dependent_dimension = 0
         try:

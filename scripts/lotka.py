@@ -1,17 +1,15 @@
 """
-(F)oxes and (R)abbits; prey-predator model.
+A Lotka model with (F)oxes and (R)abbits (prey-predator model).
     Rabbits eat grass and multiples
     Foxes hunt and eat rabbits and multiples
     Foxes also dies of old age
 """
 import mod
 
-from dgDynamic.config import SupportedSolvers
+from dgDynamic.choices import SupportedSolvers
 from dgDynamic.mod_dynamics import dgDynamicSim
 from dgDynamic.plugins.scipy import ScipyOdeSolvers
-from dgDynamic.utils.logger import set_logging
 
-set_logging()
 
 rabbit_multiples = "R -> 2 R\n"
 foxes_hunts = "R + F -> F + F\n"

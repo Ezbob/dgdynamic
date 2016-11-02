@@ -2,9 +2,9 @@ import functools as ft
 from collections import OrderedDict
 from typing import Union
 import sympy as sp
-from dgDynamic.config import SupportedSolvers
 from .simulator import DynamicSimulator
 from dgDynamic.utils.project_utils import ProjectTypeHints
+from dgDynamic.choices import SupportedSolvers
 
 
 class ODESystem(DynamicSimulator):

@@ -1,23 +1,9 @@
 import sys
-from enum import Enum
-
 from scipy.integrate import ode
-
-from dgDynamic.config import SupportedSolvers
 from dgDynamic.converters.scipy_converter import get_scipy_lambda
 from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from dgDynamic.utils.project_utils import LogMixin
-
-
-class ScipyOdeSolvers(Enum):
-    """
-    Enum representing different ode solver methods available to the Scipy solver
-    """
-    VODE = "vode"
-    ZVODE = "zvode"
-    LSODA = "lsoda"
-    DOPRI5 = "dopri5"
-    DOP853 = "dop853"
+from dgDynamic.choices import ScipyOdeSolvers, SupportedSolvers
 
 
 class ScipyOde(OdePlugin, LogMixin):
