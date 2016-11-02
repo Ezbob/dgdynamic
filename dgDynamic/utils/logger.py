@@ -1,12 +1,13 @@
 import logging
 import os
-import dgDynamic.utils.config as project_config
 import shutil
+
+from dgDynamic.config.settings import config
 
 logging_handler = None
 
 
-def set_logging(config_file="default_config.ini"):
+def set_logging():
     """
     This function setups the root logging system for use with the logging mixin.
     All log statements gets written to a log file
@@ -17,10 +18,9 @@ def set_logging(config_file="default_config.ini"):
     """
     global logging_handler
     if logging_handler is None:
-        project_config.set_config(filename=config_file)
-        log_config = project_config.config['Logging']
+        log_config = config['Logging']
 
-        log_dir_name = project_config.config['Output Paths']['LOG_DIRECTORY']
+        log_dir_name = config['Output Paths']['LOG_DIRECTORY']
         filename = log_config['SYSTEM_LOG_FILE']
 
         level = logging.getLevelName(log_config['LOG_LEVEL']) \

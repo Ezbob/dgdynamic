@@ -9,7 +9,7 @@ from typing import Union, Dict, Tuple, Callable
 
 import sympy as sp
 
-from dgDynamic.utils.config import config, set_config
+from dgDynamic.config.settings import config
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
 from ..utils.plotter import plot
