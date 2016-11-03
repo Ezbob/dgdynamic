@@ -90,11 +90,13 @@ class OdePlugin(metaclass=ABCMeta):
                         self.parameters is not None:
             self._user_function = converter_function(self._abstract_system, self.parameters)
 
-    def __call__(self, ode_solver=None, integration_range=None, initial_conditions=None, parameters=None, **kwargs):
+    def __call__(self, ode_solver=None, integration_range=None, initial_conditions=None, parameters=None, delta_t=None,
+                 **kwargs):
         self.ode_solver = ode_solver
         self.integration_range = integration_range
         self.initial_conditions = initial_conditions
         self.parameters = parameters
+        self.delta_t = delta_t
         output = self.solve(**kwargs)
         if output is None:
             raise ValueError("Solve returned None; check the calling parameters")

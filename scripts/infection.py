@@ -6,7 +6,6 @@ The recovered becomes immune to the infected once they recover,
 and the model starts out with some infected.
 """
 import mod
-from dgDynamic.choices import SupportedOdePlugins, ScipyOdeSolvers, MatlabOdeSolvers
 from dgDynamic.mod_dynamics import dgDynamicSim
 
 susceptible_infected = "S + I -> 2 I\n"
@@ -34,19 +33,15 @@ parameters = {
 
 integration_range = (0, 200)
 
-ode = dgDynamicSim(dg)
+ode = dgDynamicSim(dg, simulator_choice="ode")
 
 # Name of the data set
 name = "infected"
-
-matlab_solver = ode(SupportedOdePlugins.Matlab)
-scipy_ode = ode(SupportedOdePlugins.Scipy)
-
-scipy_ode.delta_t = 0.1
+# figure_size in centimetres
 figure_size = (40, 20)
 
-output = scipy_ode(integration_range, initial_conditions, parameters)
+output = ode("Scipy")(integration_range, initial_conditions, parameters, delta_t=0.2)
 output.plot(figure_size=figure_size)
 
-output = matlab_solver(integration_range, initial_conditions, parameters)
+output = ode("Matlab")(integration_range, initial_conditions, parameters)
 output.plot(figure_size=figure_size)

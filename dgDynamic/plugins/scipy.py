@@ -11,14 +11,15 @@ class ScipyOde(OdePlugin, LogMixin):
     Scipy ODE solver plugin
     """
 
-    def __init__(self, eq_system=None, integration_range=None, initial_condition=None, delta_t=0.05, parameters=None,
+    def __init__(self, eq_system=None, integration_range=None, initial_condition=None, delta_t=0.1, parameters=None,
                  solver=ScipyOdeSolvers.VODE, initial_t=0):
         super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters,
                          initial_t=initial_t, ode_solver=solver)
 
-    def __call__(self, integration_range=None, initial_conditions=None, parameters=None, ode_solver=None, **kwargs):
+    def __call__(self, integration_range=None, initial_conditions=None, parameters=None, delta_t=0.1, ode_solver=None,
+                 **kwargs):
         solver_choice = ode_solver if ode_solver is not None else ScipyOdeSolvers.VODE
-        return super().__call__(solver_choice, integration_range, initial_conditions, parameters, **kwargs)
+        return super().__call__(solver_choice, integration_range, initial_conditions, parameters, delta_t, **kwargs)
 
     def solve(self, **kwargs) -> OdeOutput:
         self._convert_to_function(get_scipy_lambda)
