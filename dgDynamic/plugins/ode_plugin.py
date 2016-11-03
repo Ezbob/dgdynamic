@@ -95,7 +95,10 @@ class OdePlugin(metaclass=ABCMeta):
         self.integration_range = integration_range
         self.initial_conditions = initial_conditions
         self.parameters = parameters
-        return self.solve(**kwargs)
+        output = self.solve(**kwargs)
+        if output is None:
+            raise ValueError("Solve returned None; check the calling parameters")
+        return output
 
     @abstractmethod
     def solve(self, **kwargs) -> object:
