@@ -34,33 +34,54 @@ class StochasticPiSystem(DynamicSimulator):
         # our "matrix"
         result = defaultdict(lambda: defaultdict(tuple))
 
-        def _add_channel(key, channel, reaction_index):
-            result[key][reaction_index] += (channel,)
+        def add_channel(key, channel, edge_index):
+            result[key][edge_index] += (channel,)
+
+        def homo_reaction_case(edge, edge_index):
+            channel_results = tuple()
+            first_vertex = ""
+            for vertex_index, vertex in enumerate(edge.sources):
+                if vertex_index == 0:
+                    first_vertex = vertex.graph.name
+                    new_input_channel = Channel(rate=self.rate_names[edge_index], is_input=True,
+                                                is_decay=False).add_reagents(edge.targets)
+                    channel_results += (new_input_channel,)
+                else:
+                    new_output_channel = Channel(rate=self.rate_names[edge_index], is_input=False, )
+                    channel_results += (new_output_channel,)
+            add_channel(key=first_vertex, channel=channel_results, edge_index=edge_index)
+
+        def hetero_reaction_case(edge, edge_index):
+            for vertex_index, vertex in enumerate(edge.sources):
+                if vertex_index == 0:
+                    new_input_channel = Channel(rate=self.rate_names[edge_index], is_input=True)\
+                        .add_reagents(edge.targets)
+                    add_channel(key=vertex.graph.name, channel=new_input_channel, edge_index=edge_index)
+                else:
+                    new_output_channel = Channel(rate=self.rate_names[edge_index], is_input=False)
+                    add_channel(key=vertex.graph.name, channel=new_output_channel, edge_index=edge_index)
+
+        def unary_reaction_case(edge, edge_index):
+            for vertex in edge.sources:
+                new_channel = Channel(rate=self.rate_names[edge_index], is_input=False, is_decay=True) \
+                    .add_reagents(edge.targets)
+
+                add_channel(key=vertex.graph.name, channel=new_channel, edge_index=edge_index)
 
         # debug = {value: key for key, value in self.symbols.items()}
         for reaction_index, hyper_edge in enumerate(self.graph.edges):
             if hyper_edge.numSources == 1:
                 print("I am unary: ", print_hyper_edge(edge=hyper_edge))
-                for vertex in hyper_edge.sources:
-                    new_channel = Channel(rate=self.rate_names[reaction_index], is_input=False, is_decay=True)\
-                        .add_reagents(hyper_edge.targets)
-
-                    _add_channel(key=vertex.graph.name, channel=new_channel, reaction_index=reaction_index)
+                unary_reaction_case(hyper_edge, reaction_index)
             elif hyper_edge.numSources == 2:
                 if ft.reduce(lambda a, b: a.graph.name == b.graph.name, hyper_edge.sources):
                     print("I am homo: ", print_hyper_edge(edge=hyper_edge))
-                    channel_results = tuple()
-                    for vertex_index, vertex in enumerate(hyper_edge.sources):
-                        if vertex_index == 0:
-                            new_input_channel = Channel(rate=self.rate_names[reaction_index], is_input=True,
-                                                        is_decay=False).add_reagents(hyper_edge.targets)
-                            channel_results += (new_input_channel,)
-                        else:
-                            pass
+                    homo_reaction_case(hyper_edge, reaction_index)
                 else:
                     print("I am hetero: ", print_hyper_edge(edge=hyper_edge))
+                    hetero_reaction_case(hyper_edge, reaction_index)
 
         print(result)
 
     def unchanging_species(self, *species: Union[str, "Symbol", ProjectTypeHints.Countable_Sequence]):
-        pass
+        raise NotImplementedError
