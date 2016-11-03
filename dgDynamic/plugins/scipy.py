@@ -3,7 +3,7 @@ from scipy.integrate import ode
 from dgDynamic.converters.scipy_converter import get_scipy_lambda
 from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from dgDynamic.utils.project_utils import LogMixin
-from dgDynamic.choices import ScipyOdeSolvers, SupportedSolvers
+from dgDynamic.choices import ScipyOdeSolvers, SupportedOdePlugins
 
 
 class ScipyOde(OdePlugin, LogMixin):
@@ -14,7 +14,7 @@ class ScipyOde(OdePlugin, LogMixin):
     def __init__(self, eq_system=None, integration_range=None, initial_condition=None, delta_t=0.05, parameters=None,
                  solver=ScipyOdeSolvers.VODE, initial_t=0):
         super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters,
-                         initial_t=initial_t, solver_method=solver)
+                         initial_t=initial_t, ode_solver=solver)
 
     def solve(self, **kwargs) -> OdeOutput:
         self._convert_to_function(get_scipy_lambda)
@@ -49,7 +49,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 return None
 
             self.logger.debug("Solving finished using fixed step integration")
-            return OdeOutput(solved_by=SupportedSolvers.Scipy, dependent=y_solution, independent=t_solution,
+            return OdeOutput(solved_by=SupportedOdePlugins.Scipy, dependent=y_solution, independent=t_solution,
                              abstract_system=self._abstract_system, ignore=self._ignored,
                              solver_method=self._ode_solver)
 
@@ -69,7 +69,7 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 return None
 
             self.logger.debug("Solving finished using variable step integration")
-            return OdeOutput(solved_by=SupportedSolvers.Scipy, dependent=y_solution, independent=t_solution,
+            return OdeOutput(solved_by=SupportedOdePlugins.Scipy, dependent=y_solution, independent=t_solution,
                              abstract_system=self._abstract_system, ignore=self._ignored,
                              solver_method=self._ode_solver)
 

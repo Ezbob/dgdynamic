@@ -6,7 +6,7 @@ A Lotka model with (F)oxes and (R)abbits (prey-predator model).
 """
 import mod
 
-from dgDynamic.choices import SupportedSolvers
+from dgDynamic.choices import SupportedOdePlugins
 from dgDynamic.mod_dynamics import dgDynamicSim
 from dgDynamic.plugins.scipy import ScipyOdeSolvers
 
@@ -39,9 +39,9 @@ ode = dgDynamicSim(dg).unchanging_species('D')
 # Name of the data set
 name = "foxesRabbits"
 
-scipy_ode = ode.get_ode_plugin(SupportedSolvers.Scipy)
+scipy_ode = ode(SupportedOdePlugins.Scipy)
 
-scipy_ode.set_ode_solver(ScipyOdeSolvers.VODE)
+scipy_ode.ode_solver = ScipyOdeSolvers.VODE
 
 scipy_ode.delta_t = 0.1
 

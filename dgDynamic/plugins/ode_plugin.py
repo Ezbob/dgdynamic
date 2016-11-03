@@ -58,7 +58,7 @@ class OdePlugin(metaclass=ABCMeta):
 
     def __init__(self, function: Union[object, Callable, str]=None, integration_range=(0, 0), initial_conditions=None,
                  delta_t=0.05, parameters=None, species_count=1, initial_t=0, converter_function=None,
-                 solver_method=None):
+                 ode_solver=None):
 
         if type(function) is ODESystem:
             self.ode_count = function.species_count
@@ -78,7 +78,7 @@ class OdePlugin(metaclass=ABCMeta):
             self._user_function = function
 
         self.initial_t = initial_t
-        self._ode_solver = solver_method
+        self._ode_solver = ode_solver
         self.delta_t = delta_t
         self.parameters = parameters
         self.integration_range = integration_range
@@ -94,8 +94,17 @@ class OdePlugin(metaclass=ABCMeta):
     def solve(self) -> object:
         pass
 
-    def set_ode_solver(self, solver: Enum):
+    @property
+    def ode_solver(self):
+        return self._ode_solver
+
+    @ode_solver.setter
+    def ode_solver(self, solver: Enum):
         self._ode_solver = solver
+
+    def set_ode_solver(self, solver: Enum):
+        self.ode_solver = solver
+        return self
 
     def set_integration_range(self, *range_tuple: Tuple[int, int]):
         if isinstance(range_tuple, tuple):

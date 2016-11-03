@@ -7,7 +7,7 @@ and the model starts out with some infected.
 """
 import mod
 
-from dgDynamic.choices import SupportedSolvers
+from dgDynamic.choices import SupportedOdePlugins
 from dgDynamic.mod_dynamics import dgDynamicSim
 from dgDynamic.plugins.scipy import ScipyOdeSolvers
 
@@ -41,9 +41,9 @@ ode = dgDynamicSim(dg)
 # Name of the data set
 name = "infected"
 
-scipy_ode = ode.get_ode_plugin(SupportedSolvers.Scipy)
+scipy_ode = ode(SupportedOdePlugins.Scipy)
 
-scipy_ode.set_ode_solver(ScipyOdeSolvers.VODE)
+scipy_ode.ode_solver = ScipyOdeSolvers.VODE
 
 scipy_ode.delta_t = 0.1
 
@@ -51,7 +51,7 @@ scipy_ode.set_integration_range(integration_range).set_initial_conditions(initia
 
 scipy_ode.solve().save(name).plot(figure_size=(40, 20))
 
-matlab_solver = ode.get_ode_plugin(SupportedSolvers.Matlab)
+matlab_solver = ode(SupportedOdePlugins.Matlab)
 
 matlab_solver.set_integration_range(integration_range).set_initial_conditions(initial_conditions)\
     .set_parameters(parameters)

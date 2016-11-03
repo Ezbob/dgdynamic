@@ -4,7 +4,7 @@ from typing import Union
 import sympy as sp
 from .simulator import DynamicSimulator
 from dgDynamic.utils.project_utils import ProjectTypeHints
-from dgDynamic.choices import SupportedSolvers
+from dgDynamic.choices import SupportedOdePlugins
 
 
 class ODESystem(DynamicSimulator):
@@ -29,22 +29,25 @@ class ODESystem(DynamicSimulator):
         self.parameters = OrderedDict((edge.id, sp.Symbol("k{}".format(index + 1)))
                                       for index, edge in enumerate(self.graph.edges))
 
-    def get_ode_plugin(self, plugin_name: Union[str, SupportedSolvers], *args, **kwargs):
+    def __call__(self, plugins, *args, **kwargs):
+        return self.get_ode_plugin(plugins, *args, **kwargs)
+
+    def get_ode_plugin(self, plugin_name: Union[str, SupportedOdePlugins], *args, **kwargs):
 
         def get_plugin_from_enum(enum_variable):
-            if enum_variable == SupportedSolvers.Scipy:
+            if enum_variable == SupportedOdePlugins.Scipy:
                 from dgDynamic.plugins.scipy import ScipyOde
                 return ScipyOde(self, *args, **kwargs)
-            elif enum_variable == SupportedSolvers.Matlab:
+            elif enum_variable == SupportedOdePlugins.Matlab:
                 from dgDynamic.plugins.matlab import MatlabOde
                 return MatlabOde(self, *args, **kwargs)
 
         if type(plugin_name) is str:
-            for plugin in SupportedSolvers:
+            for plugin in SupportedOdePlugins:
                 if plugin.value in plugin_name.lower():
                     return get_plugin_from_enum(plugin)
             raise ValueError("plugin name not recognized")
-        elif type(plugin_name) is SupportedSolvers:
+        elif type(plugin_name) is SupportedOdePlugins:
             return get_plugin_from_enum(plugin_name)
 
     def generate_rate_laws(self):

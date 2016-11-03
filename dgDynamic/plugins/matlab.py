@@ -7,7 +7,7 @@ from dgDynamic.converters.matlab_converter import get_matlab_lambda
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from dgDynamic.utils.project_utils import LogMixin
-from dgDynamic.choices import MatlabOdeSolvers, SupportedSolvers
+from dgDynamic.choices import MatlabOdeSolvers, SupportedOdePlugins
 
 
 class MatlabOde(OdePlugin, LogMixin):
@@ -17,8 +17,8 @@ class MatlabOde(OdePlugin, LogMixin):
     def __init__(self, eq_system=None, solver=MatlabOdeSolvers.ode45, integration_range=None, initial_conditions=None,
                  parameters=None):
 
-        super().__init__(eq_system, integration_range=integration_range,  initial_conditions=initial_conditions,
-                         parameters=parameters, solver_method=solver, converter_function=get_matlab_lambda)
+        super().__init__(eq_system, integration_range=integration_range, initial_conditions=initial_conditions,
+                         parameters=parameters, ode_solver=solver, converter_function=get_matlab_lambda)
 
         self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
@@ -69,7 +69,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_rang
             yres = convert_matrix(yres)
 
             self.logger.info("Return output object")
-            return OdeOutput(solved_by=SupportedSolvers.Matlab, dependent=yres, independent=tres, ignore=self._ignored,
+            return OdeOutput(solved_by=SupportedOdePlugins.Matlab, dependent=yres, independent=tres, ignore=self._ignored,
                              solver_method=self._ode_solver, abstract_system=self._abstract_system)
         else:
             self.logger.debug("Empty ode function. Aborting...")
