@@ -8,8 +8,6 @@ B -> A + C
 A + B <=> A + A
 """)
 
-print(config['Logging']['SAVE_LOGS'])
-
 stochastic_sim = dgDynamicSim(dg, simulator_choice="spim")
 
 stochastic_sim.generate_channels()

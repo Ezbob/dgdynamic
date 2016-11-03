@@ -1,13 +1,10 @@
 import logging
 import os
 import shutil
-
 from dgDynamic.config.settings import config
 
-logging_handler = None
 
-
-def set_logging():
+def _set_logging():
     """
     This function setups the root logging system for use with the logging mixin.
     All log statements gets written to a log file
@@ -16,11 +13,10 @@ def set_logging():
     :param new_session: whether to delete all previous log files in the log directory
     :param level: maximum log level to log for
     """
-    global logging_handler
-    if logging_handler is None:
+    if config.getboolean('Logging', 'ENABLE_LOGGING', fallback=False):
         log_config = config['Logging']
-
-        log_dir_name = config['Output Paths']['LOG_DIRECTORY']
+        dir_config = config['Output Paths']
+        log_dir_name = dir_config['LOG_DIRECTORY']
         filename = log_config['SYSTEM_LOG_FILE']
 
         level = logging.getLevelName(log_config['LOG_LEVEL']) \
@@ -32,9 +28,12 @@ def set_logging():
 
         new_file_path = os.path.join(log_dir, filename)
 
-        logging_handler = logging.FileHandler(new_file_path)
-        logging_handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s'))
+        handler = logging.FileHandler(new_file_path)
+        handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s'))
         logging.basicConfig(level=level)
+        return handler
+    else:
+        return None
 
 
 def make_directory(path, pre_delete=False):
@@ -50,3 +49,5 @@ def make_directory(path, pre_delete=False):
             os.mkdir(path)
     elif not os.path.exists(path):
         os.mkdir(path)
+
+logging_handler = _set_logging()
