@@ -150,12 +150,13 @@ class OdeOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None, should_wait=True,
+    def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None, should_wait=False,
              timeout=10):
         title = self.solver_used.name.title()
         if self.solver_method_used is not None:
             title += (" - " + self.solver_method_used.name)
 
+        # using queue here it's process-safe
         queue = mp.Queue()
         queue.put({
             'independent': self.independent,
