@@ -62,7 +62,8 @@ class StochasticPiSystem(DynamicSimulator):
                 add_channel(vertex_key=first_vertex, channel=channel, reaction_key=edge_index)
 
         def hetero_reaction_case(edge, edge_index):
-            for vertex_index, vertex in enumerate(edge.sources):
+            vertices = sorted(edge.sources, key=lambda instance: instance.graph.name)
+            for vertex_index, vertex in enumerate(vertices):
                 if vertex_index == 0:
                     new_input_channel = Channel(channel_name=edge_index,
                                                 rate=self.rate_names[edge_index], is_input=True)\
@@ -84,14 +85,11 @@ class StochasticPiSystem(DynamicSimulator):
         # debug = {value: key for key, value in self.symbols.items()}
         for reaction_index, hyper_edge in enumerate(self.graph.edges):
             if hyper_edge.numSources == 1:
-                print("I am unary: ", print_hyper_edge(edge=hyper_edge))
                 unary_reaction_case(hyper_edge, reaction_index)
             elif hyper_edge.numSources == 2:
                 if ft.reduce(lambda a, b: a.graph.name == b.graph.name, hyper_edge.sources):
-                    print("I am homo: ", print_hyper_edge(edge=hyper_edge))
                     homo_reaction_case(hyper_edge, reaction_index)
                 else:
-                    print("I am hetero: ", print_hyper_edge(edge=hyper_edge))
                     hetero_reaction_case(hyper_edge, reaction_index)
 
         pretty_print_dict(result)
