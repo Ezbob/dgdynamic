@@ -45,7 +45,11 @@ scipy_ode.ode_solver = ScipyOdeSolvers.VODE
 
 scipy_ode.delta_t = 0.1
 
-scipy_ode.set_integration_range(integration_range).set_initial_conditions(initial_conditions).set_parameters(parameters)
+scipy_ode.integration_range = integration_range
+
+scipy_ode.initial_conditions = initial_conditions
+
+scipy_ode.parameters = parameters
 
 scipy_ode.solve().save(name).plot(figure_size=(40, 20))
 
