@@ -33,7 +33,7 @@ parameters = {
 
 integration_range = (0, 200)
 
-ode = dgDynamicSim(dg, simulator_choice="ode")
+ode = dgDynamicSim(dg, simulator_choice="ODE")
 
 # Name of the data set
 name = "infected"

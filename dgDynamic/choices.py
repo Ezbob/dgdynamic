@@ -1,6 +1,14 @@
 import enum
 
 
+class SimulatorModes(enum.Enum):
+    """
+    This enum lists the available simulation modes
+    """
+    ODE = "ode"
+    Stochastic_Pi = "spim"
+
+
 class SupportedOdePlugins(enum.Enum):
     """
     Here we list the different solvers available in our system as key-value pairs.
