@@ -6,10 +6,8 @@ The recovered becomes immune to the infected once they recover,
 and the model starts out with some infected.
 """
 import mod
-
-from dgDynamic.choices import SupportedOdePlugins
+from dgDynamic.choices import SupportedOdePlugins, ScipyOdeSolvers, MatlabOdeSolvers
 from dgDynamic.mod_dynamics import dgDynamicSim
-from dgDynamic.plugins.scipy import ScipyOdeSolvers
 
 susceptible_infected = "S + I -> 2 I\n"
 recovered = "I -> R\n"
@@ -41,19 +39,14 @@ ode = dgDynamicSim(dg)
 # Name of the data set
 name = "infected"
 
+matlab_solver = ode(SupportedOdePlugins.Matlab)
 scipy_ode = ode(SupportedOdePlugins.Scipy)
 
-scipy_ode.ode_solver = ScipyOdeSolvers.VODE
-
 scipy_ode.delta_t = 0.1
+figure_size = (40, 20)
 
-scipy_ode.set_integration_range(integration_range).set_initial_conditions(initial_conditions).set_parameters(parameters)
+output = scipy_ode(integration_range, initial_conditions, parameters)
+output.plot(figure_size=figure_size)
 
-scipy_ode.solve().save(name).plot(figure_size=(40, 20))
-
-matlab_solver = ode(SupportedOdePlugins.Matlab)
-
-matlab_solver.set_integration_range(integration_range).set_initial_conditions(initial_conditions)\
-    .set_parameters(parameters)
-
-matlab_solver.solve().save(name).plot(figure_size=(40, 20))
+output = matlab_solver(integration_range, initial_conditions, parameters)
+output.plot(figure_size=figure_size)

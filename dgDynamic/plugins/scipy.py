@@ -16,6 +16,10 @@ class ScipyOde(OdePlugin, LogMixin):
         super().__init__(eq_system, integration_range, initial_condition, delta_t=delta_t, parameters=parameters,
                          initial_t=initial_t, ode_solver=solver)
 
+    def __call__(self, integration_range=None, initial_conditions=None, parameters=None, ode_solver=None, **kwargs):
+        solver_choice = ode_solver if ode_solver is not None else ScipyOdeSolvers.VODE
+        return super().__call__(solver_choice, integration_range, initial_conditions, parameters, **kwargs)
+
     def solve(self, **kwargs) -> OdeOutput:
         self._convert_to_function(get_scipy_lambda)
 

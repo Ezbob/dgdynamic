@@ -66,13 +66,12 @@ dg = mod.dgAbstract(reactions)
 
 ode = dgDynamicSim(dg).unchanging_species(*unchanging_species)
 
-solver = ode.get_ode_plugin("scipy")
+solver = ode("scipy")
 
-solver.set_integration_range(integration_range)
-solver.set_parameters(parameters)
-solver.set_initial_conditions(initial_conditions)
-solver.set_ode_solver(ScipyOdeSolvers.LSODA)
-
+solver.integration_range = integration_range
+solver.parameters = parameters
+solver.initial_conditions = initial_conditions
+solver.ode_solver = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.1
 
 solver.solve().save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))

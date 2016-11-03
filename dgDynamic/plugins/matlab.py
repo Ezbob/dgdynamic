@@ -24,7 +24,11 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine = matlab.engine.start_matlab()
         self.logger.debug("MATLAB engine started.")
 
-    def solve(self) -> OdeOutput:
+    def __call__(self, integration_range=None, initial_conditions=None, parameters=None, ode_solver=None, **kwargs):
+        solver_choice = ode_solver if ode_solver is not None else MatlabOdeSolvers.ode45
+        return super().__call__(solver_choice, integration_range, initial_conditions, parameters, **kwargs)
+
+    def solve(self, **kwargs) -> OdeOutput:
         if type(self._abstract_system) is ODESystem:
             self._user_function = get_matlab_lambda(abstract_ode_system=self._abstract_system,
                                                     parameter_substitutions=self.parameters)

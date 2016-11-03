@@ -90,8 +90,15 @@ class OdePlugin(metaclass=ABCMeta):
                         self.parameters is not None:
             self._user_function = converter_function(self._abstract_system, self.parameters)
 
+    def __call__(self, ode_solver=None, integration_range=None, initial_conditions=None, parameters=None, **kwargs):
+        self.ode_solver = ode_solver
+        self.integration_range = integration_range
+        self.initial_conditions = initial_conditions
+        self.parameters = parameters
+        return self.solve(**kwargs)
+
     @abstractmethod
-    def solve(self) -> object:
+    def solve(self, **kwargs) -> object:
         pass
 
     @property

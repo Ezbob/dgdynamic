@@ -34,7 +34,7 @@ parameters = {
 
 integration_range = (0, 100)
 
-ode = dgDynamicSim(dg).unchanging_species('D')
+ode = dgDynamicSim(dg, simulator_choice='ode').unchanging_species('D')
 
 # Name of the data set
 name = "foxesRabbits"
