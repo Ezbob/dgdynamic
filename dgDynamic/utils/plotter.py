@@ -1,70 +1,74 @@
 import matplotlib.pyplot as pyplt
-import time
 import math
 
 
-def plot(x_data, y_data, symbols, ignored, title,
-         filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None):
+def plot(queue):
     """
     Tries to plot the data using the MatPlotLib
     :return: self (chaining enabled)
     """
+    pyplt.figure()
+    input_data = queue.get()
 
-    print("Started on plotting")
+    x_data, y_data = input_data['independent'], input_data['dependent']
+
+    def get_data(field):
+        if field in input_data:
+            return input_data[field]
+        return None
+
     if len(y_data) == 0 or len(x_data) == 0:
         raise ValueError("No or mismatched data")
 
     # let get a subplot that fill the whole figure area
     plt = pyplt.subplot(111)
 
-    print("parsing data to matplotlib...")
-    start_t = time.time()
     lines = plt.plot(x_data, y_data)
-    end_t = time.time()
-    print("matplotlib parsed. Took {} secs".format(end_t - start_t))
 
     pyplt.tight_layout()
 
-    if axis_limits is not None:
+    if get_data('axis_limits') is not None:
+        axis_limits = input_data['axis_limits']
         assert isinstance(axis_limits, (tuple, list))
         assert len(axis_limits) == 2
         plt.set_ylim(axis_limits[1])
         plt.set_xlim(axis_limits[0])
 
-    if axis_labels is not None:
+    if get_data('axis_labels') is not None:
+        axis_labels = input_data['axis_labels']
         assert isinstance(axis_labels, (tuple, list))
         assert len(axis_labels) >= 2
         assert isinstance(axis_labels[0], str) and isinstance(axis_labels[1], str)
         plt.xlabel(axis_labels[0])
         plt.ylabel(axis_labels[1])
 
-    if labels is not None:
-        assert len(labels) >= len(lines)
-    else:
-        labels = symbols
-
-    for index, line in enumerate(lines):
-        if index in ignored:
-            line.remove()
+    if get_data('symbols') is not None:
+        if get_data('labels') is not None:
+            assert len(input_data['labels']) >= len(lines)
+            labels = input_data['labels']
         else:
-            line.set_label(labels[index])
-        if 20 < index <= 30:
-            line.set_linestyle('dashed')
-        elif 30 < index <= 40:
-            line.set_linestyle('dashdot')
-        elif 40 < index <= 50:
-            line.set_linestyle('dotted')
+            labels = input_data['symbols']
 
-    # shrinking the box so there is space for the left box
-    box = plt.get_position()
-    plt.set_position([box.x0, box.y0, box.width * 0.84, box.height])
-    _, labels = plt.get_legend_handles_labels()
+        for index, line in enumerate(lines):
+            if index in input_data['ignored']:
+                line.remove()
+            else:
+                line.set_label(labels[index])
+            if 20 < index <= 30:
+                line.set_linestyle('dashed')
+            elif 30 < index <= 40:
+                line.set_linestyle('dashdot')
+            elif 40 < index <= 50:
+                line.set_linestyle('dotted')
 
-    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=math.ceil(len(labels) / 32.))
+        # shrinking the box so there is space for the left box
+        box = plt.get_position()
+        plt.set_position([box.x0, box.y0, box.width * 0.84, box.height])
+        _, labels = plt.get_legend_handles_labels()
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=math.ceil(len(labels) / 32.))
 
-    print("Labels are set")
-
-    if figure_size is not None:
+    if get_data('figure_size') is not None:
+        figure_size = input_data['figure_size']
         assert len(figure_size) >= 2
 
         def cm2inch(number): return number / 2.54
@@ -72,10 +76,11 @@ def plot(x_data, y_data, symbols, ignored, title,
         fig = pyplt.gcf()
         fig.set_size_inches(cm2inch(figure_size[0]), cm2inch(figure_size[1]), forward=True)
 
-    pyplt.title(title)
+    if get_data('title') is not None:
+        pyplt.title(input_data['title'])
+    filename = get_data('filename')
     if filename is None or type(filename) is not str:
         pyplt.show()
     else:
         pyplt.savefig(filename, bbox_inches='tight')
 
-    print("Done plotting.")

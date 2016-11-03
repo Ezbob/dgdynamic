@@ -4,11 +4,9 @@ import threading
 import time
 from abc import abstractmethod, ABCMeta
 from enum import Enum
-from multiprocessing import Process
-from typing import Union, Dict, Tuple, Callable
-
+import multiprocessing as mp
 import sympy as sp
-
+from typing import Union, Dict, Tuple, Callable
 from dgDynamic.config.settings import config
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
@@ -157,9 +155,21 @@ class OdeOutput(LogMixin):
         title = self.solver_used.name.title()
         if self.solver_method_used is not None:
             title += (" - " + self.solver_method_used.name)
-        process = Process(target=plot, args=(self.independent, self.dependent, self.symbols, self._ignored,
-                                             title, filename, labels, figure_size, axis_labels,
-                                             axis_limits))
+
+        queue = mp.Queue()
+        queue.put({
+            'independent': self.independent,
+            'dependent': self.dependent,
+            'symbols': self.symbols,
+            'ignored': self._ignored,
+            'title': title,
+            'filename': filename,
+            'labels': labels,
+            'figure_size': figure_size,
+            'axis_labels': axis_labels,
+            'axis_limits': axis_limits,
+        })
+        process = mp.Process(target=plot, args=(queue,))
         process.start()
         if should_wait:
             process.join(timeout=timeout)
@@ -185,7 +195,10 @@ class OdeOutput(LogMixin):
         by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
         concatenation of the ODE solver name followed by a underscore, the 'name' parameter and finally the file
         extension.
+        :param prefix: name prefix for the data file
+        :param unfiltered: whether to mark 'unchanging species' in the output data set
         :param name: a name for the data file
+        :param stream: use another stream than a file stream
         :param float_precision: precision when printing out the floating point numbers
         :return:
         """
