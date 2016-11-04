@@ -7,6 +7,8 @@ and the model starts out with some infected.
 """
 import mod
 from dgDynamic.mod_dynamics import dgDynamicSim
+from dgDynamic.choices import MatlabOdeSolvers
+import numpy as np
 
 susceptible_infected = "S + I -> 2 I\n"
 recovered = "I -> R\n"
@@ -40,8 +42,11 @@ name = "infected"
 # figure_size in centimetres
 figure_size = (40, 20)
 
-output = ode("Scipy")(integration_range, initial_conditions, parameters, delta_t=0.2)
-output.plot(figure_size=figure_size)
+with ode("scipy") as scipy:
+    # Let's generate some sample delta_ts
+    for delta_t in np.linspace(1, 0.01, num=5):
+        scipy(integration_range, initial_conditions, parameters, delta_t=delta_t).plot(figure_size=figure_size)
 
-output = ode("Matlab")(integration_range, initial_conditions, parameters)
-output.plot(figure_size=figure_size)
+with ode("Matlab") as matlab:
+    for supported in MatlabOdeSolvers:
+        matlab(integration_range, initial_conditions, parameters, supported).plot(figure_size=figure_size)

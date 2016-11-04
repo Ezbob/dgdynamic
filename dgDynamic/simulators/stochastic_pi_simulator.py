@@ -48,13 +48,13 @@ class StochasticPiSystem(DynamicSimulator):
             for vertex_index, vertex in enumerate(edge.sources):
                 if vertex_index == 0:
                     first_vertex = vertex.graph.name
-                    new_input_channel = Channel(channel_number=edge_index,
-                                                rate=self.rate_names[edge_index], is_input=True, is_decay=False)\
+                    new_input_channel = Channel(channel_edge=edge,
+                                                rate=edge_index, is_input=True, is_decay=False)\
                         .add_reagents(edge.targets)
                     channel_results += (new_input_channel,)
                 else:
-                    new_output_channel = Channel(channel_number=edge_index,
-                                                 rate=self.rate_names[edge_index], is_input=False, )
+                    new_output_channel = Channel(channel_edge=edge,
+                                                 rate=edge_index, is_input=False, )
                     channel_results += (new_output_channel,)
             for channel in channel_results:
                 add_channel(vertex_key=first_vertex, channel=channel)
@@ -63,19 +63,19 @@ class StochasticPiSystem(DynamicSimulator):
             vertices = sorted(edge.sources, key=lambda instance: instance.graph.name)
             for vertex_index, vertex in enumerate(vertices):
                 if vertex_index == 0:
-                    new_input_channel = Channel(channel_number=edge_index,
-                                                rate=self.rate_names[edge_index], is_input=True)\
+                    new_input_channel = Channel(channel_edge=edge,
+                                                rate=edge_index, is_input=True)\
                         .add_reagents(edge.targets)
                     add_channel(vertex_key=vertex.graph.name, channel=new_input_channel)
                 else:
-                    new_output_channel = Channel(channel_number=edge_index,
-                                                 rate=self.rate_names[edge_index], is_input=False)
+                    new_output_channel = Channel(channel_edge=edge,
+                                                 rate=edge_index, is_input=False)
                     add_channel(vertex_key=vertex.graph.name, channel=new_output_channel)
 
         def unary_reaction_case(edge, edge_index):
             for vertex in edge.sources:
-                new_channel = Channel(channel_number=edge_index,
-                                      rate=self.rate_names[edge_index], is_input=False, is_decay=True) \
+                new_channel = Channel(channel_edge=edge,
+                                      rate=edge_index, is_input=False, is_decay=True) \
                     .add_reagents(edge.targets)
 
                 add_channel(vertex_key=vertex.graph.name, channel=new_channel)

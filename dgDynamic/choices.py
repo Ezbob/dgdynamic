@@ -23,10 +23,10 @@ class ScipyOdeSolvers(enum.Enum):
     Enum representing different ode solver methods available to the Scipy solver
     """
     VODE = "vode"
-    ZVODE = "zvode"
     LSODA = "lsoda"
     DOPRI5 = "dopri5"
     DOP853 = "dop853"
+    ZVODE = "zvode"
 
 
 class MatlabOdeSolvers(enum.Enum):
@@ -40,4 +40,4 @@ class MatlabOdeSolvers(enum.Enum):
     ode23s = "23s"
     ode23t = "23t"
     ode23tb = "23tb"
-    ode15i = "15i"
+    # ode15i = "15i" # for complex numbers

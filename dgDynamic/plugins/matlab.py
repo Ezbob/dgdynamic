@@ -28,6 +28,10 @@ class MatlabOde(OdePlugin, LogMixin):
         solver_choice = ode_solver if ode_solver is not None else MatlabOdeSolvers.ode45
         return super().__call__(solver_choice, integration_range, initial_conditions, parameters, **kwargs)
 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.engine.clear(nargout=0)
+        self.engine.exit()
+
     def solve(self, **kwargs) -> OdeOutput:
         if type(self._abstract_system) is ODESystem:
             self._user_function = get_matlab_lambda(abstract_ode_system=self._abstract_system,

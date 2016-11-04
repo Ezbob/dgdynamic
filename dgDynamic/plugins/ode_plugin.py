@@ -102,6 +102,13 @@ class OdePlugin(metaclass=ABCMeta):
             raise ValueError("Solve returned None; check the calling parameters")
         return output
 
+    #ooh context manager!
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
     @abstractmethod
     def solve(self, **kwargs) -> object:
         pass
