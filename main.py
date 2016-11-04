@@ -21,7 +21,7 @@ A + A -> A + B
 """
 
 dg = mod.dgAbstract(
-    simple1
+    simple3
 )
 
 stochastic_sim = dgDynamicSim(dg, simulator_choice="spim")

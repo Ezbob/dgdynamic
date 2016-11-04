@@ -2,7 +2,7 @@ from .simulator import DynamicSimulator
 from typing import Union
 from dgDynamic.utils.project_utils import ProjectTypeHints
 import functools as ft
-from ..converters.spim_converter import Channel
+from ..converters.definitions.cgf_channel import Channel
 from collections import defaultdict
 from io import StringIO
 
