@@ -8,7 +8,7 @@ import mod
 
 from dgDynamic.choices import SupportedOdePlugins
 from dgDynamic.mod_dynamics import dgDynamicSim
-from dgDynamic.plugins.scipy import ScipyOdeSolvers
+from dgDynamic.plugins.ode.scipy import ScipyOdeSolvers
 
 
 rabbit_multiples = "R -> 2 R\n"

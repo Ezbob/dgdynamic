@@ -10,7 +10,7 @@ from typing import Union, Dict, Tuple, Callable
 from dgDynamic.config.settings import config
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
-from ..utils.plotter import plot
+from dgDynamic.utils.plotter import plot
 
 
 def sanity_check(plugin_instance, initial_values):
@@ -102,7 +102,6 @@ class OdePlugin(metaclass=ABCMeta):
             raise ValueError("Solve returned None; check the calling parameters")
         return output
 
-    #ooh context manager!
     def __enter__(self):
         return self
 

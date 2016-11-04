@@ -88,8 +88,10 @@ class StochasticPiSystem(DynamicSimulator):
                     homo_reaction_case(hyper_edge, reaction_index)
                 else:
                     hetero_reaction_case(hyper_edge, reaction_index)
-
         return result
+
+    def __call__(self):
+        return
 
     def unchanging_species(self, *species: Union[str, "Symbol", ProjectTypeHints.Countable_Sequence]):
         raise NotImplementedError

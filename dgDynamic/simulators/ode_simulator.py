@@ -1,10 +1,12 @@
 import functools as ft
 from collections import OrderedDict
 from typing import Union
+
 import sympy as sp
-from .simulator import DynamicSimulator
-from dgDynamic.utils.project_utils import ProjectTypeHints
+
 from dgDynamic.choices import SupportedOdePlugins
+from dgDynamic.utils.project_utils import ProjectTypeHints
+from .simulator import DynamicSimulator
 
 
 class ODESystem(DynamicSimulator):
@@ -36,10 +38,10 @@ class ODESystem(DynamicSimulator):
 
         def get_plugin_from_enum(enum_variable):
             if enum_variable == SupportedOdePlugins.Scipy:
-                from dgDynamic.plugins.scipy import ScipyOde
+                from dgDynamic.plugins.ode.scipy import ScipyOde
                 return ScipyOde(self, *args, **kwargs)
             elif enum_variable == SupportedOdePlugins.Matlab:
-                from dgDynamic.plugins.matlab import MatlabOde
+                from dgDynamic.plugins.ode.matlab import MatlabOde
                 return MatlabOde(self, *args, **kwargs)
 
         if type(plugin_name) is str:

@@ -7,7 +7,7 @@ import matlab.engine
 
 from dgDynamic.choices import MatlabOdeSolvers, SupportedOdePlugins
 from dgDynamic.converters.ode.matlab_converter import get_matlab_lambda
-from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
+from dgDynamic.plugins.ode.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import LogMixin
 

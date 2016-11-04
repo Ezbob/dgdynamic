@@ -4,7 +4,7 @@ from scipy.integrate import ode
 
 from dgDynamic.choices import ScipyOdeSolvers, SupportedOdePlugins
 from dgDynamic.converters.ode.scipy_converter import get_scipy_lambda
-from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
+from dgDynamic.plugins.ode.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
 from dgDynamic.utils.project_utils import LogMixin
 
 
