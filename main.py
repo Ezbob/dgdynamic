@@ -14,8 +14,14 @@ C -> E + F
 F + F -> B
 """
 
+simple3 = """
+B -> A
+A + B -> A + A
+A + A -> A + B
+"""
+
 dg = mod.dgAbstract(
-    simple2
+    simple1
 )
 
 stochastic_sim = dgDynamicSim(dg, simulator_choice="spim")
