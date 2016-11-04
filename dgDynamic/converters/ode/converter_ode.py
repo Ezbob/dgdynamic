@@ -5,7 +5,7 @@ from io import StringIO
 from typing import Tuple
 
 from dgDynamic.simulators.ode_simulator import ODESystem
-from ..utils.project_utils import log_it
+from dgDynamic.utils.project_utils import log_it
 
 
 class DefaultFunctionSymbols:

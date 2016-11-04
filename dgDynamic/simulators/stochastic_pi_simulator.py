@@ -2,7 +2,7 @@ from .simulator import DynamicSimulator
 from typing import Union
 from dgDynamic.utils.project_utils import ProjectTypeHints
 import functools as ft
-from ..converters.CGF import Channel
+from ..converters.spim_converter import Channel
 from collections import defaultdict
 from io import StringIO
 
@@ -34,6 +34,7 @@ class StochasticPiSystem(DynamicSimulator):
         super().__init__(graph=graph)
         self.rate_names = tuple('r{}'.format(index) for index in range(self.reaction_count))
         self.symbols = tuple(vertex.graph.name for vertex in self.graph.vertices)
+        self.decay_rates = tuple()
 
     def generate_channels(self):
         # our "matrix"
@@ -48,13 +49,11 @@ class StochasticPiSystem(DynamicSimulator):
             for vertex_index, vertex in enumerate(edge.sources):
                 if vertex_index == 0:
                     first_vertex = vertex.graph.name
-                    new_input_channel = Channel(channel_edge=edge,
-                                                rate=edge_index, is_input=True, is_decay=False)\
+                    new_input_channel = Channel(channel_edge=edge, rate_id=edge_index, is_input=True, is_decay=False)\
                         .add_reagents(edge.targets)
                     channel_results += (new_input_channel,)
                 else:
-                    new_output_channel = Channel(channel_edge=edge,
-                                                 rate=edge_index, is_input=False, )
+                    new_output_channel = Channel(channel_edge=edge, rate_id=edge_index, is_input=False, )
                     channel_results += (new_output_channel,)
             for channel in channel_results:
                 add_channel(vertex_key=first_vertex, channel=channel)
@@ -64,20 +63,20 @@ class StochasticPiSystem(DynamicSimulator):
             for vertex_index, vertex in enumerate(vertices):
                 if vertex_index == 0:
                     new_input_channel = Channel(channel_edge=edge,
-                                                rate=edge_index, is_input=True)\
+                                                rate_id=edge_index, is_input=True)\
                         .add_reagents(edge.targets)
                     add_channel(vertex_key=vertex.graph.name, channel=new_input_channel)
                 else:
                     new_output_channel = Channel(channel_edge=edge,
-                                                 rate=edge_index, is_input=False)
+                                                 rate_id=edge_index, is_input=False)
                     add_channel(vertex_key=vertex.graph.name, channel=new_output_channel)
 
         def unary_reaction_case(edge, edge_index):
             for vertex in edge.sources:
                 new_channel = Channel(channel_edge=edge,
-                                      rate=edge_index, is_input=False, is_decay=True) \
+                                      rate_id=edge_index, is_input=False, is_decay=True) \
                     .add_reagents(edge.targets)
-
+                self.decay_rates += ("r{}".format(edge_index),)
                 add_channel(vertex_key=vertex.graph.name, channel=new_channel)
 
         # debug = {value: key for key, value in self.symbols.items()}
@@ -90,7 +89,7 @@ class StochasticPiSystem(DynamicSimulator):
                 else:
                     hetero_reaction_case(hyper_edge, reaction_index)
 
-        pretty_print_dict(result)
+        return result
 
     def unchanging_species(self, *species: Union[str, "Symbol", ProjectTypeHints.Countable_Sequence]):
         raise NotImplementedError

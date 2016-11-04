@@ -1,7 +1,7 @@
 import sympy as sp
 
 from dgDynamic.simulators.ode_simulator import ODESystem
-from .converter import DefaultFunctionSymbols, substitute, get_parameter_map
+from .converter_ode import DefaultFunctionSymbols, substitute, get_parameter_map
 
 
 class MatlabSymbols(DefaultFunctionSymbols):

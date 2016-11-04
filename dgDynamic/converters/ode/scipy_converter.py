@@ -1,7 +1,6 @@
 import sympy as sp
-
 from dgDynamic.simulators.ode_simulator import ODESystem
-from .converter import substitute, get_parameter_map
+from .converter_ode import substitute, get_parameter_map
 
 
 def get_scipy_lambda(abstract_system: ODESystem, parameter_substitutions=None):

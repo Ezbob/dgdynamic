@@ -1,4 +1,5 @@
 from dgDynamic.mod_dynamics import dgDynamicSim
+from dgDynamic.converters.spim_converter import generate_automata_code
 import mod
 
 simple1 = """
@@ -19,5 +20,4 @@ dg = mod.dgAbstract(
 
 stochastic_sim = dgDynamicSim(dg, simulator_choice="spim")
 
-stochastic_sim.generate_channels()
-
+print(generate_automata_code(stochastic_sim))

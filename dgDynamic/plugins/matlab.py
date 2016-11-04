@@ -2,12 +2,14 @@
 #  This plugin uses the matlab python engine to approximate solutions to ODEs
 ##
 import sys
+
 import matlab.engine
-from dgDynamic.converters.matlab_converter import get_matlab_lambda
-from dgDynamic.simulators.ode_simulator import ODESystem
-from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
-from dgDynamic.utils.project_utils import LogMixin
+
 from dgDynamic.choices import MatlabOdeSolvers, SupportedOdePlugins
+from dgDynamic.converters.ode.matlab_converter import get_matlab_lambda
+from dgDynamic.plugins.ode_plugin import OdePlugin, OdeOutput, sanity_check, get_initial_values
+from dgDynamic.simulators.ode_simulator import ODESystem
+from dgDynamic.utils.project_utils import LogMixin
 
 
 class MatlabOde(OdePlugin, LogMixin):
