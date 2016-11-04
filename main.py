@@ -1,6 +1,7 @@
-from dgDynamic.mod_dynamics import dgDynamicSim
-from dgDynamic.converters.spim_converter import generate_automata_code
 import mod
+
+from dgDynamic.converters.stochastic.spim_converter import generate_automata_code
+from dgDynamic.mod_dynamics import dgDynamicSim
 
 simple1 = """
 B -> A + C

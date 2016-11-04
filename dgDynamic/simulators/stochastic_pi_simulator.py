@@ -4,6 +4,7 @@ from dgDynamic.utils.project_utils import ProjectTypeHints
 import functools as ft
 from ..converters.definitions.cgf_channel import Channel
 from collections import defaultdict
+from ..plugins.stochastic.spim import SpimStochastic
 from io import StringIO
 
 
@@ -91,7 +92,7 @@ class StochasticPiSystem(DynamicSimulator):
         return result
 
     def __call__(self):
-        return
+        return SpimStochastic()
 
     def unchanging_species(self, *species: Union[str, "Symbol", ProjectTypeHints.Countable_Sequence]):
         raise NotImplementedError

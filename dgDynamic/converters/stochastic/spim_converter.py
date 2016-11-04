@@ -1,5 +1,5 @@
 from io import StringIO
-from ..simulators.stochastic_pi_simulator import pretty_print_dict
+from dgDynamic.simulators.stochastic_pi_simulator import pretty_print_dict
 
 
 def generate_automata_code(spi_system):
