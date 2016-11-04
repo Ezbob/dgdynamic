@@ -2,11 +2,12 @@ import os
 import os.path
 import threading
 import time
-from abc import abstractmethod, ABCMeta
+from abc import abstractmethod, ABC
 from enum import Enum
 import multiprocessing as mp
 import sympy as sp
 from typing import Union, Dict, Tuple, Callable
+from ..plugin_base import PluginBase, OutputBase
 from dgDynamic.config.settings import config
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import LogMixin, make_directory, ProjectTypeHints as Types
@@ -50,7 +51,7 @@ def get_initial_values(initial_conditions, symbols):
         return results
 
 
-class OdePlugin(metaclass=ABCMeta):
+class OdePlugin(PluginBase, ABC):
     """
     Super class for all the ODE plugins. This class inherits the Abstract Base Class and functions as a
     interface for all the ODE plugins.
@@ -59,6 +60,7 @@ class OdePlugin(metaclass=ABCMeta):
     def __init__(self, function: Union[object, Callable, str]=None, integration_range=(0, 0), initial_conditions=None,
                  delta_t=0.05, parameters=None, species_count=1, initial_t=0, converter_function=None,
                  ode_solver=None):
+        super().__init__(parameters, initial_conditions)
 
         if type(function) is ODESystem:
             self.ode_count = function.species_count
@@ -80,9 +82,7 @@ class OdePlugin(metaclass=ABCMeta):
         self.initial_t = initial_t
         self._ode_solver = ode_solver
         self.delta_t = delta_t
-        self.parameters = parameters
         self.integration_range = integration_range
-        self.initial_conditions = initial_conditions
         self._convert_to_function(converter_function)
 
     def _convert_to_function(self, converter_function):
@@ -102,14 +102,8 @@ class OdePlugin(metaclass=ABCMeta):
             raise ValueError("Solve returned None; check the calling parameters")
         return output
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
     @abstractmethod
-    def solve(self, **kwargs) -> object:
+    def solve(self):
         pass
 
     @property
@@ -153,7 +147,7 @@ class OdePlugin(metaclass=ABCMeta):
         return self
 
 
-class OdeOutput(LogMixin):
+class OdeOutput(OutputBase):
     """
     The output class for the ODE plugins. This class specifies the handling of solution output from any of the
     ODE plugins. It is the responsibility of the individual ODE plugin to produce a set of independent and dependent

@@ -1,16 +1,20 @@
+from ..plugin_base import PluginBase, OutputBase
 import abc
 
 
-class StochasticOutput:
-    pass
+class StochasticOutput(OutputBase):
+    def plot(self):
+        pass
+
+    def save(self):
+        pass
 
 
-class StochasticPlugin(abc.ABC):
+class StochasticPlugin(PluginBase, abc.ABC):
 
     def __init__(self, sample_range=None, parameters=None, initial_conditions=None,):
+        super().__init__(parameters=parameters, initial_conditions=initial_conditions)
         self.sample_range = sample_range
-        self.parameters = parameters
-        self.initial_conditions = initial_conditions
 
     @abc.abstractmethod
     def solve(self) -> StochasticOutput:
@@ -24,9 +28,3 @@ class StochasticPlugin(abc.ABC):
         if output is None:
             raise ValueError("Stochastic simulation output was None; check your parameters")
         return output
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
