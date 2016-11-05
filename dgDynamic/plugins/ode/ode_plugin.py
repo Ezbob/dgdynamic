@@ -2,10 +2,10 @@ import os
 import os.path
 import threading
 import time
-from abc import abstractmethod, ABC
-from enum import Enum
 import multiprocessing as mp
 import sympy as sp
+from abc import abstractmethod, ABC
+from enum import Enum
 from typing import Union, Dict, Tuple, Callable
 from ..plugin_base import PluginBase, OutputBase
 from dgDynamic.config.settings import config
@@ -36,19 +36,6 @@ def sanity_check(plugin_instance, initial_values):
 
 def _count_parameters(parameters):
     return sum(2 if "<=>" in reaction_string else 1 for reaction_string in parameters.keys())
-
-
-def get_initial_values(initial_conditions, symbols):
-    if isinstance(initial_conditions, (tuple, list)):
-        return initial_conditions
-    elif isinstance(initial_conditions, dict):
-        translate_mapping = {val: index for index, val in enumerate(symbols.values())}
-        results = [0] * len(translate_mapping)
-        for key, value in initial_conditions.items():
-            key_symbol = sp.Symbol(key)
-            if key_symbol in translate_mapping:
-                results[translate_mapping[key_symbol]] = value
-        return results
 
 
 class OdePlugin(PluginBase, ABC):

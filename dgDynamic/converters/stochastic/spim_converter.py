@@ -2,12 +2,19 @@ from io import StringIO
 from dgDynamic.simulators.stochastic_pi_simulator import pretty_print_dict
 
 
-def generate_automata_code(spi_system):
-    channel_dict = spi_system.generate_channels()
-    symbols = spi_system.symbols
-    process_prefix = "_"
+def get_parameters(stochastic_system, parameter_substitutions=None):
 
-    pretty_print_dict(channel_dict)
+    if isinstance(parameter_substitutions, dict):
+        pass
+    elif isinstance(parameter_substitutions, (tuple, list)):
+        pass
+
+
+def get_initial_values(stochastic_system, parameter_substitutions=None):
+    pass
+
+
+def generate_automata_code(channel_dict, symbols, process_prefix="_"):
 
     def generate_channel(stream, channel):
 

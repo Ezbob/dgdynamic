@@ -29,4 +29,4 @@ stochastic_sim = dgDynamicSim(dg, simulator_choice="stochastic")
 
 stochastic_sim('spim')
 
-print(generate_automata_code(stochastic_sim))
+print(generate_automata_code(stochastic_sim.generate_channels(), stochastic_sim.symbols))

@@ -1,6 +1,6 @@
 import abc
-from typing import Union, Tuple
 import sympy as sp
+from typing import Union, Tuple
 from ..converters.reaction_parser import parse
 from dgDynamic.utils.project_utils import LogMixin, ProjectTypeHints
 

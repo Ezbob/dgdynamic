@@ -1,9 +1,9 @@
 """
 This module contains stuff relevant for all converters
 """
+import sympy as sp
 from io import StringIO
 from typing import Tuple
-
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import log_it
 
@@ -51,6 +51,19 @@ def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, rea
         raise TypeError("Parameter {}; Only tuples, "
                         "lists and dictionaries are supported as parameters to two-way reactions"
                         .format(reaction_string))
+
+
+def get_initial_values(initial_conditions, symbols):
+    if isinstance(initial_conditions, (tuple, list)):
+        return initial_conditions
+    elif isinstance(initial_conditions, dict):
+        translate_mapping = {val: index for index, val in enumerate(symbols.values())}
+        results = [0] * len(translate_mapping)
+        for key, value in initial_conditions.items():
+            key_symbol = sp.Symbol(key)
+            if key_symbol in translate_mapping:
+                results[translate_mapping[key_symbol]] = value
+        return results
 
 
 def get_parameter_map(abstract_system: ODESystem, parameter_substitutions=None):

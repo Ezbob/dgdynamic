@@ -1,5 +1,5 @@
-from ..plugin_base import PluginBase, OutputBase
 import abc
+from ..plugin_base import PluginBase, OutputBase
 
 
 class StochasticOutput(OutputBase):

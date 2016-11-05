@@ -1,9 +1,7 @@
 import functools as ft
+import sympy as sp
 from collections import OrderedDict
 from typing import Union
-
-import sympy as sp
-
 from dgDynamic.choices import SupportedOdePlugins
 from dgDynamic.utils.project_utils import ProjectTypeHints
 from .simulator import DynamicSimulator

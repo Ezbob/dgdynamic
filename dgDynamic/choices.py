@@ -6,7 +6,7 @@ class SimulatorModes(enum.Enum):
     This enum lists the available simulation modes
     """
     ODE = "ode"
-    Stochastic_Pi = "spim"
+    Stochastic_Pi = "stochastic"
 
 
 class SupportedOdePlugins(enum.Enum):

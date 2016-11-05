@@ -1,6 +1,6 @@
+import os.path
 from dgDynamic.config.settings import config
 from .stochastic_plugin import StochasticPlugin, StochasticOutput
-import os.path
 
 
 class SpimStochastic(StochasticPlugin):
