@@ -25,6 +25,8 @@ dg = mod.dgAbstract(
     simple3
 )
 
-stochastic_sim = dgDynamicSim(dg, simulator_choice="spim")
+stochastic_sim = dgDynamicSim(dg, simulator_choice="stochastic")
+
+stochastic_sim('spim')
 
 print(generate_automata_code(stochastic_sim))

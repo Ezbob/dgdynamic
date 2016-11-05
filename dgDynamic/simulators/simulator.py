@@ -16,6 +16,18 @@ class DynamicSimulator(abc.ABC, LogMixin):
     def parse_abstract_reaction(self, reaction: str) -> Union[object, Tuple[object, object]]:
         return parse(self, reaction)
 
+    def __call__(self, plugins, *args, **kwargs):
+        return self.get_plugin(plugins, *args, **kwargs)
+
     @abc.abstractmethod
     def unchanging_species(self, *species: Union[str, sp.Symbol, ProjectTypeHints.Countable_Sequence]):
         pass
+
+    @abc.abstractmethod
+    def get_plugin_from_enum(self, enum_variable, *args, **kwargs):
+        pass
+
+    @abc.abstractmethod
+    def get_plugin(self, plugin_name, *args, **kwargs):
+        pass
+

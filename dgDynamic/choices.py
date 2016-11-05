@@ -18,6 +18,10 @@ class SupportedOdePlugins(enum.Enum):
     Matlab = "matlab"
 
 
+class SupportedStochasticPlugins(enum.Enum):
+    SPiM = "spim"
+
+
 class ScipyOdeSolvers(enum.Enum):
     """
     Enum representing different ode solver methods available to the Scipy solver

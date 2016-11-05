@@ -31,26 +31,22 @@ class ODESystem(DynamicSimulator):
         self.parameters = OrderedDict((edge.id, sp.Symbol("k{}".format(index + 1)))
                                       for index, edge in enumerate(self.graph.edges))
 
-    def __call__(self, plugins, *args, **kwargs):
-        return self.get_ode_plugin(plugins, *args, **kwargs)
+    def get_plugin_from_enum(self, enum_variable, *args, **kwargs):
+        if enum_variable == SupportedOdePlugins.Scipy:
+            from dgDynamic.plugins.ode.scipy import ScipyOde
+            return ScipyOde(self, *args, **kwargs)
+        elif enum_variable == SupportedOdePlugins.Matlab:
+            from dgDynamic.plugins.ode.matlab import MatlabOde
+            return MatlabOde(self, *args, **kwargs)
 
-    def get_ode_plugin(self, plugin_name: Union[str, SupportedOdePlugins], *args, **kwargs):
-
-        def get_plugin_from_enum(enum_variable):
-            if enum_variable == SupportedOdePlugins.Scipy:
-                from dgDynamic.plugins.ode.scipy import ScipyOde
-                return ScipyOde(self, *args, **kwargs)
-            elif enum_variable == SupportedOdePlugins.Matlab:
-                from dgDynamic.plugins.ode.matlab import MatlabOde
-                return MatlabOde(self, *args, **kwargs)
-
-        if type(plugin_name) is str:
+    def get_plugin(self, plugin_name: Union[str, SupportedOdePlugins], *args, **kwargs):
+        if isinstance(plugin_name, str):
             for plugin in SupportedOdePlugins:
                 if plugin.value in plugin_name.lower():
-                    return get_plugin_from_enum(plugin)
+                    return self.get_plugin_from_enum(plugin, *args, **kwargs)
             raise ValueError("plugin name not recognized")
-        elif type(plugin_name) is SupportedOdePlugins:
-            return get_plugin_from_enum(plugin_name)
+        elif isinstance(plugin_name, SupportedOdePlugins):
+            return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
 
     def generate_rate_laws(self):
         for index, edge in enumerate(self.graph.edges):

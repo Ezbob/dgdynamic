@@ -5,6 +5,7 @@ import functools as ft
 from ..converters.definitions.cgf_channel import Channel
 from collections import defaultdict
 from ..plugins.stochastic.spim import SpimStochastic
+from dgDynamic.choices import SupportedStochasticPlugins
 from io import StringIO
 
 
@@ -91,8 +92,17 @@ class StochasticPiSystem(DynamicSimulator):
                     hetero_reaction_case(hyper_edge, reaction_index)
         return result
 
-    def __call__(self):
-        return SpimStochastic()
+    def get_plugin_from_enum(self, enum_variable, *args, **kwargs):
+        if enum_variable == SupportedStochasticPlugins.SPiM:
+            return SpimStochastic(self, *args, **kwargs)
+
+    def get_plugin(self, plugin_name, *args, **kwargs):
+        if isinstance(plugin_name, str):
+            for plugin_enum in SupportedStochasticPlugins:
+                if plugin_enum.value in plugin_name.lower():
+                    return self.get_plugin_from_enum(plugin_enum, *args, **kwargs)
+        elif isinstance(plugin_name, SupportedStochasticPlugins):
+            return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
 
     def unchanging_species(self, *species: Union[str, "Symbol", ProjectTypeHints.Countable_Sequence]):
         raise NotImplementedError
