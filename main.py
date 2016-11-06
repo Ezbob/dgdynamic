@@ -4,7 +4,7 @@ from dgDynamic.converters.stochastic.spim_converter import generate_automata_cod
 from dgDynamic.mod_dynamics import dgDynamicSim
 
 simple1 = """
-B -> A + C
+B -> A
 A + B <=> A + A
 """
 
@@ -22,11 +22,13 @@ A + A -> A + B
 """
 
 rates_simple3 = {'B -> A': 0.3,
-                 'A + B -> A + A': 0.4,
-                 'A + A -> A + B': 0.6}
+                 'A + B -> A + A': 0.4}
+
+rates_simple1 = {'B -> A': 0.3,
+                 'A + B <=> A + A': {'<=>': 0.6}}
 
 dg = mod.dgAbstract(
-    simple3
+    simple1
 )
 
 stochastic_sim = dgDynamicSim(dg, simulator_choice="stochastic")
@@ -34,6 +36,6 @@ stochastic_sim = dgDynamicSim(dg, simulator_choice="stochastic")
 stochastic_sim('spim')
 
 #pretty_print_dict(stochastic_sim.generate_channels())
-print(get_parameters(stochastic_sim, stochastic_sim.generate_channels(), rates_simple3))
+print(get_parameters(stochastic_sim, stochastic_sim.generate_channels(), rates_simple1))
 print(generate_automata_code(stochastic_sim.generate_channels(), stochastic_sim.symbols))
 

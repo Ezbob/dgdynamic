@@ -1,0 +1,4 @@
+
+
+class InitialValueError(Exception):
+    pass

@@ -1,14 +1,49 @@
 from io import StringIO
+from dgDynamic.utils.exceptions import InitialValueError
 from dgDynamic.simulators.stochastic_pi_simulator import pretty_print_dict
+from collections import defaultdict
 
 
 def get_preamble(sample_range, draw_automata=False) -> str:
     pass
 
 
+def _get_edge_rate_dict(stochastic_system, parameters):
+    result = dict()
+    for edge, rate in parameters.items():
+        parsed_edges = stochastic_system.parse_abstract_reaction(edge)
+        if isinstance(rate, (int, float)):
+            if isinstance(parsed_edges, tuple):
+                for parsed_edge in parsed_edges:
+                    result[parsed_edge.id] = rate
+            else:
+                result[parsed_edges.id] = rate
+        elif isinstance(rate, tuple):
+            if isinstance(parsed_edges, tuple):
+                for parsed_edge, rate_item in zip(parsed_edges, rate):
+                    result[parsed_edge.id] = rate_item
+            else:
+                raise InitialValueError("Multivalued initial condition given for reaction: {}".format(edge))
+        elif isinstance(rate, dict):
+            if isinstance(parsed_edges, tuple):
+                if '<=>' in rate:
+                    for parsed_edge in parsed_edges:
+                        result[parsed_edge.id] = rate['<=>']
+                elif '->' in rate and '<-' in rate:
+                    result[parsed_edges[0].id] = rate['->']
+                    result[parsed_edges[1].id] = rate['<-']
+                else:
+                    raise InitialValueError("Not enough initial conditions given for reaction: {}".format(edge))
+            else:
+                raise InitialValueError("Multivalued initial condition given for reaction: {}".format(edge))
+    return result
+
+
 def get_parameters(stochastic_system, channel_dict, parameters=None) -> str:
     if isinstance(parameters, dict):
-        edge_rate_dict = {stochastic_system.parse_abstract_reaction(edge).id: rate for edge, rate in parameters.items()}
+        edge_rate_dict = _get_edge_rate_dict(stochastic_system, parameters)
+        print(edge_rate_dict)
+
         already_seen = dict()
         with StringIO() as str_out:
             for channel_tuple in channel_dict.values():
