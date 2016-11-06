@@ -7,33 +7,46 @@ def get_preamble(sample_range, draw_automata=False) -> str:
 
 
 def generate_rates(stochastic_system, channel_dict, parameters=None) -> str:
-    if isinstance(parameters, dict):
-        edge_rate_dict = get_edge_rate_dict(reaction_parser_function=stochastic_system.parse_abstract_reaction,
-                                            user_parameters=parameters)
-
-        already_seen = dict()
-        with StringIO() as str_out:
-            for channel_tuple in channel_dict.values():
-                for channel in channel_tuple:
-                    rate = 0.0
-                    if channel.channel_edge.id in edge_rate_dict:
-                        rate = edge_rate_dict[channel.channel_edge.id]
-                    if channel.rate_id not in already_seen:
-                        if channel.is_decay:
-                            str_out.write("val r{} = {}\n".format(channel.rate_id, rate))
-                        else:
-                            str_out.write("new chan{}@{} : chan()\n".format(channel.rate_id, rate))
-                        already_seen[channel.rate_id] = True
-            return str_out.getvalue()
-    elif isinstance(parameters, (tuple, list)):
-        pass
+    edge_rate_dict = get_edge_rate_dict(reaction_parser_function=stochastic_system.parse_abstract_reaction,
+                                        user_parameters=parameters)
+    already_seen = dict()
+    with StringIO() as str_out:
+        for channel_tuple in channel_dict.values():
+            for channel in channel_tuple:
+                rate = edge_rate_dict[channel.channel_edge.id]
+                if channel.rate_id not in already_seen:
+                    if channel.is_decay:
+                        str_out.write("val r{} = {}\n".format(channel.rate_id, rate))
+                    else:
+                        str_out.write("new chan{}@{} : chan()\n".format(channel.rate_id, rate))
+                    already_seen[channel.rate_id] = True
+        return str_out.getvalue()
 
 
-def get_initial_values(symbols, initial_conditions=None) -> str:
-    if isinstance(initial_conditions, dict):
-        pass
-    elif isinstance(initial_conditions, (tuple, list)):
-        pass
+def generate_initial_values(symbols, initial_conditions) -> str:
+
+    with StringIO() as str_out:
+        str_out.write("run ( ")
+        if isinstance(initial_conditions, dict):
+            for index, key in enumerate(initial_conditions.keys()):
+                if isinstance(initial_conditions[key], int):
+                    str_out.write("{} of _{}()".format(initial_conditions[key], key))
+
+                    if index < len(initial_conditions) - 1:
+                        str_out.write(" | ")
+                else:
+                    raise TypeError("Unsupported value type for key: {}".format(key))
+        elif isinstance(initial_conditions, (tuple, list, set)):
+            for index, rate in enumerate(initial_conditions):
+                if isinstance(rate, int):
+                    str_out.write("{} of _{}()".format(symbols[index], rate))
+
+                    if index < len(initial_conditions) - 1:
+                        str_out.write(" | ")
+                else:
+                    raise TypeError("Unsupported value type for element: {}".format(index))
+        str_out.write(" )\n")
+        return str_out.getvalue()
 
 
 def generate_automata_code(channel_dict, symbols, process_prefix="_"):
