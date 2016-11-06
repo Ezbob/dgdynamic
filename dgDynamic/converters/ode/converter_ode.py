@@ -6,6 +6,7 @@ from io import StringIO
 from typing import Tuple
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import log_it
+from dgDynamic.utils.exceptions import InitialValueError
 
 
 class DefaultFunctionSymbols:
@@ -19,7 +20,7 @@ class DefaultFunctionSymbols:
 
 def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, reaction_string, result_dict):
 
-    if isinstance(parameter_value, (tuple, list)):
+    if isinstance(parameter_value, (tuple, list, set)):
 
         if len(parameter_value) == 0:
             raise IndexError("Cannot parse empty parameter values")
@@ -40,7 +41,7 @@ def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, rea
                 result_dict[abstract_system.parameters[edge_tuple[0].id]] = parameter_value['->']
                 result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value['<-']
             except KeyError:
-                raise KeyError("Two-way reactions keys not defined or understood")
+                raise InitialValueError("Two-way reactions keys not defined or understood")
 
     elif isinstance(parameter_value, (float, int)):
 
@@ -48,9 +49,7 @@ def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, rea
             result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value
 
     else:
-        raise TypeError("Parameter {}; Only tuples, "
-                        "lists and dictionaries are supported as parameters to two-way reactions"
-                        .format(reaction_string))
+        raise InitialValueError("Unsupported type of initial condition for reaction: {} ".format(reaction_string))
 
 
 def get_initial_values(initial_conditions, symbols):

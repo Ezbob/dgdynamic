@@ -10,20 +10,20 @@ def get_preamble(sample_range, draw_automata=False) -> str:
 
 def _get_edge_rate_dict(stochastic_system, parameters):
     result = dict()
-    for edge, rate in parameters.items():
-        parsed_edges = stochastic_system.parse_abstract_reaction(edge)
+    for reaction_string, rate in parameters.items():
+        parsed_edges = stochastic_system.parse_abstract_reaction(reaction_string)
         if isinstance(rate, (int, float)):
             if isinstance(parsed_edges, tuple):
                 for parsed_edge in parsed_edges:
                     result[parsed_edge.id] = rate
             else:
                 result[parsed_edges.id] = rate
-        elif isinstance(rate, tuple):
+        elif isinstance(rate, (tuple, list, set)):
             if isinstance(parsed_edges, tuple):
                 for parsed_edge, rate_item in zip(parsed_edges, rate):
                     result[parsed_edge.id] = rate_item
             else:
-                raise InitialValueError("Multivalued initial condition given for reaction: {}".format(edge))
+                raise InitialValueError("Multivalued initial condition given for reaction: {}".format(reaction_string))
         elif isinstance(rate, dict):
             if isinstance(parsed_edges, tuple):
                 if '<=>' in rate:
@@ -33,9 +33,12 @@ def _get_edge_rate_dict(stochastic_system, parameters):
                     result[parsed_edges[0].id] = rate['->']
                     result[parsed_edges[1].id] = rate['<-']
                 else:
-                    raise InitialValueError("Not enough initial conditions given for reaction: {}".format(edge))
+                    raise InitialValueError("Not enough initial conditions given for reaction: {}"
+                                            .format(reaction_string))
             else:
-                raise InitialValueError("Multivalued initial condition given for reaction: {}".format(edge))
+                raise InitialValueError("Multivalued initial condition given for reaction: {}".format(reaction_string))
+        else:
+            raise InitialValueError("Unsupported type of initial condition for reaction: {} ".format(reaction_string))
     return result
 
 
