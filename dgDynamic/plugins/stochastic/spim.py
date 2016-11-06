@@ -14,9 +14,6 @@ class SpimStochastic(StochasticPlugin):
         if self._spim_path is None or not self._spim_path:
             self._spim_path = os.path.join(os.path.dirname(__file__), "spim.ocaml")
         self._spim_path = os.path.abspath(self._spim_path)
-        self.simulator = simulator
-
-        print(self._spim_path)
-
+        self._simulator = simulator
         self._ocamlrun_path = os.path.abspath(config['Simulation']['OCAML_RUN'])
 

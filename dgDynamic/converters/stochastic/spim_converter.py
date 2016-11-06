@@ -2,16 +2,36 @@ from io import StringIO
 from dgDynamic.simulators.stochastic_pi_simulator import pretty_print_dict
 
 
-def get_parameters(stochastic_system, parameter_substitutions=None):
-
-    if isinstance(parameter_substitutions, dict):
-        pass
-    elif isinstance(parameter_substitutions, (tuple, list)):
-        pass
-
-
-def get_initial_values(stochastic_system, parameter_substitutions=None):
+def get_preamble(sample_range, draw_automata=False) -> str:
     pass
+
+
+def get_parameters(stochastic_system, channel_dict, parameters=None) -> str:
+    if isinstance(parameters, dict):
+        edge_rate_dict = {stochastic_system.parse_abstract_reaction(edge).id: rate for edge, rate in parameters.items()}
+        already_seen = dict()
+        with StringIO() as str_out:
+            for channel_tuple in channel_dict.values():
+                for channel in channel_tuple:
+                    rate = 0.0
+                    if channel.channel_edge.id in edge_rate_dict:
+                        rate = edge_rate_dict[channel.channel_edge.id]
+                    if channel.rate_id not in already_seen:
+                        if channel.is_decay:
+                            str_out.write("val r{} = {}\n".format(channel.rate_id, rate))
+                        else:
+                            str_out.write("new chan{}@{} : chan()\n".format(channel.rate_id, rate))
+                        already_seen[channel.rate_id] = True
+            return str_out.getvalue()
+    elif isinstance(parameters, (tuple, list)):
+        pass
+
+
+def get_initial_values(symbols, initial_conditions=None) -> str:
+    if isinstance(initial_conditions, dict):
+        pass
+    elif isinstance(initial_conditions, (tuple, list)):
+        pass
 
 
 def generate_automata_code(channel_dict, symbols, process_prefix="_"):
