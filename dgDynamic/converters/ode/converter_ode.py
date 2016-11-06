@@ -4,9 +4,7 @@ This module contains stuff relevant for all converters
 import sympy as sp
 from io import StringIO
 from typing import Tuple
-from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import log_it
-from dgDynamic.utils.exceptions import InitialValueError
 
 
 class DefaultFunctionSymbols:
@@ -16,40 +14,6 @@ class DefaultFunctionSymbols:
     equation_separator = ','
     function_start = 'lambda t,y: ['
     function_end = ']'
-
-
-def _handle_two_way_parameters(abstract_system, edge_tuple, parameter_value, reaction_string, result_dict):
-
-    if isinstance(parameter_value, (tuple, list, set)):
-
-        if len(parameter_value) == 0:
-            raise IndexError("Cannot parse empty parameter values")
-        elif len(parameter_value) == 1:
-            result_dict[abstract_system.parameters[edge_tuple[0].id]] = \
-                result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value[0]
-        else:
-            for edge, parameter in zip(edge_tuple, parameter_value):
-                result_dict[abstract_system.parameters[edge.id]] = parameter
-
-    elif isinstance(parameter_value, dict):
-
-        if '<=>' in parameter_value:
-            result_dict[abstract_system.parameters[edge_tuple[0].id]] = \
-                result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value['<=>']
-        else:
-            try:
-                result_dict[abstract_system.parameters[edge_tuple[0].id]] = parameter_value['->']
-                result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value['<-']
-            except KeyError:
-                raise InitialValueError("Two-way reactions keys not defined or understood")
-
-    elif isinstance(parameter_value, (float, int)):
-
-        result_dict[abstract_system.parameters[edge_tuple[0].id]] = \
-            result_dict[abstract_system.parameters[edge_tuple[1].id]] = parameter_value
-
-    else:
-        raise InitialValueError("Unsupported type of initial condition for reaction: {} ".format(reaction_string))
 
 
 def get_initial_values(initial_conditions, symbols):
@@ -63,46 +27,6 @@ def get_initial_values(initial_conditions, symbols):
             if key_symbol in translate_mapping:
                 results[translate_mapping[key_symbol]] = value
         return results
-
-
-def get_parameter_map(abstract_system: ODESystem, parameter_substitutions=None):
-    """
-    Create the parameter mapping
-    :param abstract_system:
-    :param parameter_substitutions:
-    :return:
-    """
-    if parameter_substitutions is not None:
-
-        if isinstance(parameter_substitutions, dict):
-            # here the user uses a dictionary for parameter_subs with type: Dict[str, Union[Tuple[Real,Real], Real]]
-            parameter_map = dict()
-            for reaction_string, parameter_value in parameter_substitutions.items():
-                edges = abstract_system.parse_abstract_reaction(reaction_string.strip())
-
-                if isinstance(edges, tuple):
-                    if not edges[0].isNull() and not edges[1].isNull():
-                        _handle_two_way_parameters(abstract_system=abstract_system, edge_tuple=edges,
-                                               result_dict=parameter_map, reaction_string=reaction_string,
-                                               parameter_value=parameter_value)
-                    else:
-                        raise ValueError("Could not find hyper edge for reaction: {}".format(reaction_string))
-                else:
-                    if not edges.isNull():
-                        if isinstance(parameter_value, (int, float)):
-                            parameter_map[abstract_system.parameters[edges.id]] = parameter_value
-                        else:
-                            raise TypeError("Expected float or int parameter for reaction {}".format(reaction_string))
-                    else:
-                        raise ValueError("Could not find hyper edge for reaction: {}".format(reaction_string))
-
-        elif isinstance(parameter_substitutions, (tuple, list)):
-            parameter_map = {k: v for k, v in zip(abstract_system.parameters.values(), parameter_substitutions)}
-        else:
-            raise TypeError("Got unknown type for parameters")
-    else:
-        parameter_map = None
-    return parameter_map
 
 
 @log_it

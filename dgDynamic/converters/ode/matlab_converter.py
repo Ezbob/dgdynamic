@@ -1,7 +1,8 @@
 import sympy as sp
 
 from dgDynamic.simulators.ode_simulator import ODESystem
-from .converter_ode import DefaultFunctionSymbols, substitute, get_parameter_map
+from .converter_ode import DefaultFunctionSymbols, substitute
+from ..convert_base import get_edge_rate_dict
 
 
 class MatlabSymbols(DefaultFunctionSymbols):
@@ -22,9 +23,12 @@ def get_matlab_lambda(abstract_ode_system: ODESystem, parameter_substitutions=No
     :param parameter_substitutions: list/tuple of values that should be substituted
     :return: string, containing a anonymous MatLab function that can be integrated
     """
-    parameter_map = get_parameter_map(abstract_ode_system, parameter_substitutions)
+    parameter_map = get_edge_rate_dict(reaction_parser_function=abstract_ode_system.parse_abstract_reaction,
+                                       user_parameters=parameter_substitutions,
+                                       internal_parameters_map=abstract_ode_system.parameters)
 
-    substitute_me = {value: sp.Symbol("y({})".format(key + 1)) for key, value in enumerate(abstract_ode_system.symbols.values())}
+    substitute_me = {value: sp.Symbol("y({})".format(key + 1))
+                     for key, value in enumerate(abstract_ode_system.symbols.values())}
 
     return substitute(abstract_ode_system.generate_equations(), parameter_map, symbol_map=substitute_me,
                       extra_symbols=MatlabSymbols(), postprocessor=_postprocessor)

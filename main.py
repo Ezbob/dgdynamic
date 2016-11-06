@@ -1,6 +1,6 @@
 import mod
 
-from dgDynamic.converters.stochastic.spim_converter import generate_automata_code, pretty_print_dict, get_parameters
+from dgDynamic.converters.stochastic.spim_converter import generate_automata_code, generate_rates
 from dgDynamic.mod_dynamics import dgDynamicSim
 
 simple1 = """
@@ -36,6 +36,6 @@ stochastic_sim = dgDynamicSim(dg, simulator_choice="stochastic")
 stochastic_sim('spim')
 
 #pretty_print_dict(stochastic_sim.generate_channels())
-print(get_parameters(stochastic_sim, stochastic_sim.generate_channels(), rates_simple1))
+print(generate_rates(stochastic_sim, stochastic_sim.generate_channels(), rates_simple1))
 print(generate_automata_code(stochastic_sim.generate_channels(), stochastic_sim.symbols))
 
