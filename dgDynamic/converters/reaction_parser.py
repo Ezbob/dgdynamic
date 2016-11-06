@@ -1,4 +1,5 @@
 from typing import Iterable, Tuple, Union
+from dgDynamic.utils.exceptions import ReactionParseError
 
 
 def _parse_sides(side: str) -> str:
@@ -12,7 +13,7 @@ def _parse_sides(side: str) -> str:
                 try:
                     species = the_splitting[index + 1]
                 except IndexError:
-                    raise IndexError("Index error in\
+                    raise ReactionParseError("Index error in\
                       specification parsing; tried index {} but length is {} ".format(index + 1,
                                                                                       len(the_splitting)))
                 for i in range(multiplier):
@@ -39,10 +40,13 @@ def _break_two_way_deviations(two_way: str) -> Iterable[str]:
 
 def _parse_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHyperEdge":
     sources, _, targets = derivation.partition(" -> ")
-    return graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
+    edge = graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
+    if edge.isNull():
+        raise ReactionParseError("Encountered a null edge")
+    return edge
 
 
-def parse(abstract_system: "DynamicSimulator", reaction: str) -> Union[object, Tuple[object,object]]:
+def parse(abstract_system: "DynamicSimulator", reaction: str) -> Union[object, Tuple[object, object]]:
     if reaction.find(" <=> ") != -1:
         first_reaction, second_reaction = _break_two_way_deviations(reaction)
         return _parse_reaction(abstract_system.graph, first_reaction), \
