@@ -35,7 +35,7 @@ dg = mod.dgAbstract(
     simple1
 )
 
-stochastic_sim = dgDynamicSim(dg, simulator_choice="stochastic")
+stochastic_sim = dgDynamicSim(dg, simulator_choice="stochastic").unchanging_species('A')
 
 spim = stochastic_sim('spim')
 

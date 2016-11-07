@@ -108,4 +108,4 @@ class StochasticPiSystem(DynamicSimulator):
         elif isinstance(species, tuple):
             for element in species:
                 self.ignored += (element,)
-
+        return self

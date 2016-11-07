@@ -20,7 +20,7 @@ def generate_preamble(sample_range, draw_automata=False, symbols=None, ignored=N
                 if ignored is not None:
                     if symbol not in ignored:
                         str_out.write("_{}()".format(symbol))
-                        if index < len(symbols) - 1:
+                        if index < (len(symbols) - len(ignored)) - 1:
                             str_out.write("; ")
                 else:
                     str_out.write("_{}()".format(symbol))

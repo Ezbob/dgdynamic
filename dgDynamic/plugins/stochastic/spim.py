@@ -44,11 +44,15 @@ class SpimStochastic(StochasticPlugin):
             file_path_code = os.path.join(tmpdir, "spim.spi")
             generate_code_file(file_path_code)
 
-            with open(os.devnull, 'w') as devnull:
+            with open(os.devnull, mode="w") as null_dev:
                 run_parameters = (self._ocamlrun_path, self._spim_path, file_path_code)
-                subprocess.run(run_parameters, stdout=devnull)
+                subprocess.run(run_parameters, stdout=null_dev)
 
-            with open(os.path.join(tmpdir, "spim.spi.csv")) as file:
+            csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
+            if not os.path.isfile(csv_file_path):
+                raise IOError("Missing SPiM output")
+
+            with open(csv_file_path) as file:
                 reader = csv.reader(file)
                 next(reader)
                 independent = array.array('d')
