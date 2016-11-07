@@ -25,6 +25,6 @@ class StochasticPlugin(PluginBase, abc.ABC):
         self.parameters = parameters
         self.initial_conditions = initial_conditions
         output = self.solve()
-        if output is None:
-            raise ValueError("Stochastic simulation output was None; check your parameters")
+        #if output is None:
+        #    raise ValueError("Stochastic simulation output was None; check your parameters")
         return output
