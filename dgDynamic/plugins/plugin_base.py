@@ -150,7 +150,8 @@ class SimulationOutput(LogMixin):
             self.logger.info("Started on writing data to disk")
             start_t = time.time()
             with stream as out:
-                # writing header underscore prefix marks that the columns where constant in the integration process
+                # writing header underscore prefix marks that the columns where ignored (for ODE only, since SPiM
+                # don't output data for a variable if it's not in the plot directive)
                 out.write(header_row())
 
                 for row in gen_data_rows():

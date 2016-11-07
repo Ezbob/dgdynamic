@@ -60,5 +60,5 @@ class ProjectTypeHints:
     Real = Union[float, int]
     Reals = List[Real]
     Numbers = Union[Reals, Real]
-    Countable_Sequence = Union[List[Any], Tuple[Any,...]]
+    Countable_Sequence = Union[List[Any], Tuple[Any, ...], Set[Any]]
     ODE_Function = Callable[[Numbers, Numbers], Numbers]

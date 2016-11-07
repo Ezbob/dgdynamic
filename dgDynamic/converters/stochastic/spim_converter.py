@@ -2,7 +2,7 @@ from io import StringIO
 from ..convert_base import get_edge_rate_dict
 
 
-def generate_preamble(sample_range, draw_automata=False, symbols=None) -> str:
+def generate_preamble(sample_range, draw_automata=False, symbols=None, ignored=None) -> str:
 
     with StringIO() as str_out:
         if isinstance(sample_range, (tuple, list, set)):
@@ -17,9 +17,15 @@ def generate_preamble(sample_range, draw_automata=False, symbols=None) -> str:
             str_out.write("directive plot ")
 
             for index, symbol in enumerate(symbols):
-                str_out.write("_{}()".format(symbol))
-                if index < len(symbols) - 1:
-                    str_out.write("; ")
+                if ignored is not None:
+                    if symbol not in ignored:
+                        str_out.write("_{}()".format(symbol))
+                        if index < len(symbols) - 1:
+                            str_out.write("; ")
+                else:
+                    str_out.write("_{}()".format(symbol))
+                    if index < len(symbols) - 1:
+                        str_out.write("; ")
             str_out.write("\n")
 
         if draw_automata:

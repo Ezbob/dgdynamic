@@ -26,7 +26,8 @@ class SpimStochastic(StochasticPlugin):
 
         def generate_code_file(file_path):
             with open(file_path, mode="w") as code_file:
-                code_file.write(generate_preamble(self.sample_range, symbols=self._simulator.symbols))
+                code_file.write(generate_preamble(self.sample_range, symbols=self._simulator.symbols,
+                                                  ignored=self._simulator.ignored))
                 code_file.write('\n')
                 code_file.write(generate_rates(self._simulator, channel_dict=channels, parameters=self.parameters))
                 code_file.write('\n')

@@ -1,7 +1,5 @@
 import functools as ft
 from .simulator import DynamicSimulator
-from typing import Union
-from dgDynamic.utils.project_utils import ProjectTypeHints
 from ..converters.definitions.cgf_channel import Channel
 from collections import defaultdict
 from ..plugins.stochastic.spim import SpimStochastic
@@ -104,5 +102,10 @@ class StochasticPiSystem(DynamicSimulator):
         elif isinstance(plugin_name, SupportedStochasticPlugins):
             return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
 
-    def unchanging_species(self, *species: Union[str, "Symbol", ProjectTypeHints.Countable_Sequence]):
-        raise NotImplementedError
+    def unchanging_species(self, *species):
+        if isinstance(species, str):
+            self.ignored = (species,)
+        elif isinstance(species, tuple):
+            for element in species:
+                self.ignored += (element,)
+
