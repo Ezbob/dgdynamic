@@ -93,21 +93,6 @@ class ODESystem(DynamicSimulator):
 
         return self
 
-    def unchanging_species(self, *species: Union[str, sp.Symbol, ProjectTypeHints.Countable_Sequence]):
-        if len(self.ignored) < self.species_count:
-            if isinstance(species, str):
-                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
-                                     if sp.Symbol(species) == item)
-            elif isinstance(species, sp.Symbol):
-                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
-                                     if species == item)
-            else:
-                self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
-                                     for element in species if sp.Symbol(element) == item)
-        else:
-            self.logger.warn("ignored species count exceeds the count of actual species")
-        return self
-
     def __repr__(self):
         return "<Abstract Ode System {}>".format(self.left_hand_sides)
 

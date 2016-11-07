@@ -42,7 +42,7 @@ def _parse_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHyperE
     sources, _, targets = derivation.partition(" -> ")
     edge = graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
     if edge.isNull():
-        raise ReactionParseError("Encountered a null edge")
+        raise ReactionParseError("No edge for reaction: {}".format(derivation))
     return edge
 
 

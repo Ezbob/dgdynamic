@@ -101,11 +101,3 @@ class StochasticPiSystem(DynamicSimulator):
                     return self.get_plugin_from_enum(plugin_enum, *args, **kwargs)
         elif isinstance(plugin_name, SupportedStochasticPlugins):
             return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
-
-    def unchanging_species(self, *species):
-        if isinstance(species, str):
-            self.ignored = (species,)
-        elif isinstance(species, tuple):
-            for element in species:
-                self.ignored += (element,)
-        return self
