@@ -58,7 +58,7 @@ dg = mod.dgAbstract(reactions)
 
 ode = dgDynamicSim(dg)
 
-solver = ode.get_ode_plugin("scipy")
+solver = ode.get_plugin("scipy")
 
 solver.set_integration_range(integration_range)
 solver.set_parameters(parameters)
@@ -69,7 +69,7 @@ solver.delta_t = 0.08
 
 solver.solve().plot(filename="scipy2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
 
-solver = ode.get_ode_plugin('matlab')
+solver = ode.get_plugin('matlab')
 
 solver.set_integration_range(integration_range)\
     .set_parameters(parameters)\

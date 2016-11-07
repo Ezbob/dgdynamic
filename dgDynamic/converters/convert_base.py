@@ -5,6 +5,13 @@ from collections import defaultdict
 
 def get_edge_rate_dict(reaction_parser_function, user_parameters, internal_parameters_map=None) \
         -> Dict[int, Union[float, int]]:
+    """
+    Get a dictionary with edge.ids as keys and their associated rates as values
+    :param reaction_parser_function:
+    :param user_parameters:
+    :param internal_parameters_map:
+    :return:
+    """
     result = defaultdict(lambda: 0)
 
     if not hasattr(reaction_parser_function, "__call__"):
