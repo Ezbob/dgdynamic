@@ -23,17 +23,16 @@ class DynamicSimulator(abc.ABC, LogMixin):
     def unchanging_species(self, *species: Union[str, sp.Symbol, ProjectTypeHints.Countable_Sequence]):
         if len(self.ignored) < self.species_count:
             if isinstance(self.symbols, dict):
-                symbols = tuple(map(str, self.symbols.values()))
-
-                if isinstance(species, str):
-                    self.ignored = tuple((item, index) for index, item in enumerate(symbols)
-                                         if species == item)
-                elif isinstance(species, sp.Symbol):
-                    self.ignored = tuple((item, index) for index, item in enumerate(symbols)
-                                         if str(species) == item)
-                else:
-                    self.ignored = tuple((item, index) for index, item in enumerate(symbols)
-                                         for element in species if element == item)
+                if len(self.ignored) < self.species_count:
+                    if isinstance(species, str):
+                        self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                             if sp.Symbol(species) == item)
+                    elif isinstance(species, sp.Symbol):
+                        self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                             if species == item)
+                    else:
+                        self.ignored = tuple((item, index) for index, item in enumerate(self.symbols.values())
+                                             for element in species if sp.Symbol(element) == item)
             else:
                 self.ignored = tuple(item for item in species if item in self.symbols)
         else:
