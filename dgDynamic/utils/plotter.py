@@ -12,7 +12,7 @@ def plot(queue):
 
     x_data, y_data = input_data['independent'], input_data['dependent']
 
-    def get_data(field):
+    def get_input(field):
         if field in input_data:
             return input_data[field]
         return None
@@ -27,14 +27,14 @@ def plot(queue):
 
     pyplt.tight_layout()
 
-    if get_data('axis_limits') is not None:
+    if get_input('axis_limits') is not None:
         axis_limits = input_data['axis_limits']
         assert isinstance(axis_limits, (tuple, list))
         assert len(axis_limits) == 2
         plt.set_ylim(axis_limits[1])
         plt.set_xlim(axis_limits[0])
 
-    if get_data('axis_labels') is not None:
+    if get_input('axis_labels') is not None:
         axis_labels = input_data['axis_labels']
         assert isinstance(axis_labels, (tuple, list))
         assert len(axis_labels) >= 2
@@ -42,8 +42,8 @@ def plot(queue):
         plt.xlabel(axis_labels[0])
         plt.ylabel(axis_labels[1])
 
-    if get_data('symbols') is not None:
-        if get_data('labels') is not None:
+    if get_input('symbols') is not None:
+        if get_input('labels') is not None:
             assert len(input_data['labels']) >= len(lines)
             labels = input_data['labels']
         else:
@@ -67,7 +67,7 @@ def plot(queue):
         _, labels = plt.get_legend_handles_labels()
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=math.ceil(len(labels) / 32.))
 
-    if get_data('figure_size') is not None:
+    if get_input('figure_size') is not None:
         figure_size = input_data['figure_size']
         assert len(figure_size) >= 2
 
@@ -76,9 +76,9 @@ def plot(queue):
         fig = pyplt.gcf()
         fig.set_size_inches(cm2inch(figure_size[0]), cm2inch(figure_size[1]), forward=True)
 
-    if get_data('title') is not None:
+    if get_input('title') is not None:
         pyplt.title(input_data['title'])
-    filename = get_data('filename')
+    filename = get_input('filename')
     if filename is None or type(filename) is not str:
         pyplt.show()
     else:

@@ -2,6 +2,7 @@ import os.path
 import os
 import array
 import csv
+import functools as fts
 import subprocess
 import tempfile
 from dgDynamic.config.settings import config
@@ -50,13 +51,12 @@ class SpimStochastic(StochasticPlugin):
 
             with open(os.path.join(tmpdir, "spim.spi.csv")) as file:
                 reader = csv.reader(file)
-                header = next(reader)
+                next(reader)
                 independent = array.array('d')
-                dependent = tuple(array.array('d') for _ in range(max(1, len(header) - 1)))
+                dependent = []
                 for line in reader:
                     independent.append(float(line[0]))
-                    for index, dependent_list in enumerate(dependent):
-                        dependent_list.append(float(line[index + 1]))
+                    dependent.append(array.array('d', map(float, line[1:])))
 
-        return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent, independent,
+        return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent, independent=independent,
                                 abstract_system=self._simulator)
