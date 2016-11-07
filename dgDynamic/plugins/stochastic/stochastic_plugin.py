@@ -1,13 +1,5 @@
 import abc
-from ..plugin_base import PluginBase, OutputBase
-
-
-class StochasticOutput(OutputBase):
-    def plot(self):
-        pass
-
-    def save(self):
-        pass
+from ..plugin_base import PluginBase, SimulationOutput
 
 
 class StochasticPlugin(PluginBase, abc.ABC):
@@ -17,7 +9,7 @@ class StochasticPlugin(PluginBase, abc.ABC):
         self.sample_range = sample_range
 
     @abc.abstractmethod
-    def solve(self) -> StochasticOutput:
+    def solve(self) -> SimulationOutput:
         pass
 
     def __call__(self, sample_range=None, parameters=None, initial_conditions=None,):

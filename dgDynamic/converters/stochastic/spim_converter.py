@@ -2,8 +2,30 @@ from io import StringIO
 from ..convert_base import get_edge_rate_dict
 
 
-def get_preamble(sample_range, draw_automata=False) -> str:
-    pass
+def generate_preamble(sample_range, draw_automata=False, symbols=None) -> str:
+
+    with StringIO() as str_out:
+        if isinstance(sample_range, (tuple, list, set)):
+            if len(sample_range) >= 2:
+                str_out.write("directive sample {} {}\n".format(sample_range[0], sample_range[1]))
+            elif len(sample_range) == 1:
+                str_out.write("directive sample {}\n".format(sample_range[0]))
+        elif issubclass(sample_range, float):
+            str_out.write("directive sample {}\n".format(sample_range))
+
+        if symbols is not None:
+            str_out.write("directive plot ")
+
+            for index, symbol in enumerate(symbols):
+                str_out.write("_{}()".format(symbol))
+                if index < len(symbols) - 1:
+                    str_out.write("; ")
+            str_out.write("\n")
+
+        if draw_automata:
+            str_out.write("directive graph\n")
+
+        return str_out.getvalue()
 
 
 def generate_rates(stochastic_system, channel_dict, parameters=None) -> str:

@@ -3,8 +3,9 @@ from scipy.integrate import ode
 from dgDynamic.choices import ScipyOdeSolvers, SupportedOdePlugins
 from dgDynamic.converters.ode.scipy_converter import get_scipy_lambda
 from dgDynamic.converters.ode.converter_ode import get_initial_values
-from dgDynamic.plugins.ode.ode_plugin import OdePlugin, OdeOutput, sanity_check
+from dgDynamic.plugins.ode.ode_plugin import OdePlugin, sanity_check
 from dgDynamic.utils.project_utils import LogMixin
+from dgDynamic.plugins.plugin_base import SimulationOutput
 
 
 class ScipyOde(OdePlugin, LogMixin):
@@ -22,7 +23,7 @@ class ScipyOde(OdePlugin, LogMixin):
         solver_choice = ode_solver if ode_solver is not None else ScipyOdeSolvers.VODE
         return super().__call__(solver_choice, integration_range, initial_conditions, parameters, delta_t, **kwargs)
 
-    def solve(self, **kwargs) -> OdeOutput:
+    def solve(self, **kwargs) -> SimulationOutput:
         self._convert_to_function(get_scipy_lambda)
 
         if self._user_function is None:
@@ -55,9 +56,9 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 return None
 
             self.logger.debug("Solving finished using fixed step integration")
-            return OdeOutput(solved_by=SupportedOdePlugins.Scipy, dependent=y_solution, independent=t_solution,
-                             abstract_system=self._abstract_system, ignore=self._ignored,
-                             solver_method=self._ode_solver)
+            return SimulationOutput(solved_by=SupportedOdePlugins.Scipy, dependent=y_solution, independent=t_solution,
+                                    abstract_system=self._abstract_system, ignore=self._ignored,
+                                    solver_method=self._ode_solver)
 
         def variable_step_integration():
 
@@ -75,9 +76,9 @@ range: {} and dt: {} ".format(self.initial_conditions, self.integration_range, s
                 return None
 
             self.logger.debug("Solving finished using variable step integration")
-            return OdeOutput(solved_by=SupportedOdePlugins.Scipy, dependent=y_solution, independent=t_solution,
-                             abstract_system=self._abstract_system, ignore=self._ignored,
-                             solver_method=self._ode_solver)
+            return SimulationOutput(solved_by=SupportedOdePlugins.Scipy, dependent=y_solution, independent=t_solution,
+                                    abstract_system=self._abstract_system, ignore=self._ignored,
+                                    solver_method=self._ode_solver)
 
         if self._ode_solver is ScipyOdeSolvers.DOP853 or self._ode_solver is ScipyOdeSolvers.DOPRI5:
             return variable_step_integration()

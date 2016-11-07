@@ -1,11 +1,14 @@
 import os.path
 import os
-import shutil
+import array
+import csv
 import subprocess
 import tempfile
 from dgDynamic.config.settings import config
-from .stochastic_plugin import StochasticPlugin, StochasticOutput
-from ...converters.stochastic.spim_converter import generate_initial_values, generate_rates, generate_automata_code
+from .stochastic_plugin import StochasticPlugin, SimulationOutput
+from ...converters.stochastic.spim_converter import generate_initial_values, generate_rates, generate_automata_code, \
+    generate_preamble
+from dgDynamic.choices import SupportedStochasticPlugins
 
 
 class SpimStochastic(StochasticPlugin):
@@ -19,19 +22,41 @@ class SpimStochastic(StochasticPlugin):
         self._simulator = simulator
         self._ocamlrun_path = os.path.abspath(config['Simulation']['OCAML_RUN'])
 
-    def solve(self) -> StochasticOutput:
+    def solve(self) -> SimulationOutput:
+
+        def generate_code_file(file_path):
+            with open(file_path, mode="w") as file:
+                file.write(generate_preamble(self.sample_range, symbols=self._simulator.symbols))
+                file.write('\n')
+                file.write(generate_rates(self._simulator, channel_dict=channels, parameters=self.parameters))
+                file.write('\n')
+                file.write(generate_automata_code(channels, self._simulator.symbols))
+                file.write('\n\n')
+                file.write(generate_initial_values(self._simulator.symbols, self.initial_conditions))
 
         if self.parameters is None or self.initial_conditions is None:
             raise ValueError("Missing parameters or initial values")
 
-        with tempfile.TemporaryFile(mode='r+') as tf:
+        with tempfile.TemporaryDirectory() as tmpdir:
             channels = self._simulator.generate_channels()
 
-            tf.write(generate_rates(self._simulator, channel_dict=channels, parameters=self.parameters))
-            tf.write('\n')
-            tf.write(generate_automata_code(channels, self._simulator.symbols))
-            tf.write('\n\n')
-            tf.write(generate_initial_values(self._simulator.symbols, self.initial_conditions))
+            file_path_code = os.path.join(tmpdir, "spim.spi")
+            data_dir_path = os.path.join(os.path.abspath(os.path.curdir), "data/")
+            generate_code_file(file_path_code)
 
-            tf.seek(0)
-            print(tf.read())
+            with open(os.devnull, 'w') as devnull:
+                run_parameters = (self._ocamlrun_path, self._spim_path, file_path_code)
+                subprocess.run(run_parameters, stdout=devnull)
+
+            with open(os.path.join(tmpdir, "spim.spi.csv")) as file:
+                reader = csv.reader(file)
+                header = next(reader)
+                independent = array.array('d')
+                dependent = tuple(array.array('d') for _ in range(max(1, len(header) - 1)))
+                for line in reader:
+                    independent.append(float(line[0]))
+                    for index, dependent_list in enumerate(dependent):
+                        dependent_list.append(float(line[index + 1]))
+
+        return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent, independent,
+                                abstract_system=self._simulator)
