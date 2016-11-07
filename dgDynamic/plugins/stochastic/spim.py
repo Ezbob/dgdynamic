@@ -2,7 +2,6 @@ import os.path
 import os
 import array
 import csv
-import functools as fts
 import subprocess
 import tempfile
 from dgDynamic.config.settings import config
@@ -26,14 +25,14 @@ class SpimStochastic(StochasticPlugin):
     def solve(self) -> SimulationOutput:
 
         def generate_code_file(file_path):
-            with open(file_path, mode="w") as file:
-                file.write(generate_preamble(self.sample_range, symbols=self._simulator.symbols))
-                file.write('\n')
-                file.write(generate_rates(self._simulator, channel_dict=channels, parameters=self.parameters))
-                file.write('\n')
-                file.write(generate_automata_code(channels, self._simulator.symbols))
-                file.write('\n\n')
-                file.write(generate_initial_values(self._simulator.symbols, self.initial_conditions))
+            with open(file_path, mode="w") as code_file:
+                code_file.write(generate_preamble(self.sample_range, symbols=self._simulator.symbols))
+                code_file.write('\n')
+                code_file.write(generate_rates(self._simulator, channel_dict=channels, parameters=self.parameters))
+                code_file.write('\n')
+                code_file.write(generate_automata_code(channels, self._simulator.symbols))
+                code_file.write('\n\n')
+                code_file.write(generate_initial_values(self._simulator.symbols, self.initial_conditions))
 
         if self.parameters is None or self.initial_conditions is None:
             raise ValueError("Missing parameters or initial values")
@@ -42,7 +41,6 @@ class SpimStochastic(StochasticPlugin):
             channels = self._simulator.generate_channels()
 
             file_path_code = os.path.join(tmpdir, "spim.spi")
-            data_dir_path = os.path.join(os.path.abspath(os.path.curdir), "data/")
             generate_code_file(file_path_code)
 
             with open(os.devnull, 'w') as devnull:
