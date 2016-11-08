@@ -12,7 +12,7 @@ class StochasticPlugin(PluginBase, abc.ABC):
     def solve(self) -> SimulationOutput:
         pass
 
-    def __call__(self, simulation_range, parameters, initial_conditions,):
+    def __call__(self, simulation_range, initial_conditions, parameters):
         self.sample_range = simulation_range
         self.parameters = parameters
         self.initial_conditions = initial_conditions

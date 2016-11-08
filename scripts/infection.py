@@ -36,17 +36,23 @@ parameters = {
 integration_range = (0, 200)
 
 ode = dgDynamicSim(dg, simulator_choice="ODE")
+stochastic = dgDynamicSim(dg, simulator_choice="stochastic")
 
 # Name of the data set
 name = "infected"
 # figure_size in centimetres
 figure_size = (40, 20)
 
+with stochastic("spim") as spim:
+    simulation_range = (200, 1000)
+    for i in range(3):
+        spim(simulation_range, initial_conditions, parameters,).plot(figure_size=figure_size)
+
 with ode("scipy") as scipy:
     # Let's generate some sample delta_ts
-    for delta_t in np.linspace(1, 0.01, num=5):
-        scipy(integration_range, initial_conditions, parameters, delta_t=delta_t).plot(figure_size=figure_size)
+    scipy(integration_range, initial_conditions, parameters, delta_t=0.1).plot(figure_size=figure_size)
 
 with ode("Matlab") as matlab:
     for supported in MatlabOdeSolvers:
         matlab(integration_range, initial_conditions, parameters, supported).plot(figure_size=figure_size)
+

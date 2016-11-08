@@ -1,5 +1,6 @@
 from typing import Iterable, Tuple, Union
 from dgDynamic.utils.exceptions import ReactionParseError
+from ..utils.project_utils import log_it
 
 
 def _parse_sides(side: str) -> str:
@@ -41,11 +42,12 @@ def _break_two_way_deviations(two_way: str) -> Iterable[str]:
 def _parse_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHyperEdge":
     sources, _, targets = derivation.partition(" -> ")
     edge = graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
-    if edge.isNull():
+    if edge.isNull() or edge is None:
         raise ReactionParseError("No edge for reaction: {}".format(derivation))
     return edge
 
 
+@log_it
 def parse(abstract_system: "DynamicSimulator", reaction: str) -> Union[object, Tuple[object, object]]:
     if reaction.find(" <=> ") != -1:
         first_reaction, second_reaction = _break_two_way_deviations(reaction)

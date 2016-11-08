@@ -94,5 +94,5 @@ class ODESystem(DynamicSimulator):
         return self
 
     def __repr__(self):
-        return "<Abstract Ode System {}>".format(self.left_hand_sides)
+        return "<Abstract Ode System>"
 

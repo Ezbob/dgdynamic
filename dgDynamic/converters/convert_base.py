@@ -1,8 +1,10 @@
 from ..utils.exceptions import InitialValueError
 from typing import Dict, Union
 from collections import defaultdict
+from ..utils.project_utils import log_it
 
 
+@log_it
 def get_edge_rate_dict(reaction_parser_function, user_parameters, internal_parameters_map=None) \
         -> Dict[int, Union[float, int]]:
     """

@@ -26,7 +26,7 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine = matlab.engine.start_matlab()
         self.logger.debug("MATLAB engine started.")
 
-    def __call__(self, simulation_range=None, initial_conditions=None, parameters=None, ode_solver=None, **kwargs):
+    def __call__(self, simulation_range, initial_conditions, parameters, ode_solver=None, **kwargs):
         solver_choice = ode_solver if ode_solver is not None else MatlabOdeSolvers.ode45
         return super().__call__(simulation_range, initial_conditions, parameters, solver_choice, **kwargs)
 
