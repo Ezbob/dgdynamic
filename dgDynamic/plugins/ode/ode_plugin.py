@@ -77,7 +77,7 @@ class OdePlugin(PluginBase, ABC):
                         self.parameters is not None:
             self._user_function = converter_function(self._abstract_system, self.parameters)
 
-    def __call__(self, ode_solver=None, simulation_range=None, initial_conditions=None, parameters=None, delta_t=None,
+    def __call__(self, simulation_range, initial_conditions, parameters, ode_solver=None, delta_t=None,
                  **kwargs):
         self.ode_solver = ode_solver
         self.integration_range = simulation_range

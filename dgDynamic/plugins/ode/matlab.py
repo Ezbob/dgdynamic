@@ -28,7 +28,7 @@ class MatlabOde(OdePlugin, LogMixin):
 
     def __call__(self, simulation_range=None, initial_conditions=None, parameters=None, ode_solver=None, **kwargs):
         solver_choice = ode_solver if ode_solver is not None else MatlabOdeSolvers.ode45
-        return super().__call__(solver_choice, simulation_range, initial_conditions, parameters, **kwargs)
+        return super().__call__(simulation_range, initial_conditions, parameters, solver_choice, **kwargs)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.engine.clear(nargout=0)
