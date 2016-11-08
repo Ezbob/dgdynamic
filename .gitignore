@@ -1,6 +1,9 @@
 .idea
 **.log
 **.svg
+**.png
+**.jpg
+**.jpeg
 **/config.ini
 main.py
 plots
