@@ -1,5 +1,7 @@
 .idea
 **.log
+**.svg
+**/config.ini
 plots
 data
 logs
