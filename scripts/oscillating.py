@@ -1,6 +1,6 @@
 import mod
 
-from dgDynamic.choices import SupportedOdePlugins, MatlabOdeSolvers, ScipyOdeSolvers
+from dgDynamic.choices import SupportedOdePlugins, MatlabOdeSolvers, ScipyOdeSolvers, SupportedStochasticPlugins
 from dgDynamic.mod_dynamics import dgDynamicSim
 
 # Enable logging when uncommented
@@ -15,10 +15,12 @@ C -> D
 """)
 
 ode = dgDynamicSim(dg)
+stochastic = dgDynamicSim(dg, simulator_choice="stochastic")
 
 # Set the species that you wish to remain unchanged in the integration process.
 # Since these species don't contribute they don't get saved or plotted
 ode.unchanging_species('B', 'D')
+stochastic.unchanging_species('B', 'D')
 
 # Name of the data set
 name = "abstractReactions1"
@@ -65,6 +67,8 @@ integration_range = (0, 10000)
 # that contains a recognized plugin name
 scipy_ode = ode.get_plugin(SupportedOdePlugins.Scipy)
 
+spim = stochastic.get_plugin(SupportedStochasticPlugins.SPiM)
+
 # Set the abstract ode system, but this is already set when using the "get_ode_plugin" method
 # scipy_ode.set_abstract_ode_system(ode)
 
@@ -101,6 +105,9 @@ output.save(name)
 
 # Plot the data using the MatPlotLib, also using the output object
 output.plot("plot.svg", figure_size=(40, 20))
+
+spim(simulation_range=(40, 200), parameters=parameters, initial_conditions=initial_conditions)\
+    .plot("plot2.svg", figure_size=(40, 20))
 
 
 # The following solver uses the matlab engine for python to compute the solutions to the ODEs

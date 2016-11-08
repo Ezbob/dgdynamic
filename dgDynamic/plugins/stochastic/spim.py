@@ -5,6 +5,8 @@ import csv
 import subprocess
 import tempfile
 from dgDynamic.config.settings import config
+from io import StringIO
+from dgDynamic.config.settings import config
 from .stochastic_plugin import StochasticPlugin, SimulationOutput
 from ...converters.stochastic.spim_converter import generate_initial_values, generate_rates, generate_automata_code, \
     generate_preamble
@@ -47,9 +49,13 @@ class SpimStochastic(StochasticPlugin):
             file_path_code = os.path.join(tmpdir, "spim.spi")
             generate_code_file(file_path_code)
 
-            with open(os.devnull, mode="w") as null_dev:
-                run_parameters = (self._ocamlrun_path, self._spim_path, file_path_code)
-                subprocess.run(run_parameters, stdout=null_dev)
+            if bool(config['Logging']['ENABLE_LOGGING']):
+                with open(file_path_code) as debug_file:
+                    self.logger.info("SPiM simulation file:\n{}".format(debug_file.read()))
+
+            run_parameters = (self._ocamlrun_path, self._spim_path, file_path_code)
+            stdout = subprocess.check_output(run_parameters)
+            self.logger.info("SPiM stdout:\n".format(stdout))
 
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             if not os.path.isfile(csv_file_path):

@@ -1,3 +1,4 @@
+import math
 from io import StringIO
 from ..convert_base import get_edge_rate_dict
 
@@ -34,7 +35,7 @@ def generate_preamble(sample_range, draw_automata=False, symbols=None, ignored=N
         return str_out.getvalue()
 
 
-def generate_rates(stochastic_system, channel_dict, parameters=None) -> str:
+def generate_rates(stochastic_system, channel_dict, parameters=None, float_precisition=18) -> str:
     edge_rate_dict = get_edge_rate_dict(reaction_parser_function=stochastic_system.parse_abstract_reaction,
                                         user_parameters=parameters)
     already_seen = dict()
@@ -44,9 +45,9 @@ def generate_rates(stochastic_system, channel_dict, parameters=None) -> str:
                 rate = edge_rate_dict[channel.channel_edge.id]
                 if channel.rate_id not in already_seen:
                     if channel.is_decay:
-                        str_out.write("val r{} = {}\n".format(channel.rate_id, rate))
+                        str_out.write("val r{} = {:.{}f}\n".format(channel.rate_id, rate, float_precisition))
                     else:
-                        str_out.write("new chan{}@{} : chan()\n".format(channel.rate_id, rate))
+                        str_out.write("new chan{}@{:.{}f} : chan()\n".format(channel.rate_id, rate, float_precisition))
                     already_seen[channel.rate_id] = True
         return str_out.getvalue()
 
@@ -57,8 +58,8 @@ def generate_initial_values(symbols, initial_conditions) -> str:
         str_out.write("run ( ")
         if isinstance(initial_conditions, dict):
             for index, key in enumerate(initial_conditions.keys()):
-                if isinstance(initial_conditions[key], int):
-                    str_out.write("{} of _{}()".format(initial_conditions[key], key))
+                if isinstance(initial_conditions[key], (int, float)):
+                    str_out.write("{} of _{}()".format(math.floor(initial_conditions[key]), key))
 
                     if index < len(initial_conditions) - 1:
                         str_out.write(" | ")
