@@ -35,10 +35,15 @@ dg = mod.dgAbstract(
     simple1
 )
 
-stochastic_sim = dgDynamicSim(dg, simulator_choice="stochastic").unchanging_species('A')
+stochastic_sim = dgDynamicSim(dg, simulator_choice="stochastic")
+ode_sim = dgDynamicSim(dg, simulator_choice="ode")
 
-spim = stochastic_sim('spim')
+with stochastic_sim('spim') as spim:
+    spim(simulation_range=(20.0, 100), parameters=rates_simple1, initial_conditions=initials1, ).plot()
 
-spim(sample_range=(20.0, 100), parameters=rates_simple1, initial_conditions=initials1,).plot()
+with ode_sim('scipy') as scipy:
+    scipy(simulation_range=(0, 20), parameters=rates_simple1, initial_conditions=initials1, ).plot()
+
+
 
 

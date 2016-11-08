@@ -14,6 +14,7 @@ from dgDynamic.choices import SupportedStochasticPlugins
 class SpimStochastic(StochasticPlugin):
 
     def __init__(self, simulator, sample_range=None, parameters=None, initial_conditions=None,):
+        sample_range = sample_range if sample_range is None else (float(sample_range[0]), sample_range[1])
         super().__init__(sample_range=sample_range, parameters=parameters, initial_conditions=initial_conditions)
         self._spim_path = config['Simulation']['SPIM_PATH']
         if self._spim_path is None or not self._spim_path:
@@ -23,6 +24,8 @@ class SpimStochastic(StochasticPlugin):
         self._ocamlrun_path = os.path.abspath(config['Simulation']['OCAML_RUN'])
 
     def solve(self) -> SimulationOutput:
+        self.sample_range = self.sample_range if self.sample_range is None else \
+            (float(self.sample_range[0]), self.sample_range[1])
 
         def generate_code_file(file_path):
             with open(file_path, mode="w") as code_file:
