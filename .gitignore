@@ -2,6 +2,7 @@
 **.log
 **.svg
 **/config.ini
+main.py
 plots
 data
 logs
