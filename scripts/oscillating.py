@@ -33,6 +33,13 @@ initial_conditions = {
     'D': 0,
 }
 
+spim_initial_conditions = {
+    'F': 1,
+    'B': 1,
+    'C': 0,
+    'D': 0,
+}
+
 # Alternative syntax for specifying initial conditions
 # initial_conditions = (
 #     0.5,
@@ -106,7 +113,7 @@ output.save(name)
 # Plot the data using the MatPlotLib, also using the output object
 output.plot("plot.svg", figure_size=(40, 20))
 
-spim(simulation_range=(40, 200), parameters=parameters, initial_conditions=initial_conditions)\
+spim(simulation_range=(40, 200), parameters=parameters, initial_conditions=spim_initial_conditions)\
     .plot("plot2.svg", figure_size=(40, 20))
 
 

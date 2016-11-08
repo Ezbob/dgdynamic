@@ -55,7 +55,7 @@ class SpimStochastic(StochasticPlugin):
 
             run_parameters = (self._ocamlrun_path, self._spim_path, file_path_code)
             stdout = subprocess.check_output(run_parameters)
-            self.logger.info("SPiM stdout:\n".format(stdout))
+            self.logger.info("SPiM stdout:\n".format(stdout.decode()))
 
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             if not os.path.isfile(csv_file_path):
