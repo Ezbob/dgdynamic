@@ -17,7 +17,6 @@ class SimulationOutput(LogMixin):
         self.independent = independent
         self.solver_used = solved_by
         self.solver_method_used = solver_method
-        self._data_filename = "data"
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])
         self._file_writer_thread = None
@@ -76,7 +75,7 @@ class SimulationOutput(LogMixin):
                     filtered_row += (item,)
             yield filtered_row
 
-    def save(self, name=None, float_precision=12, prefix=None, unfiltered=False, stream=None):
+    def save(self, filename=None, float_precision=15, prefix=None, unfiltered=False, stream=None):
         """
         Saves the independent and dependent variables as a Tab Separated Variables(TSV) file in the directory specified
         by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
@@ -84,16 +83,15 @@ class SimulationOutput(LogMixin):
         extension.
         :param prefix: name prefix for the data file
         :param unfiltered: whether to mark 'unchanging species' in the output data set
-        :param name: a name for the data file
+        :param filename: a name for the data file
         :param stream: use another stream than a file stream
         :param float_precision: precision when printing out the floating point numbers
         :return:
         """
-        name = self._data_filename if name is None else name
+        filename = "data" if filename is None else filename
 
         if len(self.dependent) == 0 or len(self.independent) == 0:
             raise ValueError("No or mismatched data")
-        self._data_filename = name if name is not None and type(name) is str else self._data_filename
 
         if unfiltered:
             paired_data = zip(self.independent, self.dependent)
@@ -102,62 +100,43 @@ class SimulationOutput(LogMixin):
 
         make_directory(config['Output Paths']['DATA_DIRECTORY'], pre_delete=False)
 
-        dependent_dimension = 0
-        try:
-            if unfiltered:
-                dependent_dimension = len(self.dependent[0])
-            else:
-                dependent_dimension = abs(len(self.dependent[0]) - len(self._ignored))
-            self.logger.debug("Dimension of the dependent variable is {}".format(dependent_dimension))
-        except TypeError:
-            self.logger.warn("Dimension of the dependent variable could not be determined; defaulting to 0")
+        if unfiltered:
+            dependent_dimension = len(self.dependent[0])
+        else:
+            dependent_dimension = max(len(self.dependent[0]) - len(self._ignored), 0)
 
-        def header_row():
-            header = "t\t"
-            for j in range(0, dependent_dimension):
-                if unfiltered and j in self._ignored:
-                    header += "_y{}".format(j)
+        self.logger.debug("Dimension of the dependent variable is {}".format(dependent_dimension))
+
+        def header():
+            yield "t"
+            for index in range(0, dependent_dimension):
+                if unfiltered and index in self._ignored:
+                    yield "_y{}".format(index)
                 else:
-                    header += "y{}".format(j)
+                    yield "y{}".format(index)
 
-                if j < dependent_dimension - 1:
-                    header += "\t"
-            header += "\n"
-            return header
+        def format_float(variable):
+            return "{:.{}f}".format(variable, float_precision)
 
-        new_filename = self._get_file_prefix(name, prefix=prefix)
-        self.logger.info("Saving data as {}".format(new_filename))
-
-        def gen_data_rows():
+        def data_rows():
             for independent, dependent in paired_data:
-                result = "{:.{}f}\t".format(independent, float_precision)
-                try:
-                    for index, variable in enumerate(dependent):
-                        if index < dependent_dimension - 1:
-                            result += "{:.{}f}\t".format(variable, float_precision)
-                        else:
-                            result += "{:.{}f}".format(variable, float_precision)
-                except TypeError:
-                    self.logger.warning("Dependent variable is not iterable")
-                    try:
-                        result += "{:.{}f}".format(dependent, float_precision)
-                    finally:
-                        self.logger.exception("Could not write dependent variable to file")
-                yield result + "\n"
+                yield (format_float(independent),) + tuple(format_float(var) for var in dependent)
 
         if stream is None:
-            stream = open(new_filename, mode='w')
+            file_path = self._get_file_prefix(filename, prefix=prefix)
+            self.logger.info("Saving data as {}".format(file_path))
+            stream = open(file_path, mode="w")
 
         def write_data():
             self.logger.info("Started on writing data to disk")
             start_t = time.time()
-            with stream as out:
+            with stream as outfile:
                 # writing header underscore prefix marks that the columns where ignored (for ODE only, since SPiM
                 # don't output data for a variable if it's not in the plot directive)
-                out.write(header_row())
-
-                for row in gen_data_rows():
-                    out.write(row)
+                writer = csv.writer(outfile, delimiter="\t")
+                writer.writerow(element for element in header())
+                for row in data_rows():
+                    writer.writerow(row)
             end_t = time.time()
             self.logger.info("Finished writing to disk. Took: {} secs".format(end_t - start_t))
 
