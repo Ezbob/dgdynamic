@@ -48,7 +48,7 @@ scipy_ode.ode_solver = ScipyOdeSolvers.VODE
 
 scipy_ode.delta_t = 0.1
 
-scipy_ode.integration_range = integration_range
+scipy_ode.simulation_range = integration_range
 
 scipy_ode.initial_conditions = initial_conditions
 
@@ -56,12 +56,15 @@ scipy_ode.parameters = parameters
 
 scipy_ode.solve().save(name).plot(figure_size=figure_size)
 
-spim_simulation_range = (100, 1000)
+with ode('matlab') as matlab:
+    matlab(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
 
-with stochastic(SupportedStochasticPlugins.SPiM) as spim:
-    for _ in range(6):
-        spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions, parameters=parameters)\
-            .plot(figure_size=figure_size).save(name)
+#spim_simulation_range = (100, 1000)
+#
+#with stochastic(SupportedStochasticPlugins.SPiM) as spim:
+#    for _ in range(6):
+#        spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions, parameters=parameters)\
+#            .plot(figure_size=figure_size).save(name)
 
 
 

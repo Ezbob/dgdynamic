@@ -15,22 +15,22 @@ from dgDynamic.utils.plotter import plot
 
 
 def sanity_check(plugin_instance, initial_values):
-    if plugin_instance.integration_range is None:
-        raise ValueError("Integration range not set")
-    elif len(plugin_instance.integration_range) != 2:
+    if plugin_instance.simulation_range is None:
+        raise ValueError("simulation range not set")
+    elif len(plugin_instance.simulation_range) != 2:
         raise ValueError("Integration range; tuple is not of length 2")
-    elif plugin_instance.integration_range[0] > plugin_instance.integration_range[1]:
+    elif plugin_instance.simulation_range[0] > plugin_instance.simulation_range[1]:
         raise ValueError("First value exceeds second in integration range")
     elif initial_values is None:
         raise ValueError("No valid or no initial condition values where given")
-    elif len(initial_values) - initial_values.count(None) < plugin_instance.ode_count:
+    elif len(initial_values) - initial_values.count(None) < plugin_instance._simulator.species_count:
         raise ValueError("Not enough initial values given")
-    elif len(initial_values) - initial_values.count(None) > plugin_instance.ode_count:
+    elif len(initial_values) - initial_values.count(None) > plugin_instance._simulator.species_count:
         raise ValueError("Too many initial values given")
     elif plugin_instance.parameters is None:
         raise ValueError("Parameters not set")
-    elif plugin_instance._reaction_count != _count_parameters(plugin_instance.parameters):
-        raise ValueError("Expected {} parameter values, have {}".format(plugin_instance._reaction_count,
+    elif plugin_instance._simulator.reaction_count != _count_parameters(plugin_instance.parameters):
+        raise ValueError("Expected {} parameter values, have {}".format(plugin_instance._simulator.reaction_count,
                                                                         _count_parameters(plugin_instance.parameters)))
 
 
@@ -44,43 +44,20 @@ class OdePlugin(PluginBase, ABC):
     interface for all the ODE plugins.
     """
 
-    def __init__(self, function: Union[object, Callable, str]=None, integration_range=(0, 0), initial_conditions=None,
-                 delta_t=0.05, parameters=None, species_count=1, initial_t=0, converter_function=None,
-                 ode_solver=None):
-        super().__init__(parameters, initial_conditions)
-
-        if type(function) is ODESystem:
-            self.ode_count = function.species_count
-            self._reaction_count = function.reaction_count
-            self._symbols = function.symbols
-            self._abstract_system = function
-            self.ignored_count = len(function.ignored)
-            self._ignored = function.ignored
-            self._user_function = None
-        else:
-            self._ignored = ()
-            self.ignored_count = 0
-            self._reaction_count = None
-            self.ode_count = species_count
-            self._abstract_system = None
-            self._symbols = None
-            self._user_function = function
-
+    def __init__(self, simulator, simulation_range=(0, 0), initial_conditions=None,
+                 delta_t=0.05, parameters=None, initial_t=0, ode_solver=None):
+        super().__init__(simulation_range=simulation_range, parameters=parameters,
+                         initial_conditions=initial_conditions)
+        self.simulation_range = simulation_range
+        self._simulator = simulator
         self.initial_t = initial_t
         self._ode_solver = ode_solver
         self.delta_t = delta_t
-        self.integration_range = integration_range
-        self._convert_to_function(converter_function)
-
-    def _convert_to_function(self, converter_function):
-        if type(self._abstract_system) is ODESystem and callable(converter_function) and \
-                        self.parameters is not None:
-            self._user_function = converter_function(self._abstract_system, self.parameters)
 
     def __call__(self, simulation_range, initial_conditions, parameters, ode_solver=None, delta_t=None,
                  **kwargs):
         self.ode_solver = ode_solver
-        self.integration_range = simulation_range
+        self.simulation_range = simulation_range
         self.initial_conditions = initial_conditions
         self.parameters = parameters
         self.delta_t = delta_t
@@ -102,15 +79,15 @@ class OdePlugin(PluginBase, ABC):
         self._ode_solver = solver
 
     def set_ode_solver(self, solver: Enum):
-        self.ode_solver = solver
+        self._ode_solver = solver
         return self
 
     def set_integration_range(self, *range_tuple: Tuple[int, int]):
         if isinstance(range_tuple, tuple):
             if type(range_tuple[0]) is tuple:
-                self.integration_range = range_tuple[0]
+                self.simulation_range = range_tuple[0]
             else:
-                self.integration_range = range_tuple
+                self.simulation_range = range_tuple
         return self
 
     def set_parameters(self, parameters: Union[list, tuple, Dict[str, float]]):
@@ -118,17 +95,10 @@ class OdePlugin(PluginBase, ABC):
         return self
 
     def set_abstract_ode_system(self, system: ODESystem):
-        self._abstract_system = system
-        self.ode_count = system.species_count
-        self.ignored_count = len(system.ignored)
-        self._ignored = system.ignored
-        self._symbols = system.symbols
+        self._simulator = system
         return self
 
     def set_initial_conditions(self, conditions: Dict[str, Types.Reals]):
         self.initial_conditions = conditions
         return self
 
-    def set_ode_function(self, ode_function: Types.ODE_Function):
-        self._user_function = ode_function
-        return self

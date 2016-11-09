@@ -168,7 +168,8 @@ class SimulationOutput(LogMixin):
 
 class PluginBase(abc.ABC, LogMixin):
 
-    def __init__(self, initial_conditions, parameters):
+    def __init__(self, simulation_range, initial_conditions, parameters):
+        self.simulation_range = simulation_range
         self.parameters = parameters
         self.initial_conditions = initial_conditions
 

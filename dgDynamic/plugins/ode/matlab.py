@@ -16,11 +16,11 @@ class MatlabOde(OdePlugin, LogMixin):
     """
     Wrapper for working with odes using the MATLAB python engine.
     """
-    def __init__(self, eq_system=None, solver=MatlabOdeSolvers.ode45, integration_range=None, initial_conditions=None,
+    def __init__(self, eq_system=None, solver=MatlabOdeSolvers.ode45, simulation_range=(0, 0), initial_conditions=None,
                  parameters=None):
 
-        super().__init__(eq_system, integration_range=integration_range, initial_conditions=initial_conditions,
-                         parameters=parameters, ode_solver=solver, converter_function=get_matlab_lambda)
+        super().__init__(eq_system, simulation_range=simulation_range, initial_conditions=initial_conditions,
+                         parameters=parameters, ode_solver=solver)
 
         self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
@@ -35,16 +35,17 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine.exit()
 
     def solve(self, **kwargs) -> SimulationOutput:
-        if type(self._abstract_system) is ODESystem:
-            self._user_function = get_matlab_lambda(abstract_ode_system=self._abstract_system,
-                                                    parameter_substitutions=self.parameters)
-        if self._user_function is None:
-            self.logger.error("User function was not generated")
+
+        ode_function = get_matlab_lambda(abstract_ode_system=self._simulator,
+                                         parameter_substitutions=self.parameters)
+
+        if ode_function is None or len(ode_function) == 0:
+            self.logger.error("Matlab ode function was not generated")
             return None
 
         self.logger.debug("Solving ode using MATLAB")
 
-        conditions = get_initial_values(self.initial_conditions, self._symbols)
+        conditions = get_initial_values(self.initial_conditions, self._simulator.symbols)
         sanity_check(self, list(conditions))
 
         if isinstance(conditions, (list, tuple)):
@@ -53,38 +54,34 @@ class MatlabOde(OdePlugin, LogMixin):
             # python 3 returns a view not a list of values
             self.add_to_workspace('y0', matlab.double(list(conditions)))
 
-        self.add_to_workspace('tspan', matlab.double(self.integration_range))
+        self.add_to_workspace('tspan', matlab.double(self.simulation_range))
 
-        if len(self._user_function) > 0:
-            eval_str = "ode" + str(self._ode_solver.value) + "(" + self._user_function + ", tspan, y0)"
-            self.logger.debug("evaluating matlab \
-expression: {} with tspan: {} and y0: {}".format(eval_str, self.integration_range, self.initial_conditions))
+        eval_str = "ode" + str(self._ode_solver.value) + "(" + ode_function + ", tspan, y0)"
+        self.logger.debug("evaluating matlab \
+expression: {} with tspan: {} and y0: {}".format(eval_str, self.simulation_range, self.initial_conditions))
 
-            tres, yres = self.engine.eval(eval_str, nargout=2)
-            if len(tres) >= 2:
-                self.delta_t = tres._data[1] - tres._data[0]
-            self.engine.clear(nargout=0)
-            self.logger.debug("Successfully solved")
+        t_result, y_result = self.engine.eval(eval_str, nargout=2)
+        if len(t_result) >= 2:
+            self.delta_t = t_result._data[1] - t_result._data[0]
+        self.engine.clear(nargout=0)
+        self.logger.debug("Successfully solved")
 
-            # http://stackoverflow.com/questions/30013853/convert-matlab-double-array-to-python-array
-            def convert_matrix(double_matrix):
-                row_width = double_matrix.size[0]
-                converts = []
-                for x in range(row_width):
-                    converts.append(double_matrix._data[x::row_width].tolist())
-                return converts
+        # http://stackoverflow.com/questions/30013853/convert-matlab-double-array-to-python-array
+        def convert_matrix(double_matrix):
+            row_width = double_matrix.size[0]
+            converts = []
+            for x in range(row_width):
+                converts.append(double_matrix._data[x::row_width].tolist())
+            return converts
 
-            # flat that list
-            tres = [a for i in tres for a in i]
-            yres = convert_matrix(yres)
+        # flat that list
+        t_result = [a for i in t_result for a in i]
+        y_result = convert_matrix(y_result)
 
-            self.logger.info("Return output object")
-            return SimulationOutput(solved_by=SupportedOdePlugins.Matlab, dependent=yres, independent=tres,
-                                    ignore=self._ignored, solver_method=self._ode_solver,
-                                    abstract_system=self._abstract_system)
-        else:
-            self.logger.debug("Empty ode function. Aborting...")
-            return None
+        self.logger.info("Return output object")
+        return SimulationOutput(solved_by=SupportedOdePlugins.Matlab, dependent=y_result, independent=t_result,
+                                ignore=self._simulator.ignored, solver_method=self._ode_solver,
+                                abstract_system=self._simulator)
 
     def close_engine(self):
         self.logger.debug("Closing MATLAB engine...")
