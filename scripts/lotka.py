@@ -56,11 +56,12 @@ scipy_ode.parameters = parameters
 
 scipy_ode.solve().save(name).plot(figure_size=figure_size)
 
-spim = stochastic(SupportedStochasticPlugins.SPiM)
-
 spim_simulation_range = (100, 1000)
-spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
-     parameters=parameters).plot(figure_size=figure_size).save(name)
+
+with stochastic(SupportedStochasticPlugins.SPiM) as spim:
+    for _ in range(6):
+        spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions, parameters=parameters)\
+            .plot(figure_size=figure_size).save(name)
 
 
 

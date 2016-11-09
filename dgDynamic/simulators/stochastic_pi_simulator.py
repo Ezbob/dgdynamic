@@ -7,7 +7,7 @@ from dgDynamic.choices import SupportedStochasticPlugins
 from io import StringIO
 
 
-def print_hyper_edge(edge):
+def hyper_edge_to_string(edge):
     with StringIO() as out:
         for index, source_vertex in enumerate(edge.sources):
             out.write(source_vertex.graph.name)
@@ -88,6 +88,9 @@ class StochasticPiSystem(DynamicSimulator):
                     homo_reaction_case(hyper_edge, reaction_index)
                 else:
                     hetero_reaction_case(hyper_edge, reaction_index)
+            else:
+                raise ValueError("For reaction: {}; reactions with 3 or more reactants are not support"
+                                 .format(hyper_edge_to_string(hyper_edge)))
         return result
 
     def get_plugin_from_enum(self, enum_variable, *args, **kwargs):

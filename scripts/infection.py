@@ -22,8 +22,8 @@ dg = mod.dgAbstract(
 )
 
 initial_conditions = {
-    'S': 200,
-    'I': 1,
+    'S': 400,
+    'I': 2,
 }
 
 parameters = {
