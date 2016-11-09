@@ -1,17 +1,9 @@
-import os
-import os.path
-import threading
-import time
-import multiprocessing as mp
-import sympy as sp
 from abc import abstractmethod, ABC
 from enum import Enum
-from typing import Union, Dict, Tuple, Callable
+from typing import Union, Dict, Tuple
 from ..plugin_base import PluginBase
-from dgDynamic.config.settings import config
 from dgDynamic.simulators.ode_simulator import ODESystem
-from dgDynamic.utils.project_utils import make_directory, ProjectTypeHints as Types
-from dgDynamic.utils.plotter import plot
+from dgDynamic.utils.project_utils import ProjectTypeHints as Types
 
 
 def sanity_check(plugin_instance, initial_values):

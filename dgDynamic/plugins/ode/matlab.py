@@ -8,7 +8,6 @@ from dgDynamic.converters.ode.matlab_converter import get_matlab_lambda
 from dgDynamic.converters.ode.converter_ode import get_initial_values
 from dgDynamic.plugins.ode.ode_plugin import OdePlugin, sanity_check
 from dgDynamic.plugins.plugin_base import SimulationOutput
-from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.utils.project_utils import LogMixin
 
 

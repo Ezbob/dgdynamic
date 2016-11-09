@@ -4,7 +4,7 @@ from ..plugin_base import PluginBase, SimulationOutput
 
 class StochasticPlugin(PluginBase, abc.ABC):
 
-    def __init__(self, sample_range=None, parameters=None, initial_conditions=None, ignored=None):
+    def __init__(self, sample_range=None, parameters=None, initial_conditions=None):
         super().__init__(simulation_range=sample_range, parameters=parameters, initial_conditions=initial_conditions)
 
     @abc.abstractmethod
