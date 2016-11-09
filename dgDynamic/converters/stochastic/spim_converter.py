@@ -3,16 +3,17 @@ from io import StringIO
 from ..convert_base import get_edge_rate_dict
 
 
-def generate_preamble(sample_range, draw_automata=False, symbols=None, ignored=None) -> str:
+def generate_preamble(sample_range, draw_automata=False, symbols=None, ignored=None, float_precision=18) -> str:
 
     with StringIO() as str_out:
         if isinstance(sample_range, (tuple, list, set)):
             if len(sample_range) >= 2:
-                str_out.write("directive sample {} {}\n".format(sample_range[0], sample_range[1]))
+                str_out.write("directive sample {:.{}f} {}\n".format(float(sample_range[0]), float_precision,
+                                                                     sample_range[1]))
             elif len(sample_range) == 1:
-                str_out.write("directive sample {}\n".format(sample_range[0]))
+                str_out.write("directive sample {:.{}f}\n".format(float(sample_range[0]), float_precision))
         elif issubclass(sample_range, float):
-            str_out.write("directive sample {}\n".format(sample_range))
+            str_out.write("directive sample {:.{}f}\n".format(sample_range, float_precision))
 
         if symbols is not None:
             str_out.write("directive plot ")

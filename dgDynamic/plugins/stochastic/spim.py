@@ -26,12 +26,9 @@ class SpimStochastic(StochasticPlugin):
         self._ocamlrun_path = os.path.abspath(config['Simulation']['OCAML_RUN'])
 
     def solve(self) -> SimulationOutput:
-        self.sample_range = self.sample_range if self.sample_range is None else \
-            (float(self.sample_range[0]), self.sample_range[1])
-
         def generate_code_file(file_path):
             with open(file_path, mode="w") as code_file:
-                code_file.write(generate_preamble(self.sample_range, symbols=self._simulator.symbols,
+                code_file.write(generate_preamble(self.simulation_range, symbols=self._simulator.symbols,
                                                   ignored=self._simulator.ignored))
                 code_file.write('\n')
                 code_file.write(generate_rates(self._simulator, channel_dict=channels, parameters=self.parameters))
