@@ -40,6 +40,9 @@ class SpimStochastic(StochasticPlugin):
         if self.parameters is None or self.initial_conditions is None:
             raise ValueError("Missing parameters or initial values")
 
+        independent = array.array('d')
+        dependent = list()
+
         with tempfile.TemporaryDirectory() as tmpdir:
             channels = self._simulator.generate_channels()
 
@@ -61,8 +64,6 @@ class SpimStochastic(StochasticPlugin):
             with open(csv_file_path) as file:
                 reader = csv.reader(file)
                 next(reader)
-                independent = array.array('d')
-                dependent = []
                 for line in reader:
                     independent.append(float(line[0]))
                     dependent.append(array.array('d', map(float, line[1:])))

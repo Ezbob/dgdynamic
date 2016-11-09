@@ -20,7 +20,6 @@ class ODESystem(DynamicSimulator):
         dgAbstract, else it just gets stored.
         """
         super().__init__(graph=graph)
-        self.flux_terms = dict()
 
         # every vertex in the deviation graph gets a mapping from it's id to the corresponding SymPy Symbol
         self.symbols = OrderedDict(((vertex.id, sp.Symbol(vertex.graph.name)) for vertex in self.graph.vertices))
@@ -75,23 +74,7 @@ class ODESystem(DynamicSimulator):
                         if vertex.id == target_vertex.id:
                             sub_result += left_hand_sides[reaction_index]
 
-                if vertex.graph.name in self.flux_terms:
-                    sub_result += self.flux_terms[vertex.graph.name]
-
                 yield vertex.graph.name, sub_result
-
-    def add_terms(self, flux_terms: dict):
-        for key, val in flux_terms.items():
-            if not isinstance(key, (str,) + tuple(sp.core.all_classes)):
-                raise TypeError("Expected string or sympy expression for key: {}", key)
-            if isinstance(val, str):
-                self.flux_terms[key] = sp.sympify(val)
-            elif isinstance(val, tuple(sp.core.all_classes)):
-                self.flux_terms[key] = val
-            else:
-                raise TypeError("Expected values to be a string or a sympy expression")
-
-        return self
 
     def __repr__(self):
         return "<Abstract Ode System>"
