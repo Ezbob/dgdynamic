@@ -73,10 +73,12 @@ class SpimStochastic(StochasticPlugin):
                     new_time = float(line[0])
                     if new_time > old_time or math.isclose(new_time, old_time, rel_tol=rel_tol, abs_tol=abs_tol):
                         independent.append(new_time)
+                        dependent.append(array.array('d', map(float, line[1:])))
                         old_time = new_time
                     else:
-                        raise SimulationError("Simulation time regression detected")
-                    dependent.append(array.array('d', map(float, line[1:])))
+                        return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent,
+                                                independent=independent, abstract_system=self._simulator,
+                                                errors=[SimulationError("Simulation time regression detected")],)
 
         return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent, independent=independent,
                                 abstract_system=self._simulator)

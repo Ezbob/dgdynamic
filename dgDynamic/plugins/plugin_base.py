@@ -12,9 +12,11 @@ from dgDynamic.utils.plotter import plot
 
 class SimulationOutput(LogMixin):
 
-    def __init__(self, solved_by, dependent, independent, ignore=(), solver_method=None, abstract_system=None):
+    def __init__(self, solved_by, dependent, independent, ignore=(), solver_method=None, abstract_system=None,
+                 errors=()):
         self.dependent = dependent
         self.independent = independent
+        self.errors = errors
         self.solver_used = solved_by
         self.solver_method_used = solver_method
         self._ignored = tuple(item[1] for item in ignore)
@@ -30,6 +32,9 @@ class SimulationOutput(LogMixin):
                 self.symbols = None
         else:
             self.symbols = None
+
+    def has_errors(self):
+        return len(self.errors) > 0
 
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
