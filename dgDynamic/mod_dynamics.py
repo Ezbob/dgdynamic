@@ -4,17 +4,17 @@ from typing import Union
 import enum
 
 
-def dgDynamicSim(graph, simulator_choice="ode") -> Union[ODESystem, StochasticPiSystem]:
+def dgDynamicSim(graph, simulator_choice="ode", unchanging_species=()) -> Union[ODESystem, StochasticPiSystem]:
 
     if isinstance(simulator_choice, str):
         if simulator_choice.strip().lower() == "ode":
-            return ODESystem(graph=graph)
+            return ODESystem(graph=graph).unchanging_species(*unchanging_species)
         elif simulator_choice.strip().lower() == "stochastic":
-            return StochasticPiSystem(graph=graph)
+            return StochasticPiSystem(graph=graph).unchanging_species(*unchanging_species)
     elif isinstance(simulator_choice, enum.Enum):
         if simulator_choice.name.lower() == "ode":
-            return ODESystem(graph=graph)
+            return ODESystem(graph=graph).unchanging_species(*unchanging_species)
         elif simulator_choice.name.lower() == "stochastic_pi":
-            return StochasticPiSystem(graph=graph)
+            return StochasticPiSystem(graph=graph).unchanging_species(*unchanging_species)
     else:
         return None

@@ -8,7 +8,6 @@ import mod
 
 from dgDynamic.choices import SupportedOdePlugins
 from dgDynamic.mod_dynamics import dgDynamicSim
-from dgDynamic.plugins.ode.scipy import ScipyOdeSolvers
 
 
 rabbit_multiples = "R -> 2 R\n"
@@ -34,8 +33,8 @@ parameters = {
 
 integration_range = (0, 100)
 
-ode = dgDynamicSim(dg, simulator_choice='ode').unchanging_species('D')
-stochastic = dgDynamicSim(dg, simulator_choice='stochastic').unchanging_species('D')
+ode = dgDynamicSim(dg, simulator_choice='ode', unchanging_species='D')
+stochastic = dgDynamicSim(dg, simulator_choice='stochastic', unchanging_species='D')
 
 # Name of the data set
 name = "foxesRabbits"
@@ -43,17 +42,7 @@ figure_size = (40, 20)
 
 scipy_ode = ode(SupportedOdePlugins.Scipy)
 
-scipy_ode.ode_solver = ScipyOdeSolvers.VODE
-
-scipy_ode.delta_t = 0.1
-
-scipy_ode.simulation_range = integration_range
-
-scipy_ode.initial_conditions = initial_conditions
-
-scipy_ode.parameters = parameters
-
-scipy_ode.solve().save(name).plot(figure_size=figure_size)
+scipy_ode(integration_range, initial_conditions, parameters, delta_t=0.1).save(name).plot(figure_size=figure_size)
 
 with ode('matlab') as matlab:
     matlab(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
