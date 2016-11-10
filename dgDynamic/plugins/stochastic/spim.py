@@ -42,6 +42,7 @@ class SpimStochastic(StochasticPlugin):
 
         independent = array.array('d')
         dependent = list()
+        errors = list()
 
         with tempfile.TemporaryDirectory() as tmpdir:
             channels = self._simulator.generate_channels()
@@ -55,15 +56,17 @@ class SpimStochastic(StochasticPlugin):
 
             run_parameters = (self._ocamlrun_path, self._spim_path, file_path_code)
             try:
-                stdout = subprocess.check_output(run_parameters, timeout=timeout)
+                stdout = subprocess.run(run_parameters, timeout=timeout, stdout=subprocess.PIPE).stdout
                 self.logger.info("SPiM stdout:\n{}".format(stdout.decode()))
             except subprocess.TimeoutExpired:
                 self.logger.exception("Execution timeout reached for spim")
+                errors.append(SimulationError("Simulation time out"))
 
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             if not os.path.isfile(csv_file_path):
                 self.logger.error("Missing SPiM output")
-                return None
+                errors.append(SimulationError("Missing SPiM output"))
+                return SimulationOutput(SupportedStochasticPlugins.SPiM, errors=errors)
 
             with open(csv_file_path) as file:
                 reader = csv.reader(file)
@@ -76,9 +79,9 @@ class SpimStochastic(StochasticPlugin):
                         dependent.append(array.array('d', map(float, line[1:])))
                         old_time = new_time
                     else:
+                        errors.append(SimulationError("Simulation time regression detected"))
                         return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent,
-                                                independent=independent, abstract_system=self._simulator,
-                                                errors=[SimulationError("Simulation time regression detected")],)
+                                                independent=independent, abstract_system=self._simulator, errors=errors)
 
         return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent, independent=independent,
-                                abstract_system=self._simulator)
+                                abstract_system=self._simulator, errors=errors)

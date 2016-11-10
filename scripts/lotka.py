@@ -62,9 +62,7 @@ spim_simulation_range = (100, 1000)
 
 with stochastic('spim') as spim:
     for _ in range(10):
-        spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions, parameters=parameters,
-             timeout=60)\
+        output = spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
+                      parameters=parameters, timeout=60)\
             .plot(figure_size=figure_size).save(name)
-
-
 

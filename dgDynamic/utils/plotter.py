@@ -18,7 +18,7 @@ def plot(queue):
         return None
 
     if len(y_data) == 0 or len(x_data) == 0:
-        raise ValueError("No or mismatched data")
+        return
 
     # let get a subplot that fill the whole figure area
     plt = pyplt.subplot(111)

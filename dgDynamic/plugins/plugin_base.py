@@ -12,7 +12,7 @@ from dgDynamic.utils.plotter import plot
 
 class SimulationOutput(LogMixin):
 
-    def __init__(self, solved_by, dependent, independent, ignore=(), solver_method=None, abstract_system=None,
+    def __init__(self, solved_by, dependent=(), independent=(), ignore=(), solver_method=None, abstract_system=None,
                  errors=()):
         self.dependent = dependent
         self.independent = independent
@@ -33,6 +33,7 @@ class SimulationOutput(LogMixin):
         else:
             self.symbols = None
 
+    @property
     def has_errors(self):
         return len(self.errors) > 0
 
@@ -96,7 +97,8 @@ class SimulationOutput(LogMixin):
         filename = "data" if filename is None else filename
 
         if len(self.dependent) == 0 or len(self.independent) == 0:
-            raise ValueError("No or mismatched data")
+            self.logger.warn("No or mismatched data")
+            return
 
         if unfiltered:
             paired_data = zip(self.independent, self.dependent)
