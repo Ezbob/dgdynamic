@@ -25,7 +25,7 @@ class SpimStochastic(StochasticPlugin):
         self._simulator = simulator
         self._ocamlrun_path = os.path.abspath(config['Simulation']['OCAML_RUN'])
 
-    def solve(self) -> SimulationOutput:
+    def solve(self, timeout=None) -> SimulationOutput:
         def generate_code_file(file_path):
             with open(file_path, mode="w") as code_file:
                 code_file.write(generate_preamble(self.simulation_range, symbols=self._simulator.symbols,
@@ -54,7 +54,11 @@ class SpimStochastic(StochasticPlugin):
                     self.logger.info("SPiM simulation file:\n{}".format(debug_file.read()))
 
             run_parameters = (self._ocamlrun_path, self._spim_path, file_path_code)
-            stdout = subprocess.check_output(run_parameters)
+            try:
+                stdout = subprocess.check_output(run_parameters, timeout=timeout)
+            except subprocess.TimeoutExpired:
+                self.logger.exception("Execution timeout reached for spim")
+                return None
             self.logger.info("SPiM stdout:\n".format(stdout.decode()))
 
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")

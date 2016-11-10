@@ -11,11 +11,11 @@ class StochasticPlugin(PluginBase, abc.ABC):
     def solve(self) -> SimulationOutput:
         pass
 
-    def __call__(self, simulation_range, initial_conditions, parameters):
+    def __call__(self, simulation_range, initial_conditions, parameters, *args, **kwargs):
         self.simulation_range = simulation_range
         self.parameters = parameters
         self.initial_conditions = initial_conditions
-        output = self.solve()
+        output = self.solve(*args, **kwargs)
         if output is None:
             raise ValueError("Stochastic simulation output was None; check your parameters")
         return output

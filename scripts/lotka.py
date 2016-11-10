@@ -7,7 +7,6 @@ A Lotka model with (F)oxes and (R)abbits (prey-predator model).
 import mod
 
 from dgDynamic.choices import SupportedOdePlugins
-from dgDynamic.choices import SupportedStochasticPlugins
 from dgDynamic.mod_dynamics import dgDynamicSim
 from dgDynamic.plugins.ode.scipy import ScipyOdeSolvers
 
@@ -59,12 +58,13 @@ scipy_ode.solve().save(name).plot(figure_size=figure_size)
 with ode('matlab') as matlab:
     matlab(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
 
-#spim_simulation_range = (100, 1000)
-#
-#with stochastic(SupportedStochasticPlugins.SPiM) as spim:
-#    for _ in range(6):
-#        spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions, parameters=parameters)\
-#            .plot(figure_size=figure_size).save(name)
+spim_simulation_range = (100, 1000)
+
+with stochastic('spim') as spim:
+    for _ in range(10):
+        spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions, parameters=parameters,
+             timeout=60)\
+            .plot(figure_size=figure_size).save(name)
 
 
 
