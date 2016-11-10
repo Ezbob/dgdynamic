@@ -1,5 +1,6 @@
 import sys
 from scipy.integrate import ode
+from dgDynamic.utils.exceptions import SimulationError
 from dgDynamic.choices import ScipyOdeSolvers, SupportedOdePlugins
 from dgDynamic.converters.ode.scipy_converter import get_scipy_lambda
 from dgDynamic.converters.ode.converter_ode import get_initial_values
@@ -28,7 +29,8 @@ class ScipyOde(OdePlugin, LogMixin):
 
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Scipy ode function was not generated")
-            return None
+            return SimulationOutput(SupportedOdePlugins.Scipy,
+                                    errors=(SimulationError("Ode function could not be generated"),))
         ode_function = eval(ode_function)
 
         self.logger.debug("Checking scipy parameters...")
@@ -53,7 +55,9 @@ range: {} and dt: {} ".format(self.initial_conditions, self.simulation_range, se
                     solver.integrate(solver.t + self.delta_t)
             except SystemError as integration_error:
                 self.logger.exception("Integration process failed", integration_error)
-                return None
+                return SimulationOutput(solved_by=SupportedOdePlugins.Scipy,
+                                        dependent=y_solution, independent=t_solution,
+                                        errors=(SimulationError("Integration failure"),))
 
             self.logger.debug("Solving finished using fixed step integration")
             return SimulationOutput(solved_by=SupportedOdePlugins.Scipy, dependent=y_solution, independent=t_solution,
@@ -73,7 +77,9 @@ range: {} and dt: {} ".format(self.initial_conditions, self.simulation_range, se
                     solver.integrate(self.simulation_range[1], step=True)
             except SystemError as integration_error:
                 self.logger.exception("Integration process failed", integration_error)
-                return None
+                return SimulationOutput(solved_by=SupportedOdePlugins.Scipy,
+                                        dependent=y_solution, independent=t_solution,
+                                        errors=(SimulationError("Integration failure"),))
 
             self.logger.debug("Solving finished using variable step integration")
             return SimulationOutput(solved_by=SupportedOdePlugins.Scipy, dependent=y_solution, independent=t_solution,

@@ -3,6 +3,7 @@
 ##
 import sys
 import matlab.engine
+from dgDynamic.utils.exceptions import SimulationError
 from dgDynamic.choices import MatlabOdeSolvers, SupportedOdePlugins
 from dgDynamic.converters.ode.matlab_converter import get_matlab_lambda
 from dgDynamic.converters.ode.converter_ode import get_initial_values
@@ -40,7 +41,8 @@ class MatlabOde(OdePlugin, LogMixin):
 
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Matlab ode function was not generated")
-            return None
+            return SimulationOutput(SupportedOdePlugins.Matlab,
+                                    errors=(SimulationError("Ode function could not be generated"),))
 
         self.logger.debug("Solving ode using MATLAB")
 
