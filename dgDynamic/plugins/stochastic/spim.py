@@ -59,7 +59,6 @@ class SpimStochastic(StochasticPlugin):
                 stdout = subprocess.run(run_parameters, timeout=timeout, stdout=subprocess.PIPE).stdout
                 self.logger.info("SPiM stdout:\n{}".format(stdout.decode()))
             except subprocess.TimeoutExpired:
-                self.logger.exception("Execution timeout reached for spim")
                 errors.append(SimulationError("Simulation time out"))
 
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")

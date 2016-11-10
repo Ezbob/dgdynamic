@@ -37,6 +37,10 @@ class SimulationOutput(LogMixin):
     def has_errors(self):
         return len(self.errors) > 0
 
+    @property
+    def is_empty(self):
+        return len(self.independent) == 0 and len(self.dependent) == 0
+
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
