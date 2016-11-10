@@ -6,3 +6,7 @@ class InitialValueError(Exception):
 
 class ReactionParseError(Exception):
     pass
+
+
+class SimulationError(Exception):
+    pass

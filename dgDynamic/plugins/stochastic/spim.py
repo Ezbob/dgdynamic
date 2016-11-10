@@ -4,8 +4,8 @@ import array
 import csv
 import subprocess
 import tempfile
-from dgDynamic.config.settings import config
-from io import StringIO
+import math
+from dgDynamic.utils.exceptions import SimulationError
 from dgDynamic.config.settings import config
 from .stochastic_plugin import StochasticPlugin, SimulationOutput
 from ...converters.stochastic.spim_converter import generate_initial_values, generate_rates, generate_automata_code, \
@@ -25,7 +25,7 @@ class SpimStochastic(StochasticPlugin):
         self._simulator = simulator
         self._ocamlrun_path = os.path.abspath(config['Simulation']['OCAML_RUN'])
 
-    def solve(self, timeout=None) -> SimulationOutput:
+    def solve(self, timeout=None, rel_tol=1e-09, abs_tol=0.0) -> SimulationOutput:
         def generate_code_file(file_path):
             with open(file_path, mode="w") as code_file:
                 code_file.write(generate_preamble(self.simulation_range, symbols=self._simulator.symbols,
@@ -56,20 +56,26 @@ class SpimStochastic(StochasticPlugin):
             run_parameters = (self._ocamlrun_path, self._spim_path, file_path_code)
             try:
                 stdout = subprocess.check_output(run_parameters, timeout=timeout)
+                self.logger.info("SPiM stdout:\n{}".format(stdout.decode()))
             except subprocess.TimeoutExpired:
                 self.logger.exception("Execution timeout reached for spim")
-                return None
-            self.logger.info("SPiM stdout:\n".format(stdout.decode()))
 
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             if not os.path.isfile(csv_file_path):
-                raise IOError("Missing SPiM output")
+                self.logger.error("Missing SPiM output")
+                return None
 
             with open(csv_file_path) as file:
                 reader = csv.reader(file)
                 next(reader)
+                old_time = 0.0
                 for line in reader:
-                    independent.append(float(line[0]))
+                    new_time = float(line[0])
+                    if new_time > old_time or math.isclose(new_time, old_time, rel_tol=rel_tol, abs_tol=abs_tol):
+                        independent.append(new_time)
+                        old_time = new_time
+                    else:
+                        raise SimulationError("Simulation time regression detected")
                     dependent.append(array.array('d', map(float, line[1:])))
 
         return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent, independent=independent,
