@@ -156,6 +156,27 @@ class SimulationOutput(LogMixin):
 
         return self
 
+    def __getitem__(self, indices):
+        if isinstance(indices, int):
+            return self.independent[indices], self.dependent[indices]
+        elif hasattr(indices, "__getitem__") and hasattr(indices, "__len__"):
+            if len(indices) == 2:
+                return self.independent[indices[0]], self.dependent[indices[0]][indices[1]]
+            elif len(indices) > 2:
+                raise SyntaxError('Too many indices given')
+            elif len(indices) < 2:
+                raise SyntaxError('Too few indices given')
+        raise SyntaxError('Invalid index')
+
+    def __iter__(self):
+        for i in range(len(self.independent)):
+            yield self.independent[i], self.dependent[i]
+
+    def __len__(self):
+        return len(self.independent)
+
+
+
 
 class PluginBase(abc.ABC, LogMixin):
 

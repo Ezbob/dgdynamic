@@ -8,7 +8,7 @@ import mod
 
 from dgDynamic.choices import SupportedOdePlugins
 from dgDynamic.mod_dynamics import dgDynamicSim
-
+import matplotlib.pyplot as plt
 
 rabbit_multiples = "R -> 2 R\n"
 foxes_hunts = "R + F -> F + F\n"
@@ -26,7 +26,7 @@ initial_conditions = {
 }
 
 parameters = {
-    foxes_hunts: 0.004,
+    foxes_hunts: 0.005,
     rabbit_multiples: 0.7,
     foxes_dies: 0.5,
 }
@@ -42,7 +42,7 @@ figure_size = (40, 20)
 
 scipy_ode = ode(SupportedOdePlugins.Scipy)
 
-scipy_ode(integration_range, initial_conditions, parameters, delta_t=0.1).save(name).plot(figure_size=figure_size)
+scipy_ode(integration_range, initial_conditions, parameters, delta_t=0.1).plot(figure_size=figure_size)
 
 with ode('matlab') as matlab:
     matlab(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
