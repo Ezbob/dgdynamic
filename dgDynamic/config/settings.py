@@ -1,6 +1,8 @@
 import configparser
 import os.path
 
+config = None
+
 default_config_file = 'default_config.ini'
 
 config_file_names = [

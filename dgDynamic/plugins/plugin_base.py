@@ -176,8 +176,6 @@ class SimulationOutput(LogMixin):
         return len(self.independent)
 
 
-
-
 class PluginBase(abc.ABC, LogMixin):
 
     def __init__(self, simulation_range, initial_conditions, parameters):
