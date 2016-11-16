@@ -27,8 +27,8 @@ def get_matlab_lambda(abstract_ode_system: ODESystem, parameter_substitutions=No
                                        user_parameters=parameter_substitutions,
                                        internal_parameters_map=abstract_ode_system.parameters)
 
-    substitute_me = {value: sp.Symbol("y({})".format(key + 1))
-                     for key, value in enumerate(abstract_ode_system.symbols.values())}
+    substitute_me = {sp.Symbol(value): sp.Symbol("y({})".format(key + 1))
+                     for key, value in enumerate(abstract_ode_system.symbols)}
 
     return substitute(abstract_ode_system.generate_equations(), parameter_map, symbol_map=substitute_me,
                       extra_symbols=MatlabSymbols(), postprocessor=_postprocessor)

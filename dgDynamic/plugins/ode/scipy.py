@@ -31,6 +31,7 @@ class ScipyOde(OdePlugin, LogMixin):
             self.logger.error("Scipy ode function was not generated")
             return SimulationOutput(SupportedOdePlugins.Scipy,
                                     errors=(SimulationError("Ode function could not be generated"),))
+
         ode_function = eval(ode_function)
 
         self.logger.debug("Checking scipy parameters...")

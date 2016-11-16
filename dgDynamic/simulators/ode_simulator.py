@@ -3,7 +3,6 @@ import sympy as sp
 from collections import OrderedDict
 from typing import Union
 from dgDynamic.choices import SupportedOdePlugins
-from dgDynamic.utils.project_utils import ProjectTypeHints
 from .simulator import DynamicSimulator
 
 
@@ -22,7 +21,9 @@ class ODESystem(DynamicSimulator):
         super().__init__(graph=graph)
 
         # every vertex in the deviation graph gets a mapping from it's id to the corresponding SymPy Symbol
-        self.symbols = OrderedDict(((vertex.id, sp.Symbol(vertex.graph.name)) for vertex in self.graph.vertices))
+        self.symbols_mapping = OrderedDict(((vertex.id, sp.Symbol(vertex.graph.name))
+                                            for vertex in self.graph.vertices))
+        self.symbols = tuple(vertex.graph.name for vertex in self.graph.vertices)
 
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
         self.parameters = OrderedDict((edge.id, sp.Symbol("k{}".format(index + 1)))
@@ -47,7 +48,7 @@ class ODESystem(DynamicSimulator):
 
     def generate_rate_laws(self):
         for index, edge in enumerate(self.graph.edges):
-            reduce_me = (self.symbols[vertex.id] for vertex in edge.sources)
+            reduce_me = (self.symbols_mapping[vertex.id] for vertex in edge.sources)
             reduced = ft.reduce(lambda a, b: a * b, reduce_me)
             yield self.parameters[edge.id] * reduced
 
@@ -60,7 +61,7 @@ class ODESystem(DynamicSimulator):
         left_hand_sides = tuple(self.generate_rate_laws())
         ignore_dict = dict(self.ignored)
         for vertex_id, vertex in enumerate(self.graph.vertices):
-            if sp.Symbol(vertex.graph.name) in ignore_dict:
+            if vertex.graph.name in ignore_dict:
                 yield vertex.graph.name, 0
             else:
                 # Since we use numpy, we can use the left hand expresses as mathematical expressions
@@ -75,6 +76,13 @@ class ODESystem(DynamicSimulator):
                             sub_result += left_hand_sides[reaction_index]
 
                 yield vertex.graph.name, sub_result
+
+    def unchanging_species(self, *species):
+        if len(self.ignored) < self.species_count:
+            self.ignored = tuple((item, index) for index, item in enumerate(species) if item in self.symbols)
+        else:
+            self.logger.warn("ignored species count exceeds the count of actual species")
+        return self
 
     def __repr__(self):
         return "<Abstract Ode System>"

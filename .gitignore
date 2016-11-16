@@ -6,6 +6,7 @@
 **.jpeg
 **/config.ini
 main.py
+formose
 plots
 data
 logs

@@ -20,12 +20,11 @@ def get_initial_values(initial_conditions, symbols):
     if isinstance(initial_conditions, (tuple, list)):
         return initial_conditions
     elif isinstance(initial_conditions, dict):
-        translate_mapping = {val: index for index, val in enumerate(symbols.values())}
+        translate_mapping = {val: index for index, val in enumerate(symbols)}
         results = [0] * len(translate_mapping)
         for key, value in initial_conditions.items():
-            key_symbol = sp.Symbol(key)
-            if key_symbol in translate_mapping:
-                results[translate_mapping[key_symbol]] = value
+            if key in translate_mapping:
+                results[translate_mapping[key]] = value
         return results
 
 

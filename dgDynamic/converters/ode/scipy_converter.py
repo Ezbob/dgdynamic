@@ -10,6 +10,5 @@ def get_scipy_lambda(abstract_system: ODESystem, parameter_substitutions=None):
                                        user_parameters=parameter_substitutions,
                                        internal_parameters_map=abstract_system.parameters)
 
-    substitute_me = {value: sp.Indexed('y', key) for key, value in enumerate(abstract_system.symbols.values())}
-
+    substitute_me = {sp.Symbol(value): sp.Indexed('y', key) for key, value in enumerate(abstract_system.symbols)}
     return substitute(abstract_system.generate_equations(), parameter_map, substitute_me)
