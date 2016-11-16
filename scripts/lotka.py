@@ -40,6 +40,7 @@ name = "foxesRabbits"
 figure_size = (40, 20)
 
 ode("scipy")(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
+ode("matlab")(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
 
 #for ode_plugin_name in SupportedOdePlugins:
 #    output = ode(ode_plugin_name)(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)

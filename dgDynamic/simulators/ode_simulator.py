@@ -48,7 +48,7 @@ class ODESystem(DynamicSimulator):
 
     def generate_rate_laws(self):
         for index, edge in enumerate(self.graph.edges):
-            reduce_me = (self.symbols_mapping[vertex.id] for vertex in edge.sources)
+            reduce_me = (sp.Symbol(vertex.graph.name) for vertex in edge.sources)
             reduced = ft.reduce(lambda a, b: a * b, reduce_me)
             yield self.parameters[edge.id] * reduced
 
@@ -76,13 +76,6 @@ class ODESystem(DynamicSimulator):
                             sub_result += left_hand_sides[reaction_index]
 
                 yield vertex.graph.name, sub_result
-
-    def unchanging_species(self, *species):
-        if len(self.ignored) < self.species_count:
-            self.ignored = tuple((item, index) for index, item in enumerate(species) if item in self.symbols)
-        else:
-            self.logger.warn("ignored species count exceeds the count of actual species")
-        return self
 
     def __repr__(self):
         return "<Abstract Ode System>"

@@ -22,7 +22,7 @@ class DynamicSimulator(abc.ABC, LogMixin):
 
     def unchanging_species(self, *species: Union[str, sp.Symbol, ProjectTypeHints.Countable_Sequence]):
         if len(self.ignored) < self.species_count:
-            self.ignored = tuple(item for item in species if item in self.symbols)
+            self.ignored = tuple((item, self.symbols.index(item)) for item in species if item in self.symbols)
         else:
             self.logger.warn("ignored species count exceeds the count of actual species")
         return self

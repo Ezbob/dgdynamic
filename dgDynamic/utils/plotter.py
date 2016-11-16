@@ -27,30 +27,32 @@ def plot(queue):
 
     pyplt.tight_layout()
 
-    if get_input('axis_limits') is not None:
-        axis_limits = input_data['axis_limits']
+    axis_limits = get_input('axis_limits')
+    if axis_limits is not None:
         assert isinstance(axis_limits, (tuple, list))
         assert len(axis_limits) == 2
         plt.set_ylim(axis_limits[1])
         plt.set_xlim(axis_limits[0])
 
-    if get_input('axis_labels') is not None:
-        axis_labels = input_data['axis_labels']
+    axis_labels = get_input('axis_labels')
+    if axis_labels is not None:
         assert isinstance(axis_labels, (tuple, list))
         assert len(axis_labels) >= 2
         assert isinstance(axis_labels[0], str) and isinstance(axis_labels[1], str)
         plt.xlabel(axis_labels[0])
         plt.ylabel(axis_labels[1])
 
-    if get_input('symbols') is not None:
-        if get_input('labels') is not None:
+    symbols = get_input('symbols')
+    if symbols is not None:
+        labels = get_input('labels')
+        if labels is not None:
             assert len(input_data['labels']) >= len(lines)
-            labels = input_data['labels']
         else:
-            labels = input_data['symbols']
+            labels = symbols
 
         for index, line in enumerate(lines):
-            if index in input_data['ignored']:
+            ignored = input_data['ignored']
+            if index in ignored:
                 line.remove()
             else:
                 line.set_label(labels[index])
@@ -67,8 +69,8 @@ def plot(queue):
         _, labels = plt.get_legend_handles_labels()
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=math.ceil(len(labels) / 32.))
 
-    if get_input('figure_size') is not None:
-        figure_size = input_data['figure_size']
+    figure_size = get_input('figure_size')
+    if figure_size is not None:
         assert len(figure_size) >= 2
 
         def cm2inch(number): return number / 2.54
@@ -76,8 +78,10 @@ def plot(queue):
         fig = pyplt.gcf()
         fig.set_size_inches(cm2inch(figure_size[0]), cm2inch(figure_size[1]), forward=True)
 
-    if get_input('title') is not None:
-        pyplt.title(input_data['title'])
+    title = get_input('title')
+    if title is not None:
+        pyplt.title(title)
+
     filename = get_input('filename')
     if filename is None or type(filename) is not str:
         pyplt.show()
