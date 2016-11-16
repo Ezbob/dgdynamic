@@ -41,8 +41,14 @@ def _break_two_way_deviations(two_way: str) -> Iterable[str]:
 
 def _parse_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHyperEdge":
     sources, _, targets = derivation.partition(" -> ")
-    edge = graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
-    if edge.isNull() or edge is None:
+    edge = graph.find_edge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
+
+    is_null = False
+
+    if hasattr(edge, "isNull"):
+        is_null = edge.isNull()
+
+    if is_null or edge is None:
         raise ReactionParseError("No edge for reaction: {}".format(derivation))
     return edge
 

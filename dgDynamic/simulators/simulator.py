@@ -5,6 +5,24 @@ from ..converters.reaction_parser import parse
 from dgDynamic.utils.project_utils import LogMixin, ProjectTypeHints
 
 
+class HyperGraph(LogMixin):
+    def __init__(self, graph):
+
+        if isinstance(graph, (tuple, list, set)):
+            self.vertices, self.edges = graph[0], graph[1]
+        elif isinstance(graph, dict):
+            self.vertices, self.edges = graph['vertices'], graph['edges']
+        elif hasattr(graph, "vertices") and hasattr(graph, "edges"):
+            self.vertices, self.edges = graph.vertices, graph.edges
+        else:
+            raise TypeError('Object "{}" does not have any vertices or edges'.format(graph))
+        self.edge_finder = graph.findEdge if hasattr(graph, "findEdge") else None
+
+    def find_edge(self, vertices, edges):
+        if self.edge_finder is not None:
+            return self.edge_finder(vertices, edges)
+
+
 class DynamicSimulator(abc.ABC, LogMixin):
 
     def __init__(self, graph):
@@ -12,7 +30,7 @@ class DynamicSimulator(abc.ABC, LogMixin):
         self.ignored = tuple()
         self.symbols = tuple()
         self.reaction_count = sum(1 for _ in self.graph.edges)
-        self.species_count = self.graph.numVertices
+        self.species_count = sum(1 for _ in self.graph.vertices)
 
     def parse_abstract_reaction(self, reaction: str) -> Union[object, Tuple[object, object]]:
         return parse(self, reaction)

@@ -8,7 +8,6 @@ import mod
 
 from dgDynamic.choices import SupportedOdePlugins
 from dgDynamic.mod_dynamics import dgDynamicSim
-import matplotlib.pyplot as plt
 
 rabbit_multiples = "R -> 2 R\n"
 foxes_hunts = "R + F -> F + F\n"
@@ -40,17 +39,13 @@ stochastic = dgDynamicSim(dg, simulator_choice='stochastic', unchanging_species=
 name = "foxesRabbits"
 figure_size = (40, 20)
 
-scipy_ode = ode(SupportedOdePlugins.Scipy)
-
-scipy_ode(integration_range, initial_conditions, parameters, delta_t=0.1).plot(figure_size=figure_size)
-
-with ode('matlab') as matlab:
-    matlab(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
+for ode_plugin_name in SupportedOdePlugins:
+    output = ode(ode_plugin_name)(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
 
 spim_simulation_range = (100, 1000)
 
 with stochastic('spim') as spim:
     for i in range(8):
-        output = spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
-                      parameters=parameters, timeout=60).plot(figure_size=figure_size)
+        spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
+             parameters=parameters, timeout=60).plot(figure_size=figure_size)
 
