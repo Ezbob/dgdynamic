@@ -18,9 +18,10 @@ def generate_preamble(sample_range, draw_automata=False, symbols=None, ignored=N
         if symbols is not None:
             str_out.write("directive plot ")
 
+            ignored_dict = dict(ignored)
             for index, symbol in enumerate(symbols):
                 if ignored is not None:
-                    if symbol not in ignored:
+                    if symbol not in ignored_dict:
                         str_out.write("_{}()".format(symbol))
                         if index < (len(symbols) - len(ignored)) - 1:
                             str_out.write("; ")

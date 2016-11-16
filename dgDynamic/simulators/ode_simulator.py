@@ -19,12 +19,6 @@ class ODESystem(DynamicSimulator):
         dgAbstract, else it just gets stored.
         """
         super().__init__(graph=graph)
-
-        # every vertex in the deviation graph gets a mapping from it's id to the corresponding SymPy Symbol
-        self.symbols_mapping = OrderedDict(((vertex.id, sp.Symbol(vertex.graph.name))
-                                            for vertex in self.graph.vertices))
-        self.symbols = tuple(vertex.graph.name for vertex in self.graph.vertices)
-
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
         self.parameters = OrderedDict((edge.id, sp.Symbol("k{}".format(index + 1)))
                                       for index, edge in enumerate(self.graph.edges))

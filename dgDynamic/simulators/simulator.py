@@ -10,7 +10,7 @@ class DynamicSimulator(abc.ABC, LogMixin):
     def __init__(self, graph):
         self.graph = graph
         self.ignored = tuple()
-        self.symbols = tuple()
+        self.symbols = tuple(vertex.graph.name for vertex in self.graph.vertices)
         self.reaction_count = sum(1 for _ in self.graph.edges)
         self.species_count = sum(1 for _ in self.graph.vertices)
 

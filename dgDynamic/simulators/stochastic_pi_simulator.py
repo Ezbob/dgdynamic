@@ -7,7 +7,7 @@ from dgDynamic.choices import SupportedStochasticPlugins
 from io import StringIO
 
 
-def hyper_edge_to_string(edge):
+def _hyper_edge_to_string(edge):
     with StringIO() as out:
         for index, source_vertex in enumerate(edge.sources):
             out.write(source_vertex.graph.name)
@@ -23,7 +23,7 @@ def hyper_edge_to_string(edge):
         return out.getvalue()
 
 
-def pretty_print_dict(channel_dict):
+def _pretty_print_dict(channel_dict):
     for key, value in channel_dict.items():
         print(key, value)
 
@@ -33,7 +33,6 @@ class StochasticPiSystem(DynamicSimulator):
     def __init__(self, graph):
         super().__init__(graph=graph)
         self.rate_names = tuple('r{}'.format(index) for index in range(self.reaction_count))
-        self.symbols = tuple(vertex.graph.name for vertex in self.graph.vertices)
         self.decay_rates = tuple()
 
     def generate_channels(self):
@@ -90,7 +89,7 @@ class StochasticPiSystem(DynamicSimulator):
                     hetero_reaction_case(hyper_edge, reaction_index)
             else:
                 raise ValueError("For reaction: {}; reactions with 3 or more reactants are not support"
-                                 .format(hyper_edge_to_string(hyper_edge)))
+                                 .format(_hyper_edge_to_string(hyper_edge)))
         return result
 
     def get_plugin_from_enum(self, enum_variable, *args, **kwargs):
