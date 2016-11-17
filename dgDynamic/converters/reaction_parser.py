@@ -1,6 +1,7 @@
 from typing import Iterable, Tuple, Union
 from dgDynamic.utils.exceptions import ReactionParseError
 from ..utils.project_utils import log_it
+from dgDynamic.structures import HyperEdge
 
 
 def _parse_sides(side: str) -> str:
@@ -41,12 +42,9 @@ def _break_two_way_deviations(two_way: str) -> Iterable[str]:
 
 def _parse_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHyperEdge":
     sources, _, targets = derivation.partition(" -> ")
-    edge = graph.find_edge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
 
-    is_null = False
-
-    if hasattr(edge, "isNull"):
-        is_null = edge.isNull()
+    edge = graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
+    is_null = edge.isNull() if hasattr(edge, "isNull") else False
 
     if is_null or edge is None:
         raise ReactionParseError("No edge for reaction: {}".format(derivation))
@@ -54,11 +52,14 @@ def _parse_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHyperE
 
 
 @log_it
-def parse(abstract_system: "DynamicSimulator", reaction: str) -> Union[object, Tuple[object, object]]:
+def abstract_reaction(deviation_graph: "mod._mod.DG", reaction: str) -> HyperEdge:
+
     if reaction.find(" <=> ") != -1:
         first_reaction, second_reaction = _break_two_way_deviations(reaction)
-        return _parse_reaction(abstract_system.graph, first_reaction), \
-               _parse_reaction(abstract_system.graph, second_reaction)
+        mod_edges = (_parse_reaction(deviation_graph, first_reaction),
+                     _parse_reaction(deviation_graph, second_reaction))
+        return HyperEdge(mod_edges=mod_edges, representation=reaction, has_inverse=True)
 
     elif reaction.find(' -> ') != -1:
-        return _parse_reaction(abstract_system.graph, reaction)
+        return HyperEdge(mod_edges=(_parse_reaction(deviation_graph, reaction),), representation=reaction,
+                         has_inverse=False)

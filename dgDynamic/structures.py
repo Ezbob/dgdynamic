@@ -19,16 +19,41 @@ class HyperGraph(LogMixin):
 
 
 class HyperEdge:
-    def __init__(self, educts, products, has_inverse=False):
-        self.educts = tuple(educts) if not isinstance(educts, (tuple, list, set)) else educts
-        self.products = tuple(products) if not isinstance(products, (tuple, list, set)) else products
+    def __init__(self, targets=None, sources=None, mod_edges=None, has_inverse=False, representation=None):
+        self.mod_edges = mod_edges
+        self.targets = targets
+        self.sources = sources
         self.has_inverse = has_inverse
+        self.representation = representation
+
+    @property
+    def has_mod_edges(self):
+        return self.mod_edges is not None
+
+    @property
+    def has_vertex_sets(self):
+        return self.sources is not None and self.sources is not None
+
+    @property
+    def is_empty(self):
+        return self.mod_edges is None and self.sources is None and self.targets is None
 
     def __str__(self):
-        if self.has_inverse:
-            return "{} <=> {}".format(" + ".join(self.educts), " + ".join(self.products))
+        if self.representation is not None:
+            return self.representation
         else:
-            return "{} -> {}".format(" + ".join(self.educts), " + ".join(self.products))
+            if self.has_inverse:
+                return "<HyperEdge ({}) <=> ({})>".format(", ".join(self.sources), ", ".join(self.targets))
+            else:
+                return "<HyperEdge ({}) -> ({})>".format(", ".join(self.sources), ", ".join(self.targets))
+
+    def __iter__(self):
+        if self.sources is not None and self.targets is not None:
+            yield from zip(self.sources, self.targets)
+        elif self.mod_edges is not None:
+            yield from self.mod_edges
+        else:
+            raise StopIteration
 
     def __repr__(self):
         return self.__str__()

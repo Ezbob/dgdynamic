@@ -38,8 +38,7 @@ def generate_preamble(sample_range, draw_automata=False, symbols=None, ignored=N
 
 
 def generate_rates(stochastic_system, channel_dict, parameters=None, float_precision=18) -> str:
-    edge_rate_dict = get_edge_rate_dict(reaction_parser_function=stochastic_system.parse_abstract_reaction,
-                                        user_parameters=parameters)
+    edge_rate_dict = get_edge_rate_dict(user_parameters=parameters)
     already_seen = dict()
     with StringIO() as str_out:
         for channel_tuple in channel_dict.values():

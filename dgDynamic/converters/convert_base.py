@@ -5,19 +5,15 @@ from ..utils.project_utils import log_it
 
 # TODO make this independent of the parse, OR make the parser independent of this function OR bypass it by using a sub graph with edges and vertices in the hyper graph
 @log_it
-def get_edge_rate_dict(reaction_parser_function, user_parameters, internal_parameters_map=None) \
+def get_edge_rate_dict(user_parameters, internal_parameters_map=None) \
         -> Dict[int, Union[float, int]]:
     """
     Get a dictionary with edge.ids as keys and their associated rates as values
-    :param reaction_parser_function:
     :param user_parameters:
     :param internal_parameters_map:
     :return:
     """
     result = defaultdict(lambda: 0)
-
-    if not hasattr(reaction_parser_function, "__call__"):
-        raise InitialValueError("Reaction parser function is not a callable")
 
     def add_to_result(key, value):
         if isinstance(value, (int, float)):
@@ -29,43 +25,34 @@ def get_edge_rate_dict(reaction_parser_function, user_parameters, internal_param
             raise TypeError("Type error for key {}; expected float or int".format(key))
 
     if isinstance(user_parameters, dict):
-        for key, rate in user_parameters.items():
-            parsed_edges = reaction_parser_function(key)
+        for mod_edges, rate in user_parameters.items():
             if isinstance(rate, (int, float)):
-                # rhs is simply a number
-                if isinstance(parsed_edges, tuple):
-                    for parsed_edge in parsed_edges:
-                        add_to_result(parsed_edge.id, rate)
-                else:
-                    add_to_result(parsed_edges.id, rate)
+                # rhs is a number and lhs is tuple of MØD edges
+                for edge in mod_edges:
+                    add_to_result(edge.id, rate)
             elif isinstance(rate, (tuple, list, set)):
                 # rhs is a iterable
-                if isinstance(parsed_edges, tuple):
-                    if len(rate) < len(parsed_edges):
-                        raise InitialValueError("Not enough initial conditions given for reaction: {}".format(key))
-                    for parsed_edge, rate_item in zip(parsed_edges, rate):
-                        add_to_result(parsed_edge, rate_item)
-                else:
-                    raise InitialValueError("Multivalued initial condition given for reaction: {}"
-                                            .format(key))
+                if len(rate) != len(mod_edges):
+                    raise ValueError("Expected {} rates, got {} for parameter {}"
+                                     .format(len(mod_edges), len(rate), mod_edges))
+
             elif isinstance(rate, dict):
                 # right hand side is a dictionary of the form { '->': ..., '<-': ... } or { '<=>': ... }
-                if isinstance(parsed_edges, tuple):
-                    if '<=>' in rate:
-                        for parsed_edge in parsed_edges:
-                            add_to_result(parsed_edge.id, rate['<=>'])
-                    elif '->' in rate and '<-' in rate:
-                        add_to_result(parsed_edges[0].id, rate['->'])
-                        add_to_result(parsed_edges[1].id, rate['<-'])
-                    else:
-                        raise InitialValueError("Not enough initial conditions given for reaction: {}"
-                                                .format(key))
+                if '<=>' in rate:
+                    for edge in mod_edges[-1]:
+                        add_to_result(edge.id, rate['<=>'])
+                elif '->' in rate and '<-' in rate:
+                    for index, edge in enumerate(mod_edges):
+                        if index == 0:
+                            add_to_result(edge.id, rate['->'])
+                        elif index == 1:
+                            add_to_result(edge.id, rate['<-'])
                 else:
-                    raise InitialValueError("Multivalued initial condition given for reaction: {}"
-                                            .format(key))
+                    raise InitialValueError("Not enough initial conditions given for parameter: {}"
+                                            .format(mod_edges))
             else:
-                raise InitialValueError("Unsupported type {} of initial condition for reaction: {} "
-                                        .format(type(rate), key))
+                raise InitialValueError("Unsupported type {} of initial condition for parameter: {} "
+                                        .format(type(rate), mod_edges))
     elif isinstance(user_parameters, (tuple, list, set)):
         # user parameters is just a iterable
         for index_rate, rate in enumerate(user_parameters):

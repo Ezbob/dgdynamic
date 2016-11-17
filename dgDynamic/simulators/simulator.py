@@ -1,7 +1,7 @@
 import abc
 import sympy as sp
 from typing import Union, Tuple
-from ..converters.reaction_parser import parse
+from ..converters.reaction_parser import abstract_reaction
 from dgDynamic.utils.project_utils import LogMixin, ProjectTypeHints
 
 
@@ -15,7 +15,7 @@ class DynamicSimulator(abc.ABC, LogMixin):
         self.species_count = sum(1 for _ in self.graph.vertices)
 
     def parse_abstract_reaction(self, reaction: str) -> Union[object, Tuple[object, object]]:
-        return parse(self, reaction)
+        return abstract_reaction(self, reaction)
 
     def __call__(self, plugins, *args, **kwargs):
         return self.get_plugin(plugins, *args, **kwargs)

@@ -34,7 +34,7 @@ class ODESystem(DynamicSimulator):
     def get_plugin(self, plugin_name: Union[str, SupportedOdePlugins], *args, **kwargs):
         if isinstance(plugin_name, str):
             for plugin in SupportedOdePlugins:
-                if plugin.value in plugin_name.lower():
+                if plugin.value.strip().lower() == plugin_name.strip().lower():
                     return self.get_plugin_from_enum(plugin, *args, **kwargs)
             raise ValueError("plugin name not recognized")
         elif isinstance(plugin_name, SupportedOdePlugins):

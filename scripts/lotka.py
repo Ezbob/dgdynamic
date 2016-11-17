@@ -7,7 +7,7 @@ A Lotka model with (F)oxes and (R)abbits (prey-predator model).
 import mod
 
 from dgDynamic.choices import SupportedOdePlugins
-from dgDynamic.mod_dynamics import dgDynamicSim
+from dgDynamic import dgDynamicSim, abstract_reaction
 
 rabbit_multiples = "R -> 2 R\n"
 foxes_hunts = "R + F -> F + F\n"
@@ -25,9 +25,9 @@ initial_conditions = {
 }
 
 parameters = {
-    foxes_hunts: 0.005,
-    rabbit_multiples: 0.7,
-    foxes_dies: 0.5,
+    abstract_reaction(dg, foxes_hunts): 0.005,
+    abstract_reaction(dg, rabbit_multiples): 0.7,
+    abstract_reaction(dg, foxes_dies): 0.5,
 }
 
 integration_range = (0, 100)
