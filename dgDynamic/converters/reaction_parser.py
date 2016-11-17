@@ -1,7 +1,7 @@
 from typing import Iterable, Tuple, Union
 from dgDynamic.utils.exceptions import ReactionParseError
 from ..utils.project_utils import log_it
-from dgDynamic.structures import HyperEdge
+from collections import namedtuple
 
 
 def _parse_sides(side: str) -> str:
@@ -52,14 +52,15 @@ def _parse_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHyperE
 
 
 @log_it
-def abstract_reaction(deviation_graph: "mod._mod.DG", reaction: str) -> HyperEdge:
+def abstract_reaction_parser(deviation_graph: "DG", reaction: str) -> namedtuple:
 
+    parse_results = namedtuple('parse_result', 'mod_edges representation has_inverse')
     if reaction.find(" <=> ") != -1:
         first_reaction, second_reaction = _break_two_way_deviations(reaction)
         mod_edges = (_parse_reaction(deviation_graph, first_reaction),
                      _parse_reaction(deviation_graph, second_reaction))
-        return HyperEdge(mod_edges=mod_edges, representation=reaction, has_inverse=True)
+        return parse_results(mod_edges=mod_edges, representation=reaction, has_inverse=True)
 
     elif reaction.find(' -> ') != -1:
-        return HyperEdge(mod_edges=(_parse_reaction(deviation_graph, reaction),), representation=reaction,
-                         has_inverse=False)
+        return parse_results(mod_edges=(_parse_reaction(deviation_graph, reaction),), representation=reaction,
+                             has_inverse=False)

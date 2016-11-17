@@ -1,4 +1,5 @@
 from dgDynamic.utils.project_utils import LogMixin
+from dgDynamic.converters.reaction_parser import abstract_reaction_parser
 import mod
 
 
@@ -63,3 +64,9 @@ class HyperEdge:
     def __repr__(self):
         return self.__str__()
 
+
+class AbstractReaction(HyperEdge):
+    def __init__(self, mod_dg, reaction):
+        parsed_results = abstract_reaction_parser(mod_dg, reaction)
+        super().__init__(None, None, parsed_results.mod_edges,
+                         parsed_results.has_inverse, parsed_results.representation)
