@@ -1,11 +1,11 @@
 import os.path
 import sys
 
-sys.path.append("/home/ezbob/PycharmProjects/ode-plugin-module/")
+dynamic_module_path = os.path.abspath("../../")
+sys.path.append(dynamic_module_path)
 
 from dgDynamic import dgDynamicSim, show_simulation_plots
 from dgDynamic.structures import AbstractReaction, HyperEdge, HyperGraph
-
 
 
 include("grammar.py")
@@ -75,4 +75,3 @@ show_simulation_plots()
 # sols = [(tuple(v for v in dg.vertices if sol.eval(vertex(v.graph)) != 0.0), tuple( e for e in dg.edges if
 # sol.eval(edge(e)) != 0.0)) for sol in flowAutocata.solutions]
 
-print(os.path.abspath("../../"))
