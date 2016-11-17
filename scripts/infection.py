@@ -6,7 +6,7 @@ The recovered becomes immune to the infected once they recover,
 and the model starts out with some infected.
 """
 import mod
-from dgDynamic.mod_dynamics import dgDynamicSim
+from dgDynamic.mod_dynamics import dgDynamicSim, show_simulation_plots
 from dgDynamic.choices import MatlabOdeSolvers
 from dgDynamic.structures import AbstractReaction
 
@@ -56,3 +56,4 @@ with ode("Matlab") as matlab:
     for supported in MatlabOdeSolvers:
         matlab(integration_range, initial_conditions, parameters, supported).plot(figure_size=figure_size)
 
+show_simulation_plots()
