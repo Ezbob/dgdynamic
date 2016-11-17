@@ -8,7 +8,7 @@ and the model starts out with some infected.
 import mod
 from dgDynamic.mod_dynamics import dgDynamicSim
 from dgDynamic.choices import MatlabOdeSolvers
-import numpy as np
+from dgDynamic.structures import AbstractReaction
 
 susceptible_infected = "S + I -> 2 I\n"
 recovered = "I -> R\n"
@@ -27,10 +27,10 @@ initial_conditions = {
 }
 
 parameters = {
-    susceptible_infected: 0.001,
-    infected_stays_infected: 0.001,
-    recovered_stays_recovered: 0.001,
-    recovered: 0.03,
+    AbstractReaction(dg, susceptible_infected): 0.001,
+    AbstractReaction(dg, infected_stays_infected): 0.001,
+    AbstractReaction(dg, recovered_stays_recovered): 0.001,
+    AbstractReaction(dg, recovered): 0.03,
 }
 
 integration_range = (0, 200)
