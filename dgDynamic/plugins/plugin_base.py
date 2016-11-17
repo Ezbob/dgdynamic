@@ -24,12 +24,7 @@ class SimulationOutput(LogMixin):
         self._file_writer_thread = None
 
         if abstract_system is not None:
-            if isinstance(abstract_system.symbols, dict):
-                self.symbols = tuple(abstract_system.symbols.values())
-            elif isinstance(abstract_system.symbols, (tuple, list, set)):
-                self.symbols = abstract_system.symbols
-            else:
-                self.symbols = None
+            self.symbols = abstract_system.symbols
         else:
             self.symbols = None
 

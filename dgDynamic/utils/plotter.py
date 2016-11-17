@@ -49,18 +49,18 @@ def plot(input_data):
         else:
             labels = symbols
 
-        for index, line in enumerate(lines):
+        for index, line_labels in enumerate(zip(lines, labels)):
             ignored = input_data['ignored']
             if index in ignored:
-                line.remove()
+                line_labels[0].remove()
             else:
-                line.set_label(labels[index])
+                line_labels[0].set_label(line_labels[1])
             if 20 < index <= 30:
-                line.set_linestyle('dashed')
+                line_labels[0].set_linestyle('dashed')
             elif 30 < index <= 40:
-                line.set_linestyle('dashdot')
+                line_labels[0].set_linestyle('dashdot')
             elif 40 < index <= 50:
-                line.set_linestyle('dotted')
+                line_labels[0].set_linestyle('dotted')
 
         # shrinking the box so there is space for the left box
         box = plt.get_position()
