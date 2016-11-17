@@ -1,4 +1,5 @@
 from dgDynamic.utils.project_utils import LogMixin
+import mod
 
 
 class HyperGraph(LogMixin):
@@ -11,11 +12,15 @@ class HyperGraph(LogMixin):
             self.vertices, self.edges = graph.vertices, graph.edges
         else:
             raise TypeError('Object "{}" does not have any vertices or edges'.format(graph))
-        self.edge_finder = graph.findEdge if hasattr(graph, "findEdge") else None
 
-    def find_edge(self, vertices, edges):
-        if self.edge_finder is not None:
-            return self.edge_finder(vertices, edges)
+    @staticmethod
+    def from_flow_solution(solution):
+        if isinstance(solution, mod.DGFlowSolution):
+            original_graph = solution.dgFlow.dg
+            return HyperGraph({'vertices': tuple(v for v in original_graph.vertices
+                                                 if solution.eval(mod.vertex(v.graph)) != 0.0),
+                               'edges': tuple(e for e in original_graph.edges
+                                              if solution.eval(mod.edge(e)) != 0.0)})
 
 
 class HyperEdge:

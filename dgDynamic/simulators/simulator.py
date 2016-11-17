@@ -35,3 +35,6 @@ class DynamicSimulator(abc.ABC, LogMixin):
     def get_plugin(self, plugin_name, *args, **kwargs):
         pass
 
+    def __repr__(self):
+        return "<Abstract Simulator>"
+

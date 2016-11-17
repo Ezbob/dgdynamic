@@ -103,3 +103,6 @@ class StochasticPiSystem(DynamicSimulator):
                     return self.get_plugin_from_enum(plugin_enum, *args, **kwargs)
         elif isinstance(plugin_name, SupportedStochasticPlugins):
             return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
+
+    def __repr__(self):
+        return "<Abstract Stochastic Simulator>"

@@ -72,5 +72,5 @@ class ODESystem(DynamicSimulator):
                 yield vertex.graph.name, sub_result
 
     def __repr__(self):
-        return "<Abstract Ode System>"
+        return "<Abstract Ode Simulator>"
 
