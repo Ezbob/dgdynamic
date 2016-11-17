@@ -11,9 +11,12 @@ class DynamicSimulator(abc.ABC, LogMixin):
     def __init__(self, graph):
         self.graph = graph
         self.ignored = tuple()
-        self.symbols = tuple(vertex.graph.name for vertex in self.graph.vertices)
         self.reaction_count = sum(1 for _ in self.graph.edges)
         self.species_count = sum(1 for _ in self.graph.vertices)
+
+    @property
+    def symbols(self):
+        yield from (vertex.graph.name for vertex in self.graph.vertices)
 
     @property
     def abstract_edges(self):
@@ -39,9 +42,13 @@ class DynamicSimulator(abc.ABC, LogMixin):
     def __call__(self, plugins, *args, **kwargs):
         return self.get_plugin(plugins, *args, **kwargs)
 
-    def unchanging_species(self, *species: Union[str, sp.Symbol, ProjectTypeHints.Countable_Sequence]):
+    def unchanging_species(self, *species):
         if len(self.ignored) < self.species_count:
-            self.ignored = tuple((item, self.symbols.index(item)) for item in species if item in self.symbols)
+            # (item, self.symbols.index(item)) for item in species if item in self.symbols
+            for item in species:
+                for symbol_index, symbol in enumerate(self.symbols):
+                    if item == symbol:
+                        self.ignored += ((item, symbol_index),)
         else:
             self.logger.warn("ignored species count exceeds the count of actual species")
         return self

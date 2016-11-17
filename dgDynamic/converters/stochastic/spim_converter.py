@@ -3,7 +3,8 @@ from io import StringIO
 from ..convert_base import get_edge_rate_dict
 
 
-def generate_preamble(sample_range, draw_automata=False, symbols=None, ignored=None, float_precision=18) -> str:
+def generate_preamble(sample_range, draw_automata=False, symbols=None, species_count=0,
+                      ignored=None, float_precision=18) -> str:
 
     with StringIO() as str_out:
         if isinstance(sample_range, (tuple, list, set)):
@@ -23,11 +24,11 @@ def generate_preamble(sample_range, draw_automata=False, symbols=None, ignored=N
                 if ignored is not None:
                     if symbol not in ignored_dict:
                         str_out.write("_{}()".format(symbol))
-                        if index < (len(symbols) - len(ignored)) - 1:
+                        if index < (species_count - len(ignored)) - 1:
                             str_out.write("; ")
                 else:
                     str_out.write("_{}()".format(symbol))
-                    if index < len(symbols) - 1:
+                    if index < species_count - 1:
                         str_out.write("; ")
             str_out.write("\n")
 
@@ -37,7 +38,7 @@ def generate_preamble(sample_range, draw_automata=False, symbols=None, ignored=N
         return str_out.getvalue()
 
 
-def generate_rates(stochastic_system, channel_dict, parameters=None, float_precision=18) -> str:
+def generate_rates(channel_dict, parameters=None, float_precision=18) -> str:
     edge_rate_dict = get_edge_rate_dict(user_parameters=parameters)
     already_seen = dict()
     with StringIO() as str_out:
@@ -79,7 +80,7 @@ def generate_initial_values(symbols, initial_conditions) -> str:
         return str_out.getvalue()
 
 
-def generate_automata_code(channel_dict, symbols, process_prefix="_"):
+def generate_automata_code(channel_dict, symbols, species_count, process_prefix="_"):
 
     def generate_channel(stream, channel):
 
@@ -125,6 +126,6 @@ def generate_automata_code(channel_dict, symbols, process_prefix="_"):
             else:
                 str_result.write('()')
 
-            if symbol_index < len(symbols) - 1:
+            if symbol_index < species_count - 1:
                 str_result.write('\nand ')
         return str_result.getvalue()

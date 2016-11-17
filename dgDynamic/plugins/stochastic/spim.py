@@ -29,11 +29,13 @@ class SpimStochastic(StochasticPlugin):
         def generate_code_file(file_path):
             with open(file_path, mode="w") as code_file:
                 code_file.write(generate_preamble(self.simulation_range, symbols=self._simulator.symbols,
-                                                  ignored=self._simulator.ignored))
+                                                  ignored=self._simulator.ignored, species_count=self._simulator.
+                                                  species_count))
                 code_file.write('\n')
-                code_file.write(generate_rates(self._simulator, channel_dict=channels, parameters=self.parameters))
+                code_file.write(generate_rates(channel_dict=channels, parameters=self.parameters))
                 code_file.write('\n')
-                code_file.write(generate_automata_code(channels, self._simulator.symbols))
+                code_file.write(generate_automata_code(channels, self._simulator.symbols,
+                                                       species_count=self._simulator.species_count))
                 code_file.write('\n\n')
                 code_file.write(generate_initial_values(self._simulator.symbols, self.initial_conditions))
 
