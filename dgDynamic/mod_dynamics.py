@@ -2,6 +2,7 @@ from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.simulators.stochastic_pi_simulator import StochasticPiSystem
 from typing import Union
 from .structures import HyperGraph
+from dgDynamic.plugins.plugin_base import SimulationOutput
 import enum
 
 
@@ -19,3 +20,7 @@ def dgDynamicSim(graph, simulator_choice="ode", unchanging_species=()) -> Union[
             return StochasticPiSystem(graph=deviation_graph).unchanging_species(*unchanging_species)
     else:
         return None
+
+
+def show_simulation_plots(*args, **kwargs):
+    SimulationOutput.show(*args, **kwargs)

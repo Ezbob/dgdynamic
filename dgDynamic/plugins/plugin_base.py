@@ -5,7 +5,7 @@ from dgDynamic.utils.project_utils import make_directory
 import threading
 import time
 import os.path
-import multiprocessing as mp
+import matplotlib.pyplot as plt
 from dgDynamic.config.settings import config
 from dgDynamic.utils.plotter import plot
 
@@ -44,16 +44,13 @@ class SimulationOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None, title=None,
-             should_wait=False, timeout=10):
+    def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None, title=None):
         if title is None:
             title = self.solver_used.name.title()
             if self.solver_method_used is not None:
                 title += (" - " + self.solver_method_used.name)
 
-        # using queue here it's process-safe
-        queue = mp.Queue()
-        queue.put({
+        input_values = {
             'independent': self.independent,
             'dependent': self.dependent,
             'symbols': self.symbols,
@@ -64,12 +61,13 @@ class SimulationOutput(LogMixin):
             'figure_size': figure_size,
             'axis_labels': axis_labels,
             'axis_limits': axis_limits,
-        })
-        process = mp.Process(target=plot, args=(queue,))
-        process.start()
-        if should_wait:
-            process.join(timeout=timeout)
+        }
+        plot(input_values)
         return self
+
+    @staticmethod
+    def show(*args, **kwargs):
+        plt.show(*args, **kwargs)
 
     def _get_file_prefix(self, name, extension=".tsv", prefix=None):
         if prefix is None:

@@ -3,6 +3,7 @@ import sympy as sp
 from typing import Union, Tuple
 from ..converters.reaction_parser import abstract_reaction_parser
 from dgDynamic.utils.project_utils import LogMixin, ProjectTypeHints
+from io import StringIO
 
 
 class DynamicSimulator(abc.ABC, LogMixin):
@@ -13,6 +14,24 @@ class DynamicSimulator(abc.ABC, LogMixin):
         self.symbols = tuple(vertex.graph.name for vertex in self.graph.vertices)
         self.reaction_count = sum(1 for _ in self.graph.edges)
         self.species_count = sum(1 for _ in self.graph.vertices)
+
+    @property
+    def abstract_edges(self):
+        def _hyper_edge_to_string(edge):
+            with StringIO() as out:
+                for index, source_vertex in enumerate(edge.sources):
+                    out.write(source_vertex.graph.name)
+                    if index < edge.numSources - 1:
+                        out.write(" + ")
+                out.write(" -> ")
+
+                for index, target_vertex in enumerate(edge.targets):
+                    out.write(target_vertex.graph.name)
+                    if index < edge.numTargets - 1:
+                        out.write(" + ")
+                out.write("\n")
+                return out.getvalue()
+        yield from (_hyper_edge_to_string(edge) for edge in self.graph.edges)
 
     def parse_abstract_reaction(self, reaction: str) -> Union[object, Tuple[object, object]]:
         return abstract_reaction_parser(self, reaction)

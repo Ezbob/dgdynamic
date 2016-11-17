@@ -1,5 +1,6 @@
 from dgDynamic.utils.project_utils import LogMixin
 from dgDynamic.converters.reaction_parser import abstract_reaction_parser
+from io import StringIO
 import mod
 
 

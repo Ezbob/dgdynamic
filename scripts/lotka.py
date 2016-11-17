@@ -5,7 +5,7 @@ A Lotka model with (F)oxes and (R)abbits (prey-predator model).
     Foxes also dies of old age
 """
 import mod
-from dgDynamic import dgDynamicSim
+from dgDynamic import dgDynamicSim, show_simulation_plots
 from dgDynamic.structures import AbstractReaction
 from dgDynamic.choices import SupportedOdePlugins
 
@@ -42,10 +42,11 @@ figure_size = (40, 20)
 for ode_plugin_name in SupportedOdePlugins:
     output = ode(ode_plugin_name)(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
 
-# spim_simulation_range = (100, 1000)
-#
-# with stochastic('spim') as spim:
-#     for i in range(8):
-#         spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
-#              parameters=parameters, timeout=60).plot(figure_size=figure_size)
+spim_simulation_range = (100, 1000)
 
+with stochastic('spim') as spim:
+    for i in range(8):
+        spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
+             parameters=parameters, timeout=60).plot(figure_size=figure_size)
+
+show_simulation_plots()

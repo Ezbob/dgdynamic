@@ -2,13 +2,12 @@ import matplotlib.pyplot as pyplt
 import math
 
 
-def plot(queue):
+def plot(input_data):
     """
     Tries to plot the data using the MatPlotLib
     :return: self (chaining enabled)
     """
     pyplt.figure()
-    input_data = queue.get()
 
     x_data, y_data = input_data['independent'], input_data['dependent']
 
@@ -83,8 +82,6 @@ def plot(queue):
         pyplt.title(title)
 
     filename = get_input('filename')
-    if filename is None or type(filename) is not str:
-        pyplt.show()
-    else:
+    if filename is not None and type(filename) is str:
         pyplt.savefig(filename, bbox_inches='tight')
 
