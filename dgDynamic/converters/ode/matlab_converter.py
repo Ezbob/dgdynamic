@@ -1,5 +1,4 @@
 import sympy as sp
-
 from dgDynamic.simulators.ode_simulator import ODESystem
 from .converter_ode import DefaultFunctionSymbols, substitute
 from ..convert_base import get_edge_rate_dict

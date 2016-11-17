@@ -1,7 +1,6 @@
 """
 This module contains stuff relevant for all converters
 """
-import sympy as sp
 from io import StringIO
 from typing import Tuple
 from dgDynamic.utils.project_utils import log_it
