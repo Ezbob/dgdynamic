@@ -11,6 +11,7 @@ from .stochastic_plugin import StochasticPlugin, SimulationOutput
 from ...converters.stochastic.spim_converter import generate_initial_values, generate_rates, generate_automata_code, \
     generate_preamble
 from dgDynamic.choices import SupportedStochasticPlugins
+from collections import OrderedDict
 
 
 class SpimStochastic(StochasticPlugin):
@@ -28,26 +29,32 @@ class SpimStochastic(StochasticPlugin):
     def solve(self, timeout=None, rel_tol=1e-09, abs_tol=0.0) -> SimulationOutput:
         def generate_code_file(file_path):
             with open(file_path, mode="w") as code_file:
-                code_file.write(generate_preamble(self.simulation_range, symbols=self._simulator.symbols,
-                                                  ignored=self._simulator.ignored, species_count=self._simulator.
-                                                  species_count))
+                code_file.write(generate_preamble(sample_range=self.simulation_range,
+                                                  symbols_dict=symbol_translate_dict,
+                                                  species_count=self._simulator.species_count,
+                                                  ignored=self._simulator.ignored))
                 code_file.write('\n')
-                code_file.write(generate_rates(channel_dict=channels, parameters=self.parameters))
+                code_file.write(generate_rates(channel_dict=channels,
+                                               parameters=self.parameters))
                 code_file.write('\n')
-                code_file.write(generate_automata_code(channels, self._simulator.symbols,
+                code_file.write(generate_automata_code(channel_dict=channels,
+                                                       symbols_dict=symbol_translate_dict,
                                                        species_count=self._simulator.species_count))
                 code_file.write('\n\n')
-                code_file.write(generate_initial_values(self._simulator.symbols, self.initial_conditions))
+                code_file.write(generate_initial_values(symbols_dict=symbol_translate_dict,
+                                                        initial_conditions=self.initial_conditions))
 
         if self.parameters is None or self.initial_conditions is None:
             raise ValueError("Missing parameters or initial values")
 
+        symbol_translate_dict = OrderedDict((sym, "_SYM{}".format(index))
+                                            for index, sym in enumerate(self._simulator.symbols))
+        channels = self._simulator.generate_channels()
         independent = array.array('d')
         dependent = list()
         errors = list()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            channels = self._simulator.generate_channels()
 
             file_path_code = os.path.join(tmpdir, "spim.spi")
             generate_code_file(file_path_code)

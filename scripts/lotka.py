@@ -39,13 +39,13 @@ stochastic = dgDynamicSim(dg, simulator_choice='stochastic', unchanging_species=
 name = "foxesRabbits"
 figure_size = (40, 20)
 
-for ode_plugin_name in SupportedOdePlugins:
-    output = ode(ode_plugin_name)(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
+#for ode_plugin_name in SupportedOdePlugins:
+#    output = ode(ode_plugin_name)(integration_range, initial_conditions, parameters).plot(figure_size=figure_size)
 
 spim_simulation_range = (100, 1000)
 
 with stochastic('spim') as spim:
-    for i in range(8):
+    for i in range(1):
         spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
              parameters=parameters, timeout=60).plot(figure_size=figure_size)
 

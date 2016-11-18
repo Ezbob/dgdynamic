@@ -3,8 +3,8 @@ from io import StringIO
 from ..convert_base import get_edge_rate_dict
 
 
-def generate_preamble(sample_range, draw_automata=False, symbols=None, species_count=0,
-                      ignored=None, float_precision=18) -> str:
+def generate_preamble(sample_range, draw_automata=False, symbols_dict=None, species_count=0, ignored=None,
+                      float_precision=18) -> str:
 
     with StringIO() as str_out:
         if isinstance(sample_range, (tuple, list, set)):
@@ -16,18 +16,18 @@ def generate_preamble(sample_range, draw_automata=False, symbols=None, species_c
         elif issubclass(sample_range, float):
             str_out.write("directive sample {:.{}f}\n".format(sample_range, float_precision))
 
-        if symbols is not None:
+        if symbols_dict is not None:
             str_out.write("directive plot ")
 
             ignored_dict = dict(ignored)
-            for index, symbol in enumerate(symbols):
+            for index, symbol_mapping in enumerate(symbols_dict.items()):
                 if ignored is not None:
-                    if symbol not in ignored_dict:
-                        str_out.write("_{}()".format(symbol))
+                    if symbol_mapping[0] not in ignored_dict:
+                        str_out.write("{}()".format(symbol_mapping[1]))
                         if index < (species_count - len(ignored)) - 1:
                             str_out.write("; ")
                 else:
-                    str_out.write("_{}()".format(symbol))
+                    str_out.write("{}()".format(symbol_mapping[1]))
                     if index < species_count - 1:
                         str_out.write("; ")
             str_out.write("\n")
@@ -54,23 +54,25 @@ def generate_rates(channel_dict, parameters=None, float_precision=18) -> str:
         return str_out.getvalue()
 
 
-def generate_initial_values(symbols, initial_conditions) -> str:
+def generate_initial_values(symbols_dict, initial_conditions) -> str:
 
     with StringIO() as str_out:
         str_out.write("run ( ")
         if isinstance(initial_conditions, dict):
             for index, key in enumerate(initial_conditions.keys()):
                 if isinstance(initial_conditions[key], int):
-                    str_out.write("{} of _{}()".format(initial_conditions[key], key))
+                    str_out.write("{} of {}()".format(initial_conditions[key], symbols_dict[key]))
 
                     if index < len(initial_conditions) - 1:
                         str_out.write(" | ")
                 else:
                     raise TypeError("Unsupported value type for key: {}".format(key))
         elif isinstance(initial_conditions, (tuple, list, set)):
-            for index, rate in enumerate(initial_conditions):
-                if isinstance(rate, int):
-                    str_out.write("{} of _{}()".format(symbols[index], rate))
+            for index, rate_symbols in enumerate(zip(initial_conditions, symbols_dict.keys())):
+                rate_value = rate_symbols[0]
+                symbol_key = rate_symbols[1]
+                if isinstance(rate_value, int):
+                    str_out.write("{} of {}()".format(rate_value, symbols_dict[symbol_key]))
 
                     if index < len(initial_conditions) - 1:
                         str_out.write(" | ")
@@ -80,7 +82,7 @@ def generate_initial_values(symbols, initial_conditions) -> str:
         return str_out.getvalue()
 
 
-def generate_automata_code(channel_dict, symbols, species_count, process_prefix="_"):
+def generate_automata_code(channel_dict, symbols_dict, species_count):
 
     def generate_channel(stream, channel):
 
@@ -88,12 +90,12 @@ def generate_automata_code(channel_dict, symbols, species_count, process_prefix=
             if len(channel.solutions) > 1:
                 stream.write("( ")
                 for index_solution, solution in enumerate(channel.solutions):
-                    stream.write("{}{}()".format(process_prefix, solution))
+                    stream.write("{}()".format(symbols_dict[solution]))
                     if index_solution < len(channel.solutions) - 1:
                         stream.write(' | ')
                 stream.write(" )")
             elif len(channel.solutions) == 1:
-                stream.write("{}{}()".format(process_prefix, channel.solutions[0]))
+                stream.write("{}()".format(symbols_dict[channel.solutions[0]]))
             else:
                 stream.write("()")
 
@@ -110,11 +112,11 @@ def generate_automata_code(channel_dict, symbols, species_count, process_prefix=
 
     with StringIO() as str_result:
         str_result.write('let ')
-        for symbol_index, symbol in enumerate(symbols):
-            str_result.write("{}{}() = ".format(process_prefix, symbol))
+        for symbol_index, symbol in enumerate(symbols_dict.items()):
+            str_result.write("{}() = ".format(symbol[1]))
 
-            if symbol in channel_dict:
-                current_channels = channel_dict[symbol]
+            if symbol[0] in channel_dict:
+                current_channels = channel_dict[symbol[0]]
                 if len(current_channels) == 1:
                     generate_channel(str_result, current_channels[0])
                 elif len(current_channels) > 1:
