@@ -50,20 +50,18 @@ initial_conditions = {
     'Glycolaldehyde': 20,
 }
 
-sim_range = (0, 15)
+sim_range = (0, 20)
 
 scipy = ode("scipy")
 
 scipy(sim_range, initial_conditions, parameters).plot(filename="scipy_plot.png",
-    figure_size=(40, 20), title="Formose cycle solution simulation")
+    figure_size=(40, 20), title="SciPy VODE Formose cycle solution simulation")
 
-#sim_range = (100, 100)
+sim_range = (20, 1000)
 
-# Not working due to how the naming convention of generic compounds are in MØD (P_{0,0} and so on).
-# Pretty sure it is the either the curly brackets or the in-name underscore
-#for i in range(3):
-#    stochastic("spim")(sim_range, initial_conditions, parameters, timeout=120).plot(
-#        filename="spim_plot{}.png".format(i), figure_size=(40, 20), title="{}. Formose cycle solution simulation")
+for i in range(3):
+    stochastic("spim")(sim_range, initial_conditions, parameters, timeout=120).plot(
+        filename="spim_plot{}.png".format(i), figure_size=(40, 20), title="SPIM {}. Formose cycle solution simulation".format(i + 1))
 
 show_simulation_plots()
 
