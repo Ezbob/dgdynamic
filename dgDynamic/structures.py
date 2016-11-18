@@ -4,26 +4,22 @@ import mod
 
 
 class HyperGraph(LogMixin):
-    def __init__(self, graph):
-        if isinstance(graph, (tuple, list, set)):
-            self.vertices, self.edges = graph[0], graph[1]
-        elif isinstance(graph, dict):
-            self.vertices, self.edges = graph['vertices'], graph['edges']
-        elif hasattr(graph, "vertices") and hasattr(graph, "edges"):
-            self.vertices, self.edges = graph.vertices, graph.edges
+    def __new__(cls, derivation_graph):
+        if hasattr(derivation_graph, "findEdge") and hasattr(derivation_graph, "vertices") \
+                and hasattr(derivation_graph, "edges"):
+            return derivation_graph
         else:
-            raise TypeError('Object "{}" does not have any vertices or edges'.format(graph))
-        if hasattr(graph, "findEdge"):
-            self.findEdge = graph.findEdge
+            raise TypeError("Unsupported type for derivation graph. "
+                            "Derivation graph must have attributes:"
+                            "vertices, edges and findEdge")
 
     @staticmethod
     def from_flow_solution(solution):
         if isinstance(solution, mod.DGFlowSolution):
             original_graph = solution.dgFlow.dg
-            return HyperGraph({'vertices': tuple(v for v in original_graph.vertices
-                                                 if solution.eval(mod.vertex(v.graph)) != 0.0),
-                               'edges': tuple(e for e in original_graph.edges
-                                              if solution.eval(mod.edge(e)) != 0.0)})
+            sub_hypergraph_edges = (e for e in original_graph.edges if solution.eval(mod.edge(e)) != 0.0)
+            new_graph = mod.dgDerivations([mod.DerivationRef(edge).derivation for edge in sub_hypergraph_edges])
+            return HyperGraph(new_graph)
 
 
 class HyperEdge:
