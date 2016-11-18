@@ -11,13 +11,14 @@ from dgDynamic.structures import AbstractModReaction, HyperEdge, HyperGraph
 
 include("grammar.py")
 
-predicateRight = lambda d: all(a.vLabelCount("C") <= 5 for a in d.right)
+
+def predicateRight(d): return all(a.vLabelCount("C") <= 5 for a in d.right)
 
 dg = dgRuleComp(inputGraphs,
-	addSubset(inputGraphs)
-	>> rightPredicate[predicateRight](
-		repeat(inputRules)
-	)
+    addSubset(inputGraphs)
+    >> rightPredicate[predicateRight](
+        repeat(inputRules)
+    )
 )
 
 dg.calc()
@@ -57,7 +58,7 @@ scipy = ode("scipy")
 scipy(sim_range, initial_conditions, parameters).plot(filename="scipy_plot.png",
     figure_size=(40, 20), title="SciPy VODE Formose cycle solution simulation")
 
-sim_range = (20, 1000)
+sim_range = (20, 2000)
 
 for i in range(3):
     stochastic("spim")(sim_range, initial_conditions, parameters, timeout=120).plot(
