@@ -28,6 +28,7 @@ def get_edge_rate_dict(user_parameters, internal_parameters_map=None) \
         for mod_edges, rate in user_parameters.items():
             if isinstance(rate, (int, float)):
                 # rhs is a number and lhs is tuple of MØD edges
+
                 for edge in mod_edges:
                     add_to_result(edge.id, rate)
             elif isinstance(rate, (tuple, list, set)):

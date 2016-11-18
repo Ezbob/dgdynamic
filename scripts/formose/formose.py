@@ -6,7 +6,7 @@ dynamic_module_path = os.path.abspath("../../")
 sys.path.append(dynamic_module_path)
 
 from dgDynamic import dgDynamicSim, show_simulation_plots
-from dgDynamic.structures import AbstractReaction, HyperEdge, HyperGraph
+from dgDynamic.structures import AbstractModReaction, HyperEdge, HyperGraph
 
 
 include("grammar.py")
@@ -43,7 +43,7 @@ flow_graph = HyperGraph.from_flow_solution(solution)
 ode = dgDynamicSim(flow_graph)
 stochastic = dgDynamicSim(flow_graph, simulator_choice="stochastic")
 
-parameters = {AbstractReaction(dg, edge): 0.5 for edge in ode.abstract_edges}
+parameters = {AbstractModReaction(dg, edge): 0.5 for edge in ode.abstract_edges}
 
 initial_conditions = {
     'Formaldehyde': 20,

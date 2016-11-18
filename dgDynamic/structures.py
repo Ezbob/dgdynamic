@@ -1,6 +1,5 @@
 from dgDynamic.utils.project_utils import LogMixin
-from dgDynamic.converters.reaction_parser import abstract_reaction_parser
-from io import StringIO
+from dgDynamic.converters.reaction_parser import abstract_mod_parser, abstract_parser
 import mod
 
 
@@ -67,7 +66,14 @@ class HyperEdge:
 
 
 class AbstractReaction(HyperEdge):
+    def __init__(self, reaction):
+        parsed_results = abstract_parser(reaction)
+        super().__init__(targets=parsed_results.targets, sources=parsed_results.sources, mod_edges=None,
+                         has_inverse=parsed_results.has_inverse, representation=parsed_results.representation)
+
+
+class AbstractModReaction(HyperEdge):
     def __init__(self, mod_dg, reaction):
-        parsed_results = abstract_reaction_parser(mod_dg, reaction)
+        parsed_results = abstract_mod_parser(mod_dg, reaction)
         super().__init__(None, None, parsed_results.mod_edges,
                          parsed_results.has_inverse, parsed_results.representation)

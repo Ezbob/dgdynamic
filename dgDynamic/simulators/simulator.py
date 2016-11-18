@@ -1,7 +1,7 @@
 import abc
 import sympy as sp
 from typing import Union, Tuple
-from ..converters.reaction_parser import abstract_reaction_parser
+from ..converters.reaction_parser import abstract_mod_parser
 from dgDynamic.utils.project_utils import LogMixin, ProjectTypeHints
 from io import StringIO
 
@@ -37,7 +37,7 @@ class DynamicSimulator(abc.ABC, LogMixin):
         yield from (_hyper_edge_to_string(edge) for edge in self.graph.edges)
 
     def parse_abstract_reaction(self, reaction: str) -> Union[object, Tuple[object, object]]:
-        return abstract_reaction_parser(self, reaction)
+        return abstract_mod_parser(self, reaction)
 
     def __call__(self, plugins, *args, **kwargs):
         return self.get_plugin(plugins, *args, **kwargs)
