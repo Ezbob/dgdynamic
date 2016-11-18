@@ -51,32 +51,6 @@ def _parse_mod_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHy
     return edge
 
 
-def _parse_reaction(derivation: str) -> tuple:
-    sources, _, targets = derivation.partition(" -> ")
-
-    parsed_sources = tuple(parsed for parsed in _parse_sides(sources))
-    parsed_targets = tuple(parsed for parsed in _parse_sides(targets))
-
-    if parsed_sources is None:
-        raise ReactionParseError("Parsing of reaction {}, returned None for sources".format(derivation))
-    if parsed_targets is None:
-        raise ReactionParseError("Parsing of reaction {}, returned None for targets".format(derivation))
-    return parsed_sources, parsed_targets
-
-
-def abstract_parser(reaction: str):
-    parse_result = namedtuple('parse_result', 'sources targets representation has_inverse')
-    if reaction.find(" <=> ") != -1:
-        first_reaction, second_reaction = _break_two_way_deviations(reaction)
-        first_parsed = _parse_reaction(first_reaction)
-        second_parsed = _parse_reaction(second_reaction)
-        return parse_result(targets=(first_parsed[1], second_parsed[1]), sources=(first_parsed[0], second_parsed[0]),
-                            has_inverse=True, representation=reaction)
-    elif reaction.find(" -> ") != -1:
-        parsed = _parse_reaction(reaction)
-        return parse_result(targets=(parsed[1],), sources=(parsed[0],), has_inverse=False, representation=reaction)
-
-
 @log_it
 def abstract_mod_parser(deviation_graph: "DG", reaction: str) -> namedtuple:
 

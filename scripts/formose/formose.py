@@ -6,7 +6,7 @@ dynamic_module_path = os.path.abspath("../../")
 sys.path.append(dynamic_module_path)
 
 from dgDynamic import dgDynamicSim, show_simulation_plots
-from dgDynamic.structures import AbstractModReaction, HyperEdge, HyperGraph
+from dgDynamic.structures import HyperGraph
 
 
 include("grammar.py")

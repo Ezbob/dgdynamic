@@ -6,7 +6,6 @@ A Lotka model with (F)oxes and (R)abbits (prey-predator model).
 """
 import mod
 from dgDynamic import dgDynamicSim, show_simulation_plots
-from dgDynamic.structures import AbstractModReaction, AbstractReaction
 from dgDynamic.choices import SupportedOdePlugins
 
 rabbit_multiples = "R -> 2 R\n"
