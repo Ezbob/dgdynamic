@@ -34,7 +34,7 @@ class SpimStochastic(StochasticPlugin):
                                                   species_count=self._simulator.species_count,
                                                   ignored=self._simulator.ignored))
                 code_file.write('\n')
-                code_file.write(generate_rates(channel_dict=channels,
+                code_file.write(generate_rates(derivation_graph=self._simulator.graph, channel_dict=channels,
                                                parameters=self.parameters))
                 code_file.write('\n')
                 code_file.write(generate_automata_code(channel_dict=channels,

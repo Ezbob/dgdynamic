@@ -8,7 +8,6 @@ sys.path.append(dynamic_module_path)
 from dgDynamic import dgDynamicSim, show_simulation_plots
 from dgDynamic.structures import AbstractModReaction, HyperEdge, HyperGraph
 
-
 include("grammar.py")
 
 
@@ -38,6 +37,7 @@ flow.addConstraint(inFlow(glycolaldehyde) == 1)
 flow.calc()
 
 solution = list(flow.solutions)[0]
+solution.print()
 
 flow_graph = HyperGraph.from_flow_solution(solution)
 
@@ -47,22 +47,24 @@ stochastic = dgDynamicSim(flow_graph, simulator_choice="stochastic")
 parameters = {AbstractModReaction(dg, edge): 0.5 for edge in ode.abstract_edges}
 
 initial_conditions = {
-    'Formaldehyde': 20,
-    'Glycolaldehyde': 20,
+    'Formaldehyde': 100,
+    'Glycolaldehyde': 1,
 }
 
-sim_range = (0, 20)
+sim_range = (0, 200)
 
 scipy = ode("scipy")
 
 scipy(sim_range, initial_conditions, parameters).plot(filename="scipy_plot.png",
     figure_size=(40, 20), title="SciPy VODE Formose cycle solution simulation")
 
-sim_range = (20, 2000)
+sim_range = (200, 2000)
 
-for i in range(3):
+for i in range(10):
     stochastic("spim")(sim_range, initial_conditions, parameters, timeout=120).plot(
-        filename="spim_plot{}.png".format(i), figure_size=(40, 20), title="SPIM {}. Formose cycle solution simulation".format(i + 1))
+        filename="spim_plot{}.png".format(i), figure_size=(40, 20),
+        title="SPIM {}. Formose cycle solution simulation".format(i + 1)
+    )
 
 show_simulation_plots()
 

@@ -13,6 +13,8 @@ class HyperGraph(LogMixin):
             self.vertices, self.edges = graph.vertices, graph.edges
         else:
             raise TypeError('Object "{}" does not have any vertices or edges'.format(graph))
+        if hasattr(graph, "findEdge"):
+            self.findEdge = graph.findEdge
 
     @staticmethod
     def from_flow_solution(solution):

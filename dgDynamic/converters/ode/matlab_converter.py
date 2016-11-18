@@ -22,7 +22,8 @@ def get_matlab_lambda(abstract_ode_system: ODESystem, parameter_substitutions=No
     :param parameter_substitutions: list/tuple of values that should be substituted
     :return: string, containing a anonymous MatLab function that can be integrated
     """
-    parameter_map = get_edge_rate_dict(user_parameters=parameter_substitutions,
+    parameter_map = get_edge_rate_dict(deviation_graph=abstract_ode_system.graph,
+                                       user_parameters=parameter_substitutions,
                                        internal_parameters_map=abstract_ode_system.parameters)
 
     substitute_me = {sp.Symbol(value): sp.Symbol("y({})".format(key + 1))

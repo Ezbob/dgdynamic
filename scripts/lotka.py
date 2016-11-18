@@ -25,9 +25,9 @@ initial_conditions = {
 }
 
 parameters = {
-    AbstractModReaction(dg, foxes_hunts): 0.005,
-    AbstractModReaction(dg, rabbit_multiples): 0.7,
-    AbstractModReaction(dg, foxes_dies): 0.5,
+    foxes_hunts: 0.005,
+    rabbit_multiples: 0.7,
+    foxes_dies: 0.5,
 }
 
 integration_range = (0, 100)
