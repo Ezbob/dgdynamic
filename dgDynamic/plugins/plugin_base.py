@@ -39,7 +39,7 @@ class SimulationOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent, self.dependent)
 
-    def plot(self, filename="plot", labels=None, figure_size=None, axis_labels=None, axis_limits=None, title=None):
+    def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None, axis_limits=None, title=None):
         if title is None:
             title = self.solver_used.name.title()
             if self.solver_method_used is not None:
