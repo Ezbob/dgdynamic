@@ -81,7 +81,7 @@ class SpimStochastic(StochasticPlugin):
                 if config.getboolean('Logging', 'ENABLE_LOGGING', fallback=False):
                     self.logger.error("Missing SPiM output")
                 errors.append(SimulationError("Missing SPiM output"))
-                messages.print_solver_failure(name)
+                messages.print_solver_done(name, was_failure=True)
                 return SimulationOutput(SupportedStochasticPlugins.SPiM, errors=errors)
 
             with open(csv_file_path) as file:
@@ -96,10 +96,10 @@ class SpimStochastic(StochasticPlugin):
                         old_time = new_time
                     else:
                         errors.append(SimulationError("Simulation time regression detected"))
-                        messages.print_solver_failure(name)
+                        messages.print_solver_done(name, was_failure=True)
                         return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent,
                                                 independent=independent, abstract_system=self._simulator, errors=errors)
 
-        messages.print_solver_success(name)
+        messages.print_solver_done(name)
         return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent, independent=independent,
                                 abstract_system=self._simulator, errors=errors)

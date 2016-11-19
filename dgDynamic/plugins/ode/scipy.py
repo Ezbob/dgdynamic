@@ -28,12 +28,11 @@ class ScipyOde(OdePlugin, LogMixin):
         return super().__call__(simulation_range, initial_conditions, parameters, solver_choice, delta_t, **kwargs)
 
     def solve(self, **kwargs) -> SimulationOutput:
-        name_method = "{} {}".format(name, self.ode_method.name)
         ode_function = get_scipy_lambda(self._simulator, self.parameters)
 
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Scipy ode function was not generated")
-            messages.print_solver_failure(name_method)
+            messages.print_solver_done(name, method_name=self.ode_method.name, was_failure=True)
             return SimulationOutput(SupportedOdePlugins.SciPy,
                                     errors=(SimulationError("Ode function could not be generated"),))
 
@@ -61,13 +60,13 @@ range: {} and dt: {} ".format(self.initial_conditions, self.simulation_range, se
                     solver.integrate(solver.t + self.delta_t)
             except SystemError as integration_error:
                 self.logger.exception("Integration process failed", integration_error)
-                messages.print_solver_failure(name_method)
+                messages.print_solver_done(name, method_name=self.ode_method.name, was_failure=True)
                 return SimulationOutput(solved_by=SupportedOdePlugins.SciPy,
                                         dependent=y_solution, independent=t_solution,
                                         errors=(SimulationError("Integration failure"),))
 
             self.logger.debug("Solving finished using fixed step integration")
-            messages.print_solver_success(name_method)
+            messages.print_solver_done(name, method_name=self.ode_method.name)
             return SimulationOutput(solved_by=SupportedOdePlugins.SciPy, dependent=y_solution, independent=t_solution,
                                     abstract_system=self._simulator, ignore=self._simulator.ignored,
                                     solver_method=self._ode_method)
@@ -85,13 +84,13 @@ range: {} and dt: {} ".format(self.initial_conditions, self.simulation_range, se
                     solver.integrate(self.simulation_range[1], step=True)
             except SystemError as integration_error:
                 self.logger.exception("Integration process failed", integration_error)
-                messages.print_solver_failure(name_method)
+                messages.print_solver_done(name, method_name=self.ode_method.name, was_failure=True)
                 return SimulationOutput(solved_by=SupportedOdePlugins.SciPy,
                                         dependent=y_solution, independent=t_solution,
                                         errors=(SimulationError("Integration failure"),))
 
             self.logger.debug("Solving finished using variable step integration")
-            messages.print_solver_success(name_method)
+            messages.print_solver_done(name, method_name=self.ode_method.name)
             return SimulationOutput(solved_by=SupportedOdePlugins.SciPy, dependent=y_solution, independent=t_solution,
                                     abstract_system=self._simulator, ignore=self._simulator.ignored,
                                     solver_method=self._ode_method)

@@ -38,13 +38,12 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine.exit()
 
     def solve(self, **kwargs) -> SimulationOutput:
-        name_method = "{} {}".format(name, self.ode_method.name)
         ode_function = get_matlab_lambda(abstract_ode_system=self._simulator,
                                          parameter_substitutions=self.parameters)
 
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Matlab ode function was not generated")
-            messages.print_solver_failure(name_method)
+            messages.print_solver_done(name, method_name=self.ode_method.name, was_failure=True)
             return SimulationOutput(SupportedOdePlugins.MATLAB,
                                     errors=(SimulationError("Ode function could not be generated"),))
 
@@ -84,7 +83,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.simulation_range
         y_result = convert_matrix(y_result)
 
         self.logger.info("Return output object")
-        messages.print_solver_success(name_method)
+        messages.print_solver_done(name, method_name=self.ode_method.name)
         return SimulationOutput(solved_by=SupportedOdePlugins.MATLAB, dependent=y_result, independent=t_result,
                                 ignore=self._simulator.ignored, solver_method=self._ode_method,
                                 abstract_system=self._simulator)
