@@ -5,19 +5,16 @@ This model, models the relationship between the
 The recovered becomes immune to the infected once they recover,
 and the model starts out with some infected.
 """
-import mod
-from dgDynamic.mod_dynamics import dgDynamicSim, show_simulation_plots
+from dgDynamic.mod_dynamics import dgDynamicSim, show_simulation_plots, HyperGraph
 from dgDynamic.choices import MatlabOdeSolvers
 
-susceptible_infected = "S + I -> 2 I\n"
-recovered = "I -> R\n"
-infected_stays_infected = "2 I -> 2 I\n"
-recovered_stays_recovered = "R + I -> R + I\n"
+susceptible_infected = "S + I -> 2 I"
+recovered = "I -> R"
+infected_stays_infected = "2 I -> 2 I"
+recovered_stays_recovered = "R + I -> R + I"
 
-whole_model = susceptible_infected + recovered + infected_stays_infected + recovered_stays_recovered
-
-dg = mod.dgAbstract(
-    whole_model
+dg = HyperGraph.from_abstract(
+    susceptible_infected, recovered, infected_stays_infected, recovered_stays_recovered
 )
 
 initial_conditions = {

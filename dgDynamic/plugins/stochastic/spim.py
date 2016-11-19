@@ -52,6 +52,7 @@ class SpimStochastic(StochasticPlugin):
         if self.parameters is None or self.initial_conditions is None:
             raise ValueError("Missing parameters or initial values")
 
+        name_method = "{} {}".format(name, self.ode_solver.name)
         fixed_point_precision = abs(config.getint('Simulation', 'FIXED_POINT_PRECISION', fallback=18))
         symbol_translate_dict = OrderedDict((sym, "_SYM{}".format(index))
                                             for index, sym in enumerate(self._simulator.symbols))

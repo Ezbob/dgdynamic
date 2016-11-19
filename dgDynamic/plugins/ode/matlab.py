@@ -23,7 +23,7 @@ class MatlabOde(OdePlugin, LogMixin):
                  parameters=None):
 
         super().__init__(eq_system, simulation_range=simulation_range, initial_conditions=initial_conditions,
-                         parameters=parameters, ode_solver=solver)
+                         parameters=parameters, ode_method=solver)
 
         self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
@@ -38,12 +38,13 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine.exit()
 
     def solve(self, **kwargs) -> SimulationOutput:
+        name_method = "{} {}".format(name, self.ode_method.name)
         ode_function = get_matlab_lambda(abstract_ode_system=self._simulator,
                                          parameter_substitutions=self.parameters)
 
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Matlab ode function was not generated")
-            messages.print_solver_failure(name)
+            messages.print_solver_failure(name_method)
             return SimulationOutput(SupportedOdePlugins.MATLAB,
                                     errors=(SimulationError("Ode function could not be generated"),))
 
@@ -60,7 +61,7 @@ class MatlabOde(OdePlugin, LogMixin):
 
         self.add_to_workspace('tspan', matlab.double(self.simulation_range))
 
-        eval_str = "ode" + str(self._ode_solver.value) + "(" + ode_function + ", tspan, y0)"
+        eval_str = "ode" + str(self._ode_method.value) + "(" + ode_function + ", tspan, y0)"
         self.logger.debug("evaluating matlab \
 expression: {} with tspan: {} and y0: {}".format(eval_str, self.simulation_range, self.initial_conditions))
 
@@ -83,9 +84,9 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.simulation_range
         y_result = convert_matrix(y_result)
 
         self.logger.info("Return output object")
-        messages.print_solver_success(name)
+        messages.print_solver_success(name_method)
         return SimulationOutput(solved_by=SupportedOdePlugins.MATLAB, dependent=y_result, independent=t_result,
-                                ignore=self._simulator.ignored, solver_method=self._ode_solver,
+                                ignore=self._simulator.ignored, solver_method=self._ode_method,
                                 abstract_system=self._simulator)
 
     def close_engine(self):

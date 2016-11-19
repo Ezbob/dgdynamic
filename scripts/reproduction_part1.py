@@ -71,7 +71,7 @@ solver = ode("scipy")
 solver.integration_range = integration_range
 solver.parameters = parameters
 solver.initial_conditions = initial_conditions
-solver.ode_solver = ScipyOdeSolvers.LSODA
+solver.ode_method = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.1
 
 solver.solve().save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))

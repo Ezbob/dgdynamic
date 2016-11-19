@@ -37,18 +37,18 @@ class OdePlugin(PluginBase, ABC):
     """
 
     def __init__(self, simulator, simulation_range=(0, 0), initial_conditions=None,
-                 delta_t=0.05, parameters=None, initial_t=0, ode_solver=None):
+                 delta_t=0.05, parameters=None, initial_t=0, ode_method=None):
         super().__init__(simulation_range=simulation_range, parameters=parameters,
                          initial_conditions=initial_conditions)
         self.simulation_range = simulation_range
         self._simulator = simulator
         self.initial_t = initial_t
-        self._ode_solver = ode_solver
+        self._ode_method = ode_method
         self.delta_t = delta_t
 
     def __call__(self, simulation_range, initial_conditions, parameters, ode_solver=None, delta_t=None,
                  **kwargs):
-        self.ode_solver = ode_solver
+        self.ode_method = ode_solver
         self.simulation_range = simulation_range
         self.initial_conditions = initial_conditions
         self.parameters = parameters
@@ -63,15 +63,15 @@ class OdePlugin(PluginBase, ABC):
         pass
 
     @property
-    def ode_solver(self):
-        return self._ode_solver
+    def ode_method(self) -> Enum:
+        return self._ode_method
 
-    @ode_solver.setter
-    def ode_solver(self, solver: Enum):
-        self._ode_solver = solver
+    @ode_method.setter
+    def ode_method(self, solver: Enum):
+        self._ode_method = solver
 
     def set_ode_solver(self, solver: Enum):
-        self._ode_solver = solver
+        self._ode_method = solver
         return self
 
     def set_integration_range(self, *range_tuple: Tuple[int, int]):
