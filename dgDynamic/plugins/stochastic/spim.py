@@ -12,6 +12,9 @@ from ...converters.stochastic.spim_converter import generate_initial_values, gen
     generate_preamble
 from dgDynamic.choices import SupportedStochasticPlugins
 from collections import OrderedDict
+import dgDynamic.utils.messages as messages
+
+name = SupportedStochasticPlugins.SPiM.name
 
 
 class SpimStochastic(StochasticPlugin):
@@ -20,7 +23,7 @@ class SpimStochastic(StochasticPlugin):
         sample_range = sample_range if sample_range is None else (float(sample_range[0]), sample_range[1])
         super().__init__(sample_range=sample_range, parameters=parameters, initial_conditions=initial_conditions)
         self._spim_path = config['Simulation']['SPIM_PATH']
-        if self._spim_path is None or not self._spim_path:
+        if not self._spim_path:
             self._spim_path = os.path.join(os.path.dirname(__file__), "spim.ocaml")
         self._spim_path = os.path.abspath(self._spim_path)
         self._simulator = simulator
@@ -32,21 +35,24 @@ class SpimStochastic(StochasticPlugin):
                 code_file.write(generate_preamble(sample_range=self.simulation_range,
                                                   symbols_dict=symbol_translate_dict,
                                                   species_count=self._simulator.species_count,
-                                                  ignored=self._simulator.ignored))
+                                                  ignored=self._simulator.ignored,
+                                                  float_precision=fixed_point_precision))
                 code_file.write('\n')
                 code_file.write(generate_rates(derivation_graph=self._simulator.graph, channel_dict=channels,
-                                               parameters=self.parameters))
+                                               parameters=self.parameters,
+                                               float_precision=fixed_point_precision))
                 code_file.write('\n')
                 code_file.write(generate_automata_code(channel_dict=channels,
                                                        symbols_dict=symbol_translate_dict,
-                                                       species_count=self._simulator.species_count))
+                                                       species_count=self._simulator.species_count,))
                 code_file.write('\n\n')
                 code_file.write(generate_initial_values(symbols_dict=symbol_translate_dict,
-                                                        initial_conditions=self.initial_conditions))
+                                                        initial_conditions=self.initial_conditions,))
 
         if self.parameters is None or self.initial_conditions is None:
             raise ValueError("Missing parameters or initial values")
 
+        fixed_point_precision = abs(config.getint('Simulation', 'FIXED_POINT_PRECISION', fallback=18))
         symbol_translate_dict = OrderedDict((sym, "_SYM{}".format(index))
                                             for index, sym in enumerate(self._simulator.symbols))
         channels = self._simulator.generate_channels()
@@ -59,7 +65,7 @@ class SpimStochastic(StochasticPlugin):
             file_path_code = os.path.join(tmpdir, "spim.spi")
             generate_code_file(file_path_code)
 
-            if bool(config['Logging']['ENABLE_LOGGING']):
+            if config.getboolean('Logging', 'ENABLE_LOGGING', fallback=False):
                 with open(file_path_code) as debug_file:
                     self.logger.info("SPiM simulation file:\n{}".format(debug_file.read()))
 
@@ -72,8 +78,10 @@ class SpimStochastic(StochasticPlugin):
 
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             if not os.path.isfile(csv_file_path):
-                self.logger.error("Missing SPiM output")
+                if config.getboolean('Logging', 'ENABLE_LOGGING', fallback=False):
+                    self.logger.error("Missing SPiM output")
                 errors.append(SimulationError("Missing SPiM output"))
+                messages.print_solver_failure(name)
                 return SimulationOutput(SupportedStochasticPlugins.SPiM, errors=errors)
 
             with open(csv_file_path) as file:
@@ -88,8 +96,10 @@ class SpimStochastic(StochasticPlugin):
                         old_time = new_time
                     else:
                         errors.append(SimulationError("Simulation time regression detected"))
+                        messages.print_solver_failure(name)
                         return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent,
                                                 independent=independent, abstract_system=self._simulator, errors=errors)
 
+        messages.print_solver_success(name)
         return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent, independent=independent,
                                 abstract_system=self._simulator, errors=errors)

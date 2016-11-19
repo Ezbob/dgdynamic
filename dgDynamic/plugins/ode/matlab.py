@@ -10,6 +10,9 @@ from dgDynamic.converters.ode.converter_ode import get_initial_values
 from dgDynamic.plugins.ode.ode_plugin import OdePlugin, sanity_check
 from dgDynamic.plugins.plugin_base import SimulationOutput
 from dgDynamic.utils.project_utils import LogMixin
+import dgDynamic.utils.messages as messages
+
+name = SupportedOdePlugins.MATLAB.name
 
 
 class MatlabOde(OdePlugin, LogMixin):
@@ -35,13 +38,13 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine.exit()
 
     def solve(self, **kwargs) -> SimulationOutput:
-
         ode_function = get_matlab_lambda(abstract_ode_system=self._simulator,
                                          parameter_substitutions=self.parameters)
 
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Matlab ode function was not generated")
-            return SimulationOutput(SupportedOdePlugins.Matlab,
+            messages.print_solver_failure(name)
+            return SimulationOutput(SupportedOdePlugins.MATLAB,
                                     errors=(SimulationError("Ode function could not be generated"),))
 
         self.logger.debug("Solving ode using MATLAB")
@@ -80,7 +83,8 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.simulation_range
         y_result = convert_matrix(y_result)
 
         self.logger.info("Return output object")
-        return SimulationOutput(solved_by=SupportedOdePlugins.Matlab, dependent=y_result, independent=t_result,
+        messages.print_solver_success(name)
+        return SimulationOutput(solved_by=SupportedOdePlugins.MATLAB, dependent=y_result, independent=t_result,
                                 ignore=self._simulator.ignored, solver_method=self._ode_solver,
                                 abstract_system=self._simulator)
 

@@ -37,14 +37,11 @@ flow.addConstraint(inFlow(glycolaldehyde) == 1)
 
 flow.calc()
 
-
 solution = list(flow.solutions)[0]
 
 solution.print()
 
-
 flow_graph = HyperGraph.from_flow_solution(solution)
-
 
 ode = dgDynamicSim(flow_graph)
 stochastic = dgDynamicSim(flow_graph, simulator_choice="stochastic")
@@ -67,7 +64,8 @@ sim_range = (200, 2000)
 
 for i in range(10):
     stochastic("spim")(sim_range, initial_conditions, parameters, timeout=120).plot(
-        filename="spim_plot{}.png".format(i), figure_size=(40, 20), title="SPIM {}. Formose cycle solution simulation".format(i + 1))
+        filename="spim_plot{}.png".format(i), figure_size=(40, 20),
+        title="SPIM {}. Formose cycle solution simulation".format(i + 1))
 
 show_simulation_plots()
 

@@ -19,3 +19,11 @@ class HyperGraph(LogMixin):
             sub_hypergraph_edges = (e for e in original_graph.edges if solution.eval(mod.edge(e)) != 0.0)
             new_graph = mod.dgDerivations([mod.DerivationRef(edge).derivation for edge in sub_hypergraph_edges])
             return HyperGraph(new_graph)
+
+    @staticmethod
+    def from_abstract(*abstract_reactions):
+        if len(abstract_reactions) > 0:
+            map(str.strip, abstract_reactions)
+            whole_network = "\n".join(abstract_reactions)
+            dg = mod.dgAbstract(whole_network)
+            return HyperGraph(dg)

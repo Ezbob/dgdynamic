@@ -72,7 +72,7 @@ integration_range = (0, 10000)
 # Get ODE solver plugin for the given abstract reaction system
 # input can be either a entry in the SupportedSolvers enum, or a string (such as "scipy" or "matlab")
 # that contains a recognized plugin name
-scipy_ode = ode.get_plugin(SupportedOdePlugins.Scipy)
+scipy_ode = ode.get_plugin(SupportedOdePlugins.SciPy)
 
 spim = stochastic.get_plugin(SupportedStochasticPlugins.SPiM)
 

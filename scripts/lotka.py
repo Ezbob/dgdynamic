@@ -4,19 +4,14 @@ A Lotka model with (F)oxes and (R)abbits (prey-predator model).
     Foxes hunt and eat rabbits and multiples
     Foxes also dies of old age
 """
-import mod
-from dgDynamic import dgDynamicSim, show_simulation_plots
+from dgDynamic import dgDynamicSim, show_simulation_plots, HyperGraph
 from dgDynamic.choices import SupportedOdePlugins
 
-rabbit_multiples = "R -> 2 R\n"
-foxes_hunts = "R + F -> F + F\n"
-foxes_dies = "F -> D\n"
+rabbit_multiples = "R -> 2 R"
+foxes_hunts = "R + F -> F + F"
+foxes_dies = "F -> D"
 
-whole = rabbit_multiples + foxes_hunts + foxes_dies
-
-dg = mod.dgAbstract(
-    whole
-)
+dg = HyperGraph.from_abstract(rabbit_multiples, foxes_hunts, foxes_dies)
 
 initial_conditions = {
     'F': 250,

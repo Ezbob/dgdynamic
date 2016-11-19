@@ -14,8 +14,8 @@ class SupportedOdePlugins(enum.Enum):
     Here we list the different solvers available in our system as key-value pairs.
     The value is the internal system name for the solver and is used when saving the data files etc.
     """
-    Scipy = "scipy"
-    Matlab = "matlab"
+    SciPy = "scipy"
+    MATLAB = "matlab"
 
 
 class SupportedStochasticPlugins(enum.Enum):

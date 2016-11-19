@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import time
+from ..config.settings import config
 from typing import *
 from .logger import logging_handler
 
@@ -39,6 +40,9 @@ class LogMixin:
         log_machine = logging.getLogger(name)
         log_machine.addHandler(logging_handler)
         return log_machine
+
+
+
 
 
 def make_directory(path, pre_delete=False):

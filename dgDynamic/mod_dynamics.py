@@ -6,8 +6,8 @@ from dgDynamic.plugins.plugin_base import SimulationOutput
 import enum
 
 
-def dgDynamicSim(graph, simulator_choice="ode", unchanging_species=()) -> Union[ODESystem, StochasticPiSystem]:
-    deviation_graph = graph if isinstance(graph, HyperGraph) else HyperGraph(graph)
+def dgDynamicSim(derivation_graph, simulator_choice="ode", unchanging_species=()) -> Union[ODESystem, StochasticPiSystem]:
+    deviation_graph = derivation_graph if isinstance(derivation_graph, HyperGraph) else HyperGraph(derivation_graph)
     if isinstance(simulator_choice, str):
         if simulator_choice.strip().lower() == "ode":
             return ODESystem(graph=deviation_graph).unchanging_species(*unchanging_species)

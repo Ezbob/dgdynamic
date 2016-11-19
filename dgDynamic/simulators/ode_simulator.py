@@ -24,10 +24,10 @@ class ODESystem(DynamicSimulator):
                                       for index, edge in enumerate(self.graph.edges))
 
     def get_plugin_from_enum(self, enum_variable, *args, **kwargs):
-        if enum_variable == SupportedOdePlugins.Scipy:
+        if enum_variable == SupportedOdePlugins.SciPy:
             from dgDynamic.plugins.ode.scipy import ScipyOde
             return ScipyOde(self, *args, **kwargs)
-        elif enum_variable == SupportedOdePlugins.Matlab:
+        elif enum_variable == SupportedOdePlugins.MATLAB:
             from dgDynamic.plugins.ode.matlab import MatlabOde
             return MatlabOde(self, *args, **kwargs)
 
