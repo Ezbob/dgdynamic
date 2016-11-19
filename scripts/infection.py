@@ -14,7 +14,10 @@ infected_stays_infected = "2 I -> 2 I"
 recovered_stays_recovered = "R + I -> R + I"
 
 dg = HyperGraph.from_abstract(
-    susceptible_infected, recovered, infected_stays_infected, recovered_stays_recovered
+    susceptible_infected,
+    recovered,
+    infected_stays_infected,
+    recovered_stays_recovered
 )
 
 initial_conditions = {

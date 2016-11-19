@@ -17,15 +17,17 @@ class ScipyOde(OdePlugin, LogMixin):
     Scipy ODE solver plugin
     """
 
-    def __init__(self, simulator=None, simulation_range=(0, 0), initial_condition=None, delta_t=0.1, parameters=None,
+    def __init__(self, simulator=None, simulation_range=(0, 0), initial_condition=None, delta_t=0.1, rate_parameters=None,
                  solver=ScipyOdeSolvers.VODE, initial_t=0):
-        super().__init__(simulator, simulation_range, initial_condition, delta_t=delta_t, parameters=parameters,
+        super().__init__(simulator, simulation_range, initial_condition, delta_t=delta_t, rate_parameters=rate_parameters,
                          initial_t=initial_t, ode_method=solver)
 
-    def __call__(self, simulation_range, initial_conditions, parameters, delta_t=0.1, ode_solver=None,
-                 **kwargs):
+    def __call__(self, simulation_range, initial_conditions, rate_parameters, diffusion_parameters=None, delta_t=0.1,
+                 ode_solver=None, **kwargs):
         solver_choice = ode_solver if ode_solver is not None else ScipyOdeSolvers.VODE
-        return super().__call__(simulation_range, initial_conditions, parameters, solver_choice, delta_t, **kwargs)
+        return super().__call__(simulation_range=simulation_range, initial_conditions=initial_conditions,
+                                rate_parameters=rate_parameters, ode_solver=solver_choice,
+                                diffusion_parameters=diffusion_parameters, delta_t=delta_t, **kwargs)
 
     def solve(self, **kwargs) -> SimulationOutput:
         ode_function = get_scipy_lambda(self._simulator, self.parameters)

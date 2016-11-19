@@ -19,9 +19,12 @@ name = SupportedStochasticPlugins.SPiM.name
 
 class SpimStochastic(StochasticPlugin):
 
-    def __init__(self, simulator, sample_range=None, parameters=None, initial_conditions=None,):
+    def __init__(self, simulator, sample_range=None, rate_parameters=None, initial_conditions=None,
+                 diffusion_parameters=None):
         sample_range = sample_range if sample_range is None else (float(sample_range[0]), sample_range[1])
-        super().__init__(sample_range=sample_range, parameters=parameters, initial_conditions=initial_conditions)
+
+        super().__init__(sample_range=sample_range, rate_parameters=rate_parameters,
+                         initial_conditions=initial_conditions, diffusion_parameters=diffusion_parameters)
         self._spim_path = config['Simulation']['SPIM_PATH']
         if not self._spim_path:
             self._spim_path = os.path.join(os.path.dirname(__file__), "spim.ocaml")

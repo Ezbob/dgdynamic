@@ -37,8 +37,8 @@ class OdePlugin(PluginBase, ABC):
     """
 
     def __init__(self, simulator, simulation_range=(0, 0), initial_conditions=None,
-                 delta_t=0.05, parameters=None, initial_t=0, ode_method=None):
-        super().__init__(simulation_range=simulation_range, parameters=parameters,
+                 delta_t=0.05, rate_parameters=None, initial_t=0, ode_method=None):
+        super().__init__(simulation_range=simulation_range, rate_parameters=rate_parameters,
                          initial_conditions=initial_conditions)
         self.simulation_range = simulation_range
         self._simulator = simulator
@@ -46,12 +46,12 @@ class OdePlugin(PluginBase, ABC):
         self._ode_method = ode_method
         self.delta_t = delta_t
 
-    def __call__(self, simulation_range, initial_conditions, parameters, ode_solver=None, delta_t=None,
-                 **kwargs):
+    def __call__(self, simulation_range, initial_conditions, rate_parameters, diffusion_parameters=None,
+                 ode_solver=None, delta_t=None, **kwargs):
         self.ode_method = ode_solver
         self.simulation_range = simulation_range
         self.initial_conditions = initial_conditions
-        self.parameters = parameters
+        self.parameters = rate_parameters
         self.delta_t = delta_t
         output = self.solve(**kwargs)
         if output is None:

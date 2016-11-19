@@ -20,18 +20,21 @@ class MatlabOde(OdePlugin, LogMixin):
     Wrapper for working with odes using the MATLAB python engine.
     """
     def __init__(self, eq_system=None, solver=MatlabOdeSolvers.ode45, simulation_range=(0, 0), initial_conditions=None,
-                 parameters=None):
+                 rate_parameters=None):
 
         super().__init__(eq_system, simulation_range=simulation_range, initial_conditions=initial_conditions,
-                         parameters=parameters, ode_method=solver)
+                         rate_parameters=rate_parameters, ode_method=solver)
 
         self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
         self.logger.debug("MATLAB engine started.")
 
-    def __call__(self, simulation_range, initial_conditions, parameters, ode_solver=None, **kwargs):
+    def __call__(self, simulation_range, initial_conditions, rate_parameters, diffusion_parameters=None,
+                 ode_solver=None, **kwargs):
         solver_choice = ode_solver if ode_solver is not None else MatlabOdeSolvers.ode45
-        return super().__call__(simulation_range, initial_conditions, parameters, solver_choice, **kwargs)
+        return super().__call__(simulation_range=simulation_range, initial_conditions=initial_conditions,
+                                rate_parameters=rate_parameters, diffusion_parameters=diffusion_parameters,
+                                ode_solver=solver_choice, **kwargs)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.engine.clear(nargout=0)
