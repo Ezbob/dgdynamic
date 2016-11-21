@@ -8,7 +8,7 @@ from ..utils.project_utils import log_it
 
 @log_it
 def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict, list], internal_parameters_map=None) \
-        -> Dict[int, Union[float, int]]:
+        -> Dict[int, Types.Real]:
     """
     Get a dictionary with edge.ids as keys and their associated rates as values
     :param deviation_graph:
@@ -101,3 +101,16 @@ def get_diffusion_rate_dict(simulator, user_diffusion_rates: dict) \
             else:
                 raise ValueError('Missing "in" and "out" keys for vertex key {}'.format(vertex))
     return result
+
+
+@log_it
+def get_initial_values(initial_conditions, symbols) -> Union[set, tuple, list]:
+    if isinstance(initial_conditions, (tuple, set, list)):
+        return initial_conditions
+    elif isinstance(initial_conditions, dict):
+        translate_mapping = {val: index for index, val in enumerate(symbols)}
+        results = [0] * len(translate_mapping)
+        for key, value in initial_conditions.items():
+            if key in translate_mapping:
+                results[translate_mapping[key]] = value
+        return results

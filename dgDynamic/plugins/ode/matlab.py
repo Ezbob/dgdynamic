@@ -6,8 +6,8 @@ import matlab.engine
 from dgDynamic.utils.exceptions import SimulationError
 from dgDynamic.choices import MatlabOdeSolvers, SupportedOdePlugins
 from dgDynamic.converters.ode.matlab_converter import get_matlab_lambda
-from dgDynamic.converters.ode.converter_ode import get_initial_values
-from dgDynamic.plugins.ode.ode_plugin import OdePlugin, sanity_check
+from dgDynamic.converters.convert_base import get_initial_values
+from dgDynamic.plugins.ode.ode_plugin import OdePlugin, parameter_validation
 from dgDynamic.plugins.plugin_base import SimulationOutput
 from dgDynamic.utils.project_utils import LogMixin
 import dgDynamic.utils.messages as messages
@@ -19,11 +19,10 @@ class MatlabOde(OdePlugin, LogMixin):
     """
     Wrapper for working with odes using the MATLAB python engine.
     """
-    def __init__(self, eq_system=None, solver=MatlabOdeSolvers.ode45, simulation_range=(0, 0), initial_conditions=None,
-                 rate_parameters=None):
-
-        super().__init__(eq_system, simulation_range=simulation_range, initial_conditions=initial_conditions,
-                         rate_parameters=rate_parameters, ode_method=solver)
+    def __init__(self, simulator, simulation_range=(0, 0), initial_conditions=None, rate_parameters=None,
+                 solver_method=MatlabOdeSolvers.ode45):
+        super().__init__(simulator, simulation_range=simulation_range, initial_conditions=initial_conditions,
+                         rate_parameters=rate_parameters, ode_method=solver_method)
 
         self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
@@ -53,7 +52,7 @@ class MatlabOde(OdePlugin, LogMixin):
         self.logger.debug("Solving ode using MATLAB")
 
         conditions = get_initial_values(self.initial_conditions, self._simulator.symbols)
-        sanity_check(self, list(conditions))
+        parameter_validation(self, list(conditions), self._simulator.reaction_count, self._simulator.species_count)
 
         if isinstance(conditions, (list, tuple)):
             self.add_to_workspace('y0', matlab.double(conditions))
@@ -63,7 +62,7 @@ class MatlabOde(OdePlugin, LogMixin):
 
         self.add_to_workspace('tspan', matlab.double(self.simulation_range))
 
-        eval_str = "ode" + str(self._ode_method.value) + "(" + ode_function + ", tspan, y0)"
+        eval_str = "ode" + str(self.ode_method.value) + "(" + ode_function + ", tspan, y0)"
         self.logger.debug("evaluating matlab \
 expression: {} with tspan: {} and y0: {}".format(eval_str, self.simulation_range, self.initial_conditions))
 
@@ -88,7 +87,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.simulation_range
         self.logger.info("Return output object")
         messages.print_solver_done(name, method_name=self.ode_method.name)
         return SimulationOutput(solved_by=SupportedOdePlugins.MATLAB, dependent=y_result, independent=t_result,
-                                ignore=self._simulator.ignored, solver_method=self._ode_method,
+                                ignore=self._simulator.ignored, solver_method=self.ode_method,
                                 abstract_system=self._simulator)
 
     def close_engine(self):

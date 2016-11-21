@@ -15,18 +15,6 @@ class DefaultFunctionSymbols:
     function_end = ']'
 
 
-def get_initial_values(initial_conditions, symbols):
-    if isinstance(initial_conditions, (tuple, list)):
-        return initial_conditions
-    elif isinstance(initial_conditions, dict):
-        translate_mapping = {val: index for index, val in enumerate(symbols)}
-        results = [0] * len(translate_mapping)
-        for key, value in initial_conditions.items():
-            if key in translate_mapping:
-                results[translate_mapping[key]] = value
-        return results
-
-
 @log_it
 def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_map: dict,
                extra_symbols=DefaultFunctionSymbols(), postprocessor=None):
