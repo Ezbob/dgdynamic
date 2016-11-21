@@ -41,7 +41,7 @@ class ODESystem(DynamicSimulator):
             return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
 
     def generate_rate_laws(self):
-        for index, edge in enumerate(self.graph.edges):
+        for edge in self.graph.edges:
             reduce_me = (sp.Symbol(vertex.graph.name) for vertex in edge.sources)
             reduced = ft.reduce(lambda a, b: a * b, reduce_me)
             yield self.parameters[edge.id] * reduced
@@ -52,24 +52,22 @@ class ODESystem(DynamicSimulator):
         :return: a tuple of tuples, wherein each nested tuple is a two-tuple consisting of the vertex id, of which the
         change over time is subjective to, and the symbolic ODE.
         """
-        left_hand_sides = tuple(self.generate_rate_laws())
         ignore_dict = dict(self.ignored)
-        for vertex_id, vertex in enumerate(self.graph.vertices):
+        for vertex in self.graph.vertices:
             if vertex.graph.name in ignore_dict:
                 yield vertex.graph.name, 0
             else:
                 # Since we use numpy, we can use the left hand expresses as mathematical expressions
-                sub_result = 0
-                for reaction_index, reaction_edge in enumerate(self.graph.edges):
+                equation_result = 0
+                for reaction_edge, lhs in zip(self.graph.edges, self.generate_rate_laws()):
                     for source_vertex in reaction_edge.sources:
                         if vertex.id == source_vertex.id:
-                            sub_result -= left_hand_sides[reaction_index]
-
+                            equation_result -= lhs
                     for target_vertex in reaction_edge.targets:
                         if vertex.id == target_vertex.id:
-                            sub_result += left_hand_sides[reaction_index]
+                            equation_result += lhs
 
-                yield vertex.graph.name, sub_result
+                yield vertex.graph.name, equation_result
 
     def __repr__(self):
         return "<Abstract Ode Simulator>"
