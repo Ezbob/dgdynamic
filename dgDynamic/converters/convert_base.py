@@ -1,12 +1,13 @@
 from ..utils.exceptions import InitialValueError
-from typing import Dict, Union
+from typing import Dict, Union, Tuple
+from ..utils.project_utils import ProjectTypeHints as Types
 from .reaction_parser import abstract_mod_parser
 from collections import defaultdict
 from ..utils.project_utils import log_it
 
 
 @log_it
-def get_edge_rate_dict(deviation_graph, user_parameters, internal_parameters_map=None) \
+def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict, list], internal_parameters_map=None) \
         -> Dict[int, Union[float, int]]:
     """
     Get a dictionary with edge.ids as keys and their associated rates as values
@@ -68,4 +69,35 @@ def get_edge_rate_dict(deviation_graph, user_parameters, internal_parameters_map
         for index_rate, rate in enumerate(user_parameters):
             add_to_result(index_rate, rate)
 
+    return result
+
+
+@log_it
+def get_diffusion_rate_dict(simulator, user_diffusion_rates: dict) \
+        -> Dict[str, Tuple[Types.Real, Types.Real]]:
+
+    result = {symbol: (0, 0) for symbol in simulator.symbols}
+
+    def add_to_result(key, in_value, out_value):
+        if isinstance(in_value, (int, float)) and isinstance(out_value, (int, float)):
+            if key in simulator.symbols:
+                result[key] = (in_value, out_value)
+            else:
+                raise TypeError("Vertex key not found in deviation graph: {}".format(key))
+        else:
+            raise TypeError("Type error for values mapped to key {}; expected float or int value".format(key))
+
+    for vertex, rate in user_diffusion_rates.items():
+        if isinstance(rate, (float, int)):
+            add_to_result(vertex, rate, rate)
+        elif isinstance(rate, (tuple, set, list)):
+            if len(rate) < 2:
+                raise ValueError('Not enough diffusion rates given for key: {}'.format(vertex))
+            in_val, out_val = rate[:2]
+            add_to_result(vertex, in_val, out_val)
+        elif isinstance(rate, dict):
+            if 'in' in rate and 'out' in rate:
+                add_to_result(vertex, rate['in'], rate['out'])
+            else:
+                raise ValueError('Missing "in" and "out" keys for vertex key {}'.format(vertex))
     return result
