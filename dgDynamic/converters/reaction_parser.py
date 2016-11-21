@@ -28,7 +28,7 @@ def _parse_sides(side: str) -> str:
             continue
 
 
-def _get_side_vertices(graph: "mod.mod_.DG", side: str) -> "mod.mod_.DGVertex":
+def _get_side_vertices(graph: "DG", side: str) -> "DGVertex":
     for sym in _parse_sides(side):
         for vertex in graph.vertices:
             if vertex.graph.name == sym:
@@ -40,7 +40,7 @@ def _break_two_way_deviations(two_way: str) -> Iterable[str]:
     yield " -> ".join(reversed(two_way.split(" <=> ")))
 
 
-def _parse_mod_reaction(graph: "mod.mod_.DG", derivation: str) -> "mod.mod_.DGHyperEdge":
+def _parse_mod_reaction(graph: "DG", derivation: str) -> "DGHyperEdge":
     sources, _, targets = derivation.partition(" -> ")
 
     edge = graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
@@ -57,10 +57,10 @@ def abstract_mod_parser(deviation_graph: "DG", reaction: str) -> namedtuple:
     parse_result = namedtuple('parse_result', 'mod_edges representation has_inverse')
     if reaction.find(" <=> ") != -1:
         first_reaction, second_reaction = _break_two_way_deviations(reaction)
-        mod_edges = (_parse_mod_reaction(deviation_graph, first_reaction),
-                     _parse_mod_reaction(deviation_graph, second_reaction))
-        return parse_result(mod_edges=mod_edges, representation=reaction, has_inverse=True)
+        result = (_parse_mod_reaction(deviation_graph, first_reaction),
+                  _parse_mod_reaction(deviation_graph, second_reaction))
+        return parse_result(mod_edges=result, representation=reaction, has_inverse=True)
 
     elif reaction.find(' -> ') != -1:
-        return parse_result(mod_edges=(_parse_mod_reaction(deviation_graph, reaction),), representation=reaction,
-                             has_inverse=False)
+        result = (_parse_mod_reaction(deviation_graph, reaction),)
+        return parse_result(mod_edges=result, representation=reaction, has_inverse=False)
