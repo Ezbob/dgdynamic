@@ -36,9 +36,9 @@ class OdePlugin(PluginBase, ABC):
     """
 
     def __init__(self, simulator, simulation_range=(0, 0), initial_conditions=None,
-                 delta_t=0.1, rate_parameters=None, initial_t=0, ode_method=None):
+                 rate_parameters=None, drain_parameters=None, delta_t=0.1, initial_t=0, ode_method=None):
         super().__init__(simulation_range=simulation_range, rate_parameters=rate_parameters,
-                         initial_conditions=initial_conditions)
+                         initial_conditions=initial_conditions, drain_parameters=drain_parameters)
         self.simulation_range = simulation_range
         self._simulator = simulator
         self.initial_t = initial_t

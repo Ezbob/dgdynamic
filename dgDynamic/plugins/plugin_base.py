@@ -171,11 +171,11 @@ class SimulationOutput(LogMixin):
 
 class PluginBase(abc.ABC, LogMixin):
 
-    def __init__(self, simulation_range, initial_conditions, rate_parameters, diffusion_parameters=None):
+    def __init__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None):
         self.simulation_range = simulation_range
         self.rate_parameters = rate_parameters
         self.initial_conditions = initial_conditions
-        self.diffusion_parameters = diffusion_parameters
+        self.drain_parameters = drain_parameters
 
     @abc.abstractmethod
     def solve(self):

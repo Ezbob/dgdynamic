@@ -4,9 +4,9 @@ from ..plugin_base import PluginBase, SimulationOutput
 
 class StochasticPlugin(PluginBase, abc.ABC):
 
-    def __init__(self, sample_range=None, rate_parameters=None, initial_conditions=None, diffusion_parameters=None):
+    def __init__(self, sample_range=None, rate_parameters=None, initial_conditions=None, drain_parameters=None):
         super().__init__(simulation_range=sample_range, rate_parameters=rate_parameters,
-                         initial_conditions=initial_conditions, diffusion_parameters=diffusion_parameters)
+                         initial_conditions=initial_conditions, drain_parameters=drain_parameters)
 
     @abc.abstractmethod
     def solve(self) -> SimulationOutput:

@@ -17,9 +17,10 @@ class ScipyOde(OdePlugin, LogMixin):
     Scipy ODE solver plugin
     """
     def __init__(self, simulator, simulation_range=(0, 0), initial_condition=None, rate_parameters=None,
-                 solver_method=ScipyOdeSolvers.VODE, delta_t=0.1, initial_t=0):
+                 drain_parameters=None, solver_method=ScipyOdeSolvers.VODE, delta_t=0.1, initial_t=0):
         super().__init__(simulator, simulation_range=simulation_range, initial_conditions=initial_condition,
-                         delta_t=delta_t, rate_parameters=rate_parameters, initial_t=initial_t, ode_method=solver_method)
+                         drain_parameters=drain_parameters, delta_t=delta_t, rate_parameters=rate_parameters,
+                         initial_t=initial_t, ode_method=solver_method)
 
     def __call__(self, simulation_range, initial_conditions, rate_parameters, diffusion_parameters=None, delta_t=0.1,
                  ode_solver=None, **kwargs):

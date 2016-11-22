@@ -73,7 +73,7 @@ def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict,
 
 
 @log_it
-def get_diffusion_rate_dict(simulator, user_diffusion_rates: dict) \
+def get_drain_rate_dict(simulator, user_diffusion_rates: dict) \
         -> Dict[str, Tuple[Types.Real, Types.Real]]:
 
     result = {symbol: (0, 0) for symbol in simulator.symbols}
