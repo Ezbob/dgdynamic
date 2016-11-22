@@ -1,4 +1,3 @@
-import math
 from io import StringIO
 from ..convert_base import get_edge_rate_dict
 

@@ -1,6 +1,7 @@
 import mod
 
-class Channel:
+
+class TransitionChannel:
     solutions = ()
 
     def __init__(self, rate_id, is_input, channel_edge=None, is_decay=False):
@@ -11,15 +12,15 @@ class Channel:
 
     def __repr__(self):
         if self.is_decay:
-            return "<channel τ@r{};{}>".format(self.rate_id, self.solutions)
+            return "<delay channel@r{} to {}>".format(self.rate_id, self.solutions)
         elif self.is_input:
-            return "<channel ?c{0}@r{0};{1}>".format(self.rate_id, self.solutions)
+            return "<input channel{0}@r{0} to {1}>".format(self.rate_id, self.solutions)
         else:
-            return "<channel !c{0}@r{0};{1}>".format(self.rate_id, self.solutions)
+            return "<output channel{0}@r{0} to {1}>".format(self.rate_id, self.solutions)
 
     def add_reagents(self, reagents):
         for target in reagents:
-            if isinstance(target, mod.mod_.DGVertex):
+            if isinstance(target, mod.DGVertex):
                 self.solutions += (target.graph.name,)
             else:
                 self.solutions += (target,)

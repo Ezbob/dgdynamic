@@ -17,17 +17,9 @@ class DefaultFunctionSymbols:
 
 @log_it
 def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_map: dict,
-               extra_symbols=DefaultFunctionSymbols(), postprocessor=None):
+               extra_symbols=DefaultFunctionSymbols(), postprocessor=None) -> str:
     """
     This function is tasked with generating a function string from the SymPy description
-    :param generated_equations: equations from the AbstractOdeSystem
-    :param parameter_map: what the different k-parameters should be substituted to
-    :param symbol_map: new names for the symbols in the different equations
-    :param extra_symbols: extra symbols for generating the functions from the equation(stuff such as function headers
-     etc.)
-    :param postprocessor: function to be called when the equations have been substituted and collected to a string
-     ( f.x.: in the MatLab converter we use the processor function to replace the power operators from ** to ^ )
-    :return:
     """
     with StringIO() as eq_system_steam:
 
