@@ -12,12 +12,6 @@ class ODESystem(DynamicSimulator):
     from the MØD framework.
     """
     def __init__(self, graph):
-        """
-        The initialisation phase consist of creating Sympy Symbols for the vertices of the deviation graph,
-        and creating the rate laws for each reaction.
-        :param graph: if this is parsed as a string the init function will try and parse the string argument to
-        dgAbstract, else it just gets stored.
-        """
         super().__init__(graph=graph)
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
         self.parameters = OrderedDict((edge.id, sp.Symbol("k{}".format(index + 1)))
@@ -49,8 +43,6 @@ class ODESystem(DynamicSimulator):
     def generate_equations(self):
         """
         This function will attempt to create the symbolic ODEs using the rate laws.
-        :return: a tuple of tuples, wherein each nested tuple is a two-tuple consisting of the vertex id, of which the
-        change over time is subjective to, and the symbolic ODE.
         """
         ignore_dict = dict(self.ignored)
         for vertex in self.graph.vertices:
