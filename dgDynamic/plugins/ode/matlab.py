@@ -28,11 +28,11 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine = matlab.engine.start_matlab()
         self.logger.debug("MATLAB engine started.")
 
-    def __call__(self, simulation_range, initial_conditions, rate_parameters, diffusion_parameters=None,
+    def __call__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None,
                  ode_solver=None, **kwargs):
         solver_choice = ode_solver if ode_solver is not None else MatlabOdeSolvers.ode45
         return super().__call__(simulation_range=simulation_range, initial_conditions=initial_conditions,
-                                rate_parameters=rate_parameters, diffusion_parameters=diffusion_parameters,
+                                rate_parameters=rate_parameters, drain_parameters=drain_parameters,
                                 ode_solver=solver_choice, **kwargs)
 
     def __exit__(self, exc_type, exc_val, exc_tb):

@@ -22,12 +22,12 @@ class ScipyOde(OdePlugin, LogMixin):
                          drain_parameters=drain_parameters, delta_t=delta_t, rate_parameters=rate_parameters,
                          initial_t=initial_t, ode_method=solver_method)
 
-    def __call__(self, simulation_range, initial_conditions, rate_parameters, diffusion_parameters=None, delta_t=0.1,
+    def __call__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, delta_t=0.1,
                  ode_solver=None, **kwargs):
         solver_choice = ode_solver if ode_solver is not None else ScipyOdeSolvers.VODE
         return super().__call__(simulation_range=simulation_range, initial_conditions=initial_conditions,
                                 rate_parameters=rate_parameters, ode_solver=solver_choice,
-                                diffusion_parameters=diffusion_parameters, delta_t=delta_t, **kwargs)
+                                drain_parameters=drain_parameters, delta_t=delta_t, **kwargs)
 
     def solve(self, **kwargs) -> SimulationOutput:
         ode_function = get_scipy_lambda(self._simulator, self.parameters)
