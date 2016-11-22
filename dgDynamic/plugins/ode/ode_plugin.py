@@ -45,7 +45,7 @@ class OdePlugin(PluginBase, ABC):
         self.ode_method = ode_method
         self.delta_t = delta_t
 
-    def __call__(self, simulation_range, initial_conditions, rate_parameters, diffusion_parameters=None,
+    def __call__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None,
                  ode_solver=None, delta_t=None, **kwargs):
         self.ode_method = ode_solver
         self.simulation_range = simulation_range
