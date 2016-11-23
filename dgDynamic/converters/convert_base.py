@@ -79,6 +79,9 @@ def get_drain_rate_dict(simulator, user_diffusion_rates: dict) \
 
     result = {symbol: (0, 0) for symbol in simulator.symbols}
 
+    if not user_diffusion_rates:
+        return result
+
     def add_to_result(key, in_value, out_value):
         if isinstance(in_value, (int, float)) and isinstance(out_value, (int, float)):
             if key in simulator.symbols:
