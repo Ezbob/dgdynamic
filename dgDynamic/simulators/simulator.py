@@ -19,12 +19,21 @@ class DynamicSimulator(abc.ABC, LogMixin):
         yield from (vertex.graph.name for vertex in self.graph.vertices)
 
     @property
-    def symbol_code(self):
+    def symbols_internal(self):
         yield from ("$SYM{}".format(index) for index, vertex in enumerate(self.graph.vertices))
 
     @property
+    def drain_symbols(self):
+        yield from (("$DIN{}".format(index), "$DOUT{}".format(index))
+                    for index, vertex in enumerate(self.graph.vertices))
+
+    @property
     def internal_symbol_dict(self):
-        return dict(zip(self.symbols, self.symbol_code))
+        return dict(zip(self.symbols, self.symbols_internal))
+
+    @property
+    def internal_drain_dict(self):
+        return dict(zip(self.symbols, self.drain_symbols))
 
     @property
     def abstract_edges(self):

@@ -45,6 +45,10 @@ class ODESystem(DynamicSimulator):
         """
         This function will attempt to create the symbolic ODEs using the rate laws.
         """
+
+        def add_drain():
+            pass
+
         ignore_dict = dict(self.ignored)
         for vertex in self.graph.vertices:
             if vertex.graph.name in ignore_dict:
@@ -59,6 +63,8 @@ class ODESystem(DynamicSimulator):
                     for target_vertex in reaction_edge.targets:
                         if vertex.id == target_vertex.id:
                             equation_result += lhs
+
+                #equation_result +
 
                 yield vertex.graph.name, equation_result
 

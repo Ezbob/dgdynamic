@@ -10,7 +10,7 @@ def get_scipy_lambda(abstract_system: ODESystem, parameter_substitutions=None):
                                        internal_parameters_map=abstract_system.parameters)
 
     rate_substitutes = {value.replace('$', ''): 'y[{}]'.format(key)
-                        for key, value in enumerate(abstract_system.symbol_code)}
+                        for key, value in enumerate(abstract_system.symbols_internal)}
 
     return substitute(abstract_system.generate_equations(),
                       substitution_map=join_parameter_maps(parameter_map.items(), rate_substitutes.items()))
