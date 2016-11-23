@@ -7,6 +7,7 @@ from dgDynamic.converters.convert_base import get_initial_values
 from dgDynamic.plugins.ode.ode_plugin import OdePlugin, parameter_validation
 from dgDynamic.utils.project_utils import LogMixin
 from dgDynamic.plugins.plugin_base import SimulationOutput
+from dgDynamic.config.settings import config
 import dgDynamic.utils.messages as messages
 
 name = SupportedOdePlugins.SciPy.name
@@ -34,12 +35,20 @@ class ScipyOde(OdePlugin, LogMixin):
         print(ode_function)
 
         if not ode_function:
-            self.logger.error("Scipy ode function was not generated")
+            if config.getboolean('Logging', 'ENABLED_LOGGING'):
+                self.logger.error("Scipy ode function was not generated")
             messages.print_solver_done(name, method_name=self.ode_method.name, was_failure=True)
             return SimulationOutput(SupportedOdePlugins.SciPy,
                                     errors=(SimulationError("Ode function could not be generated"),))
 
-        ode_function = eval(ode_function)
+        try:
+            ode_function = eval(ode_function)
+        except SyntaxError:
+            if config.getboolean('Logging', 'ENABLE_LOGGING'):
+                self.logger.error("Scipy ode function was not generated; syntax error")
+            messages.print_solver_done(name, method_name=self.ode_method.name, was_failure=True)
+            return SimulationOutput(SupportedOdePlugins.SciPy,
+                                    errors=(SimulationError("Internal syntax error encountered")))
 
         self.logger.debug("Checking scipy parameters...")
         initial_y = get_initial_values(self.initial_conditions, self._simulator.symbols)

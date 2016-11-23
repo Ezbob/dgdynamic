@@ -17,15 +17,14 @@ def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict,
     :param internal_parameters_map:
     :return:
     """
-    result = defaultdict(lambda: 0)
 
     def add_to_result(key, value):
         if isinstance(value, (int, float)):
             if internal_parameters_map is not None:
                 param = internal_parameters_map[key].replace('$', '')
-                result[param] = value
+                yield param, value
             else:
-                result[key] = value
+                yield key, value
         else:
             raise TypeError("Type error for key {}; expected float or int".format(key))
 
@@ -35,7 +34,7 @@ def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict,
             if isinstance(rate, (int, float)):
                 # rhs is a number and lhs is tuple of MØD edges
                 for edge in hyper_edges:
-                    add_to_result(edge.id, rate)
+                    yield from add_to_result(edge.id, rate)
             elif isinstance(rate, (tuple, list, set)):
                 # rhs is a iterable
                 if len(rate) != len(hyper_edges):
@@ -43,13 +42,13 @@ def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict,
                                      .format(len(edges_representation), len(rate), edges_representation))
 
                 for edge, rate_val in zip(hyper_edges, rate):
-                    add_to_result(edge.id, rate_val)
+                    yield from add_to_result(edge.id, rate_val)
 
             elif isinstance(rate, dict):
                 # right hand side is a dictionary of the form { '->': ..., '<-': ... } or { '<=>': ... }
                 if '<=>' in rate:
                     for edge in hyper_edges:
-                        add_to_result(edge.id, rate['<=>'])
+                        yield from add_to_result(edge.id, rate['<=>'])
                 elif '->' in rate and '<-' in rate:
                     if len(rate) != len(hyper_edges):
                         raise ValueError("Expected {} rates, got {} for parameter {}"
@@ -57,9 +56,9 @@ def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict,
 
                     for index, edge in enumerate(hyper_edges):
                         if index == 0:
-                            add_to_result(edge.id, rate['->'])
+                            yield from add_to_result(edge.id, rate['->'])
                         elif index == 1:
-                            add_to_result(edge.id, rate['<-'])
+                            yield from add_to_result(edge.id, rate['<-'])
                 else:
                     raise InitialValueError("Not enough initial conditions given for parameter: {}"
                                             .format(edges_representation))
@@ -69,43 +68,44 @@ def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict,
     elif isinstance(user_parameters, (tuple, list, set)):
         # user parameters is just a iterable
         for index_rate, rate in enumerate(user_parameters):
-            add_to_result(index_rate, rate)
+            yield from add_to_result(index_rate, rate)
 
-    return result
 
 
 @log_it
-def get_drain_rate_dict(symbols, user_diffusion_rates: dict) \
+def get_drain_rate_dict(internal_drains: dict, user_drain_rates: dict) \
         -> Dict[str, Tuple[Types.Real, Types.Real]]:
 
-    result = {symbol: (0, 0) for symbol in symbols}
-
-    if not user_diffusion_rates:
-        return result
-
-    def add_to_result(key, in_value, out_value):
-        if isinstance(in_value, (int, float)) and isinstance(out_value, (int, float)):
-            if key in result:
-                result[key] = (in_value, out_value)
+    if not user_drain_rates:
+        for drain_symbols in internal_drains.values():
+            in_symbol, out_symbol = drain_symbols
+            yield in_symbol.replace('$', ''), 0
+            yield out_symbol.replace('$', ''), 0
+    else:
+        def add_to_result(key, in_value, out_value):
+            if isinstance(in_value, (int, float)) and isinstance(out_value, (int, float)):
+                if key in internal_drains:
+                    in_sym, out_sym = internal_drains[key]
+                    yield in_sym.replace('$', ''), in_value
+                    yield out_sym.replace('$', ''), out_value
+                else:
+                    raise TypeError("Vertex key not found in deviation graph: {}".format(key))
             else:
-                raise TypeError("Vertex key not found in deviation graph: {}".format(key))
-        else:
-            raise TypeError("Type error for values mapped to key {}; expected float or int value".format(key))
+                raise TypeError("Type error for values mapped to key {}; expected float or int value".format(key))
 
-    for vertex, rate in user_diffusion_rates.items():
-        if isinstance(rate, (float, int)):
-            add_to_result(vertex, rate, rate)
-        elif isinstance(rate, (tuple, set, list)):
-            if len(rate) < 2:
-                raise ValueError('Not enough diffusion rates given for key: {}'.format(vertex))
-            in_val, out_val = rate[:2]
-            add_to_result(vertex, in_val, out_val)
-        elif isinstance(rate, dict):
-            if 'in' in rate and 'out' in rate:
-                add_to_result(vertex, rate['in'], rate['out'])
-            else:
-                raise ValueError('Missing "in" and "out" keys for vertex key {}'.format(vertex))
-    return result
+        for vertex, rate in user_drain_rates.items():
+            if isinstance(rate, (float, int)):
+                yield from add_to_result(vertex, rate, rate)
+            elif isinstance(rate, (tuple, set, list)):
+                if len(rate) < 2:
+                    raise ValueError('Not enough diffusion rates given for key: {}'.format(vertex))
+                in_val, out_val = rate[:2]
+                yield from add_to_result(vertex, in_val, out_val)
+            elif isinstance(rate, dict):
+                if 'in' in rate and 'out' in rate:
+                    yield from add_to_result(vertex, rate['in'], rate['out'])
+                else:
+                    raise ValueError('Missing "in" and "out" keys for vertex key {}'.format(vertex))
 
 
 @log_it
