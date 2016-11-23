@@ -46,8 +46,13 @@ class ODESystem(DynamicSimulator):
         This function will attempt to create the symbolic ODEs using the rate laws.
         """
 
-        def add_drain():
-            pass
+        drain_dict = self.internal_drain_dict
+        internal_symbol_dict = self.internal_symbol_dict
+
+        def drain():
+            in_sym, out_sym = drain_dict[vertex.graph.name]
+            vertex_sym = sp.Symbol(internal_symbol_dict[vertex.graph.name])
+            return sp.Symbol(in_sym) * vertex_sym - sp.Symbol(out_sym) * vertex_sym
 
         ignore_dict = dict(self.ignored)
         for vertex in self.graph.vertices:
@@ -64,7 +69,7 @@ class ODESystem(DynamicSimulator):
                         if vertex.id == target_vertex.id:
                             equation_result += lhs
 
-                #equation_result +
+                equation_result += drain()
 
                 yield vertex.graph.name, equation_result
 

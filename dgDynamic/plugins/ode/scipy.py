@@ -30,7 +30,7 @@ class ScipyOde(OdePlugin, LogMixin):
                                 drain_parameters=drain_parameters, delta_t=delta_t, **kwargs)
 
     def solve(self, **kwargs) -> SimulationOutput:
-        ode_function = get_scipy_lambda(self._simulator, self.parameters)
+        ode_function = get_scipy_lambda(self._simulator, self.parameters, self.drain_parameters)
 
         if not ode_function:
             self.logger.error("Scipy ode function was not generated")
