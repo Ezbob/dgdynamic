@@ -40,8 +40,8 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine.exit()
 
     def solve(self, **kwargs) -> SimulationOutput:
-        ode_function = get_matlab_lambda(abstract_system=self._simulator,
-                                         parameter_substitutions=self.parameters)
+        ode_function = get_matlab_lambda(simulator=self._simulator, parameter_substitutions=self.parameters,
+                                         drain_substitutions=self.drain_parameters)
 
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Matlab ode function was not generated")

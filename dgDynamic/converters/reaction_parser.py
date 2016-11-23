@@ -64,3 +64,5 @@ def abstract_mod_parser(deviation_graph: "DG", reaction: str) -> namedtuple:
     elif reaction.find(' -> ') != -1:
         result = (_parse_mod_reaction(deviation_graph, reaction),)
         return parse_result(mod_edges=result, representation=reaction, has_inverse=False)
+    else:
+        raise ReactionParseError("Unknown reaction format for reaction: {}".format(reaction))

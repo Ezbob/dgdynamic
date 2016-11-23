@@ -32,7 +32,6 @@ class ScipyOde(OdePlugin, LogMixin):
 
     def solve(self, **kwargs) -> SimulationOutput:
         ode_function = get_scipy_lambda(self._simulator, self.parameters, self.drain_parameters)
-        print(ode_function)
 
         if not ode_function:
             if config.getboolean('Logging', 'ENABLED_LOGGING'):
