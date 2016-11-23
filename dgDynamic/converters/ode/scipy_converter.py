@@ -12,7 +12,12 @@ def get_scipy_lambda(simulator: ODESystem, parameter_substitutions, drain_substi
     rate_map = {value.replace('$', ''): 'y[{}]'.format(key)
                 for key, value in enumerate(simulator.symbols_internal)}
 
-    print(get_drain_rate_dict(simulator, drain_substitutions))
+    internal_mappings = simulator.internal_drain_dict
+    drain = {}
+    for key, val in get_drain_rate_dict(simulator.symbols, drain_substitutions).items():
+        in_rate, out_rate = val
+        in_sym, out_sym = internal_mappings[key]
+        drain[in_sym.replace('$', '')], drain[out_sym.replace('$', '')] = in_rate, out_rate
 
     return substitute(simulator.generate_equations(),
-                      substitution_map=join_parameter_maps(parameter_map.items(), rate_map.items()))
+                      substitution_map=join_parameter_maps(parameter_map.items(), rate_map.items(), drain.items()))

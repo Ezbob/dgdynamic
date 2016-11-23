@@ -75,20 +75,18 @@ def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict,
 
 
 @log_it
-def get_drain_rate_dict(simulator: DynamicSimulator, user_diffusion_rates: dict) \
+def get_drain_rate_dict(symbols, user_diffusion_rates: dict) \
         -> Dict[str, Tuple[Types.Real, Types.Real]]:
 
-    internal_symbols_dict = simulator.internal_symbol_dict
-    result = {symbol: (0, 0) for symbol in simulator.symbols_internal}
+    result = {symbol: (0, 0) for symbol in symbols}
 
     if not user_diffusion_rates:
         return result
 
     def add_to_result(key, in_value, out_value):
         if isinstance(in_value, (int, float)) and isinstance(out_value, (int, float)):
-            translated_key = internal_symbols_dict[key]
-            if translated_key in result:
-                result[translated_key] = (in_value, out_value)
+            if key in result:
+                result[key] = (in_value, out_value)
             else:
                 raise TypeError("Vertex key not found in deviation graph: {}".format(key))
         else:

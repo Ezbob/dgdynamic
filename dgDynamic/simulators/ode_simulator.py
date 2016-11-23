@@ -52,7 +52,7 @@ class ODESystem(DynamicSimulator):
         def drain():
             in_sym, out_sym = drain_dict[vertex.graph.name]
             vertex_sym = sp.Symbol(internal_symbol_dict[vertex.graph.name])
-            return sp.Symbol(in_sym) * vertex_sym - sp.Symbol(out_sym) * vertex_sym
+            return sp.Symbol(in_sym) * vertex_sym, sp.Symbol(out_sym) * vertex_sym
 
         ignore_dict = dict(self.ignored)
         for vertex in self.graph.vertices:
@@ -69,7 +69,9 @@ class ODESystem(DynamicSimulator):
                         if vertex.id == target_vertex.id:
                             equation_result += lhs
 
-                equation_result += drain()
+                in_drain, out_drain = drain()
+                equation_result += in_drain
+                equation_result -= out_drain
 
                 yield vertex.graph.name, equation_result
 

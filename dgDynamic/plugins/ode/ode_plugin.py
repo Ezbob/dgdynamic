@@ -47,6 +47,7 @@ class OdePlugin(PluginBase, ABC):
 
     def __call__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None,
                  ode_solver=None, delta_t=None, **kwargs):
+        self.drain_parameters = drain_parameters
         self.ode_method = ode_solver
         self.simulation_range = simulation_range
         self.initial_conditions = initial_conditions
