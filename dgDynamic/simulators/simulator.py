@@ -19,6 +19,14 @@ class DynamicSimulator(abc.ABC, LogMixin):
         yield from (vertex.graph.name for vertex in self.graph.vertices)
 
     @property
+    def symbol_code(self):
+        yield from ("$SYM{}".format(index) for index, vertex in enumerate(self.graph.vertices))
+
+    @property
+    def internal_symbol_dict(self):
+        return dict(zip(self.symbols, self.symbol_code))
+
+    @property
     def abstract_edges(self):
         def _hyper_edge_to_string(edge):
             with StringIO() as out:

@@ -40,7 +40,7 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine.exit()
 
     def solve(self, **kwargs) -> SimulationOutput:
-        ode_function = get_matlab_lambda(abstract_ode_system=self._simulator,
+        ode_function = get_matlab_lambda(abstract_system=self._simulator,
                                          parameter_substitutions=self.parameters)
 
         if ode_function is None or len(ode_function) == 0:

@@ -21,7 +21,8 @@ def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict,
     def add_to_result(key, value):
         if isinstance(value, (int, float)):
             if internal_parameters_map is not None:
-                result[internal_parameters_map[key]] = value
+                param = internal_parameters_map[key].replace('$', '')
+                result[param] = value
             else:
                 result[key] = value
         else:

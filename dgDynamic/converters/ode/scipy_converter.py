@@ -1,6 +1,5 @@
-import sympy as sp
 from dgDynamic.simulators.ode_simulator import ODESystem
-from .converter_ode import substitute
+from .converter_ode import substitute, join_parameter_maps
 from ..convert_base import get_edge_rate_dict
 
 
@@ -10,5 +9,8 @@ def get_scipy_lambda(abstract_system: ODESystem, parameter_substitutions=None):
                                        user_parameters=parameter_substitutions,
                                        internal_parameters_map=abstract_system.parameters)
 
-    substitute_me = {sp.Symbol(value): sp.Indexed('y', key) for key, value in enumerate(abstract_system.symbols)}
-    return substitute(abstract_system.generate_equations(), parameter_map, substitute_me)
+    rate_substitutes = {value.replace('$', ''): 'y[{}]'.format(key)
+                        for key, value in enumerate(abstract_system.symbol_code)}
+
+    return substitute(abstract_system.generate_equations(),
+                      substitution_map=join_parameter_maps(parameter_map.items(), rate_substitutes.items()))

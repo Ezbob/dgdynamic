@@ -1,7 +1,7 @@
-import sympy as sp
 from dgDynamic.simulators.ode_simulator import ODESystem
-from .converter_ode import DefaultFunctionSymbols, substitute
+from .converter_ode import DefaultFunctionSymbols, substitute, join_parameter_maps
 from ..convert_base import get_edge_rate_dict
+from itertools import chain
 
 
 class MatlabSymbols(DefaultFunctionSymbols):
@@ -15,19 +15,21 @@ def _postprocessor(function_string: str):
     return function_string.replace('**', MatlabSymbols.pow)
 
 
-def get_matlab_lambda(abstract_ode_system: ODESystem, parameter_substitutions=None):
+def get_matlab_lambda(abstract_system: ODESystem, parameter_substitutions=None):
     """
     Converts a sympy symbolic ODE system into a MatLab lambda function that can be integrated.
-    :param abstract_ode_system: should be a legal AbstractOdeSystem instance
+    :param abstract_system: should be a legal AbstractOdeSystem instance
     :param parameter_substitutions: list/tuple of values that should be substituted
     :return: string, containing a anonymous MatLab function that can be integrated
     """
-    parameter_map = get_edge_rate_dict(deviation_graph=abstract_ode_system.graph,
+    parameter_map = get_edge_rate_dict(deviation_graph=abstract_system.graph,
                                        user_parameters=parameter_substitutions,
-                                       internal_parameters_map=abstract_ode_system.parameters)
+                                       internal_parameters_map=abstract_system.parameters)
 
-    substitute_me = {sp.Symbol(value): sp.Symbol("y({})".format(key + 1))
-                     for key, value in enumerate(abstract_ode_system.symbols)}
+    rate_substitutes = {value.replace('$', ''): "y({})".format(key + 1)
+                        for key, value in enumerate(abstract_system.symbol_code)}
 
-    return substitute(abstract_ode_system.generate_equations(), parameter_map, symbol_map=substitute_me,
-                      extra_symbols=MatlabSymbols(), postprocessor=_postprocessor)
+    return substitute(abstract_system.generate_equations(),
+                      substitution_map=join_parameter_maps(parameter_map.items(), rate_substitutes.items()),
+                      extra_symbols=MatlabSymbols(),
+                      postprocessor=_postprocessor)

@@ -14,7 +14,7 @@ class ODESystem(DynamicSimulator):
     def __init__(self, graph):
         super().__init__(graph=graph)
         # the mass action law parameters. For mathematical reasons the symbol indices start at 1
-        self.parameters = OrderedDict((edge.id, sp.Symbol("k{}".format(index + 1)))
+        self.parameters = OrderedDict((edge.id, "$k{}".format(index + 1))
                                       for index, edge in enumerate(self.graph.edges))
 
     def get_plugin_from_enum(self, enum_variable, *args, **kwargs):
@@ -35,10 +35,11 @@ class ODESystem(DynamicSimulator):
             return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
 
     def generate_rate_laws(self):
+        translate_internal = self.internal_symbol_dict
         for edge in self.graph.edges:
-            reduce_me = (sp.Symbol(vertex.graph.name) for vertex in edge.sources)
+            reduce_me = (sp.Symbol(translate_internal[vertex.graph.name]) for vertex in edge.sources)
             reduced = ft.reduce(lambda a, b: a * b, reduce_me)
-            yield self.parameters[edge.id] * reduced
+            yield sp.Symbol(self.parameters[edge.id]) * reduced
 
     def generate_equations(self):
         """

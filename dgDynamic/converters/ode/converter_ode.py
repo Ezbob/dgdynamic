@@ -3,7 +3,9 @@ This module contains stuff relevant for all converters
 """
 from io import StringIO
 from typing import Tuple
+from string import Template
 from dgDynamic.utils.project_utils import log_it
+from itertools import chain
 
 
 class DefaultFunctionSymbols:
@@ -15,8 +17,12 @@ class DefaultFunctionSymbols:
     function_end = ']'
 
 
+def join_parameter_maps(*maps):
+    return dict(chain(*maps))
+
+
 @log_it
-def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_map: dict,
+def substitute(generated_equations: Tuple[Tuple], substitution_map,
                extra_symbols=DefaultFunctionSymbols(), postprocessor=None) -> str:
     """
     This function is tasked with generating a function string from the SymPy description
@@ -25,22 +31,14 @@ def substitute(generated_equations: Tuple[Tuple], parameter_map: dict, symbol_ma
 
         eq_system_steam.write(extra_symbols.function_start)
 
-        if parameter_map is None:
-            for vertex_id, equation in generated_equations:
-                if type(equation) is not int:
-                    eq_system_steam.write(str(equation.xreplace(symbol_map)))
-                    eq_system_steam.write("{} ".format(extra_symbols.equation_separator))
-                else:
-                    eq_system_steam.write(str(equation))
-                    eq_system_steam.write("{} ".format(extra_symbols.equation_separator))
-        else:
-            for vertex_id, equation in generated_equations:
-                if type(equation) is not int:
-                    eq_system_steam.write(str(equation.xreplace(symbol_map).xreplace(parameter_map)))
-                    eq_system_steam.write("{} ".format(extra_symbols.equation_separator))
-                else:
-                    eq_system_steam.write(str(equation))
-                    eq_system_steam.write("{} ".format(extra_symbols.equation_separator))
+        for vertex_id, equation in generated_equations:
+            template = Template(str(equation))
+            if type(equation) is not int:
+                eq_system_steam.write(template.safe_substitute(substitution_map))
+                eq_system_steam.write("{} ".format(extra_symbols.equation_separator))
+            else:
+                eq_system_steam.write(template.template)
+                eq_system_steam.write("{} ".format(extra_symbols.equation_separator))
 
         eq_system_steam.write(extra_symbols.function_end)
         eq_system_string = eq_system_steam.getvalue()
