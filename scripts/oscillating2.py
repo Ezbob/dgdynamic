@@ -11,7 +11,7 @@ dg = HyperGraph.from_abstract(
     'C + F -> C + C',
     'B -> F',
     'F -> C',
-    'C -> D',
+    'C -> B',
 )
 
 ode = dgDynamicSim(dg)
@@ -19,8 +19,8 @@ stochastic = dgDynamicSim(dg, simulator_choice="stochastic")
 
 # Set the species that you wish to remain unchanged in the integration process.
 # Since these species don't contribute they don't get saved or plotted
-ode.unchanging_species('B', 'D')
-stochastic.unchanging_species('B', 'D')
+#ode.unchanging_species('B')
+#stochastic.unchanging_species('B', 'D')
 
 # Name of the data set
 name = "abstractReactions1"
@@ -28,9 +28,8 @@ name = "abstractReactions1"
 # Specify the initial values for each species
 initial_conditions = {
     'F': 0.5,
-    'B': 1,
+    'B': 100,
     'C': 0,
-    'D': 0,
 }
 #
 # spim_initial_conditions = {
@@ -51,10 +50,10 @@ initial_conditions = {
 # Specify the mass action parameters for each reaction
 parameters = {
    'F + B -> F + F': 0.01,
-   'C + F -> C + C': 0.000001,
+   'C + F -> C + C': 0.005,
    'B -> F': 0.001,
    'F -> C': 0.001,
-   'C -> D': 0.01,
+   'C -> B': 0.01,
 }
 
 drain_par = {}
@@ -69,7 +68,7 @@ drain_par = {}
 # )
 
 # Specify the integration range
-integration_range = (0, 6000)
+integration_range = (0, 400)
 
 # Get ODE solver plugin for the given abstract reaction system
 # input can be either a entry in the SupportedSolvers enum, or a string (such as "scipy" or "matlab")
