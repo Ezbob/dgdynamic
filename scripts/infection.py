@@ -5,8 +5,9 @@ This model, models the relationship between the
 The recovered becomes immune to the infected once they recover,
 and the model starts out with some infected.
 """
-from dgDynamic.mod_dynamics import dgDynamicSim, show_simulation_plots, HyperGraph
+from dgDynamic import dgDynamicSim, show_simulation_plots, HyperGraph
 from dgDynamic.choices import MatlabOdeSolvers
+import numpy
 
 susceptible_infected = "S + I -> 2 I"
 recovered = "I -> R"
@@ -49,11 +50,12 @@ with stochastic("spim") as spim:
 
 with ode.get_plugin("scipy") as scipy:
     # Let's generate some sample delta_ts
-    scipy.simulation_range = integration_range
-    scipy.initial_conditions = initial_conditions
-    scipy.parameters = parameters
-    scipy.delta_t = 0.1
-    scipy.solve().plot(figure_size=figure_size)
+    for dt in numpy.linspace(0.1, 1, num=5):
+        scipy.simulation_range = integration_range
+        scipy.initial_conditions = initial_conditions
+        scipy.parameters = parameters
+        scipy.delta_t = dt
+        scipy.solve().plot(figure_size=figure_size)
 
 with ode.get_plugin("Matlab") as matlab:
     for supported in MatlabOdeSolvers:
