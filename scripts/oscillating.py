@@ -1,7 +1,7 @@
 import mod
 
 from dgDynamic.choices import SupportedOdePlugins, MatlabOdeSolvers, ScipyOdeSolvers, SupportedStochasticPlugins
-from dgDynamic.mod_dynamics import dgDynamicSim
+from dgDynamic.mod_dynamics import dgDynamicSim, show_simulation_plots
 
 # Enable logging when uncommented
 # set_logging(new_session=True)
@@ -87,7 +87,7 @@ spim = stochastic.get_plugin(SupportedStochasticPlugins.SPiM)
 #    LSODA  : Can automatically handle stiff and non-stiff problems
 #    DOPRI5 : Has dense output and variable time step
 #    DOP853 : Has dense output and variable time step
-scipy_ode.set_ode_solver(ScipyOdeSolvers.VODE)
+scipy_ode.ode_method = ScipyOdeSolvers.VODE
 
 # Set the time step, default is 0.05
 scipy_ode.delta_t = 0.1
@@ -96,13 +96,13 @@ scipy_ode.delta_t = 0.1
 scipy_ode.initial_t = 0
 
 # Set the integration range. This has to be a tuple of two numbers; a lower bound and a upper bound
-scipy_ode.set_integration_range(integration_range)
+scipy_ode.simulation_range = integration_range
 
 # Set the initial conditions
-scipy_ode.set_initial_conditions(initial_conditions)
+scipy_ode.initial_conditions = initial_conditions
 
 # Set the parameters
-scipy_ode.set_parameters(parameters)
+scipy_ode.parameters = parameters
 
 # Solve the ODE system to get the output object
 output = scipy_ode.solve()
@@ -113,9 +113,10 @@ output.save(name)
 # Plot the data using the MatPlotLib, also using the output object
 output.plot("plot.svg", figure_size=(40, 20))
 
-spim(simulation_range=(40, 200), parameters=parameters, initial_conditions=spim_initial_conditions)\
-    .plot("plot2.svg", figure_size=(40, 20))
+#spim(simulation_range=(40, 200), parameters=parameters, initial_conditions=spim_initial_conditions)\
+#    .plot("plot2.svg", figure_size=(40, 20))
 
+show_simulation_plots()
 
 # The following solver uses the matlab engine for python to compute the solutions to the ODEs
 # matlab_ode = ode.get_ode_plugin(SupportedSolvers.Matlab, initial_conditions=initial_conditions,
