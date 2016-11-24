@@ -47,11 +47,15 @@ with stochastic("spim") as spim:
     for i in range(3):
         spim(simulation_range, initial_conditions, parameters,).plot(figure_size=figure_size)
 
-with ode("scipy") as scipy:
+with ode.get_plugin("scipy") as scipy:
     # Let's generate some sample delta_ts
-    scipy(integration_range, initial_conditions, parameters, delta_t=0.1).plot(figure_size=figure_size)
+    scipy.simulation_range = integration_range
+    scipy.initial_conditions = initial_conditions
+    scipy.parameters = parameters
+    scipy.delta_t = 0.1
+    scipy.solve().plot(figure_size=figure_size)
 
-with ode("Matlab") as matlab:
+with ode.get_plugin("Matlab") as matlab:
     for supported in MatlabOdeSolvers:
         matlab(integration_range, initial_conditions, parameters, ode_method=supported).plot(figure_size=figure_size)
 
