@@ -53,6 +53,6 @@ with ode("scipy") as scipy:
 
 with ode("Matlab") as matlab:
     for supported in MatlabOdeSolvers:
-        matlab(integration_range, initial_conditions, parameters, supported).plot(figure_size=figure_size)
+        matlab(integration_range, initial_conditions, parameters, ode_method=supported).plot(figure_size=figure_size)
 
 show_simulation_plots()

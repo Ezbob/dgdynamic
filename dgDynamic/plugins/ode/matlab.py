@@ -3,6 +3,7 @@
 ##
 import sys
 import matlab.engine
+from typing import Union, Tuple, List, Set, Dict
 from dgDynamic.utils.exceptions import SimulationError
 from dgDynamic.choices import MatlabOdeSolvers, SupportedOdePlugins
 from dgDynamic.converters.ode.matlab_converter import get_matlab_lambda
@@ -28,12 +29,14 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine = matlab.engine.start_matlab()
         self.logger.debug("MATLAB engine started.")
 
-    def __call__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None,
-                 ode_solver=None, **kwargs):
-        solver_choice = ode_solver if ode_solver is not None else MatlabOdeSolvers.ode45
+    def __call__(self, simulation_range: tuple,
+                 initial_conditions: Union[tuple, set, list, dict],
+                 rate_parameters: Union[tuple, set, list, dict],
+                 drain_parameters: Union[tuple, set, list, dict]=(),
+                 ode_solver: MatlabOdeSolvers=MatlabOdeSolvers.ode45, **kwargs):
         return super().__call__(simulation_range=simulation_range, initial_conditions=initial_conditions,
                                 rate_parameters=rate_parameters, drain_parameters=drain_parameters,
-                                ode_solver=solver_choice, **kwargs)
+                                ode_solver=ode_solver, **kwargs)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.engine.clear(nargout=0)

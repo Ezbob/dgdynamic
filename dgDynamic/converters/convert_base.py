@@ -73,6 +73,9 @@ def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict,
 @log_it
 def get_drain_rate_dict(internal_drains: dict, user_drain_rates: dict):
 
+    if user_drain_rates:
+        print(type(user_drain_rates))
+
     if not user_drain_rates:
         for drain_symbols in internal_drains.values():
             in_symbol, out_symbol = drain_symbols
