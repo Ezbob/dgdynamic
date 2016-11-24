@@ -38,8 +38,7 @@ def generate_preamble(sample_range, draw_automata=False, symbols_dict=None, spec
 
 
 def generate_rates(derivation_graph, channel_dict, parameters=None, float_precision=18) -> str:
-    edge_rate_dict = get_edge_rate_dict(deviation_graph=derivation_graph,
-                                        user_parameters=parameters)
+    edge_rate_dict = dict(get_edge_rate_dict(deviation_graph=derivation_graph, user_parameters=parameters))
     already_seen = dict()
     with StringIO() as str_out:
         for channel_tuple in channel_dict.values():

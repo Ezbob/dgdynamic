@@ -42,8 +42,7 @@ class SpimStochastic(StochasticPlugin):
                                                   float_precision=fixed_point_precision))
                 code_file.write('\n')
                 code_file.write(generate_rates(derivation_graph=self._simulator.graph, channel_dict=channels,
-                                               parameters=self.parameters,
-                                               float_precision=fixed_point_precision))
+                                               parameters=self.parameters, float_precision=fixed_point_precision))
                 code_file.write('\n')
                 code_file.write(generate_automata_code(channel_dict=channels,
                                                        symbols_dict=symbol_translate_dict,

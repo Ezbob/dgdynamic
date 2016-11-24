@@ -8,8 +8,7 @@ from ..utils.project_utils import log_it
 
 
 @log_it
-def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict, list], internal_parameters_map=None) \
-        -> Dict[int, Types.Real]:
+def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict, list], internal_parameters_map=None):
     """
     Get a dictionary with edge.ids as keys and their associated rates as values
     :param deviation_graph:
@@ -71,10 +70,8 @@ def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict,
             yield from add_to_result(index_rate, rate)
 
 
-
 @log_it
-def get_drain_rate_dict(internal_drains: dict, user_drain_rates: dict) \
-        -> Dict[str, Tuple[Types.Real, Types.Real]]:
+def get_drain_rate_dict(internal_drains: dict, user_drain_rates: dict):
 
     if not user_drain_rates:
         for drain_symbols in internal_drains.values():

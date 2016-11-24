@@ -4,6 +4,7 @@ from collections import OrderedDict
 from typing import Union
 from dgDynamic.choices import SupportedOdePlugins
 from .simulator import DynamicSimulator
+from ..utils.exceptions import SimulationError
 
 
 class ODESystem(DynamicSimulator):
@@ -30,7 +31,7 @@ class ODESystem(DynamicSimulator):
             for plugin in SupportedOdePlugins:
                 if plugin.value.strip().lower() == plugin_name.strip().lower():
                     return self.get_plugin_from_enum(plugin, *args, **kwargs)
-            raise ValueError("plugin name not recognized")
+            raise SimulationError("plugin name not recognized")
         elif isinstance(plugin_name, SupportedOdePlugins):
             return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
 
