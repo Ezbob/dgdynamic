@@ -1,14 +1,14 @@
 from ..utils.exceptions import InitialValueError
-from typing import Dict, Union, Tuple
-from ..utils.project_utils import ProjectTypeHints as Types
+from typing import Union, Optional, Generator, Tuple
 from .reaction_parser import abstract_mod_parser
-from collections import defaultdict
-from dgDynamic.simulators.simulator import DynamicSimulator
 from ..utils.project_utils import log_it
+import dgDynamic.utils.typehints as th
 
 
 @log_it
-def get_edge_rate_dict(deviation_graph, user_parameters: Union[tuple, set, dict, list], internal_parameters_map=None):
+def get_edge_rate_dict(deviation_graph: th.MødDeviationGraph,
+                       user_parameters: Union[tuple, set, dict, list],
+                       internal_parameters_map: Optional[dict]=None):
     """
     Get a dictionary with edge.ids as keys and their associated rates as values
     :param deviation_graph:

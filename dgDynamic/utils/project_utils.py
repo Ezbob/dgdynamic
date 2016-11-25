@@ -42,9 +42,6 @@ class LogMixin:
         return log_machine
 
 
-
-
-
 def make_directory(path, pre_delete=False):
     """
     This function just provides a mkdir functionality that can delete the contents of a
@@ -59,10 +56,3 @@ def make_directory(path, pre_delete=False):
     elif not os.path.exists(path):
         os.mkdir(path)
 
-
-class ProjectTypeHints:
-    Real = Union[float, int]
-    Reals = List[Real]
-    Numbers = Union[Reals, Real]
-    Countable_Sequence = Union[List[Any], Tuple[Any, ...], Set[Any]]
-    ODE_Function = Callable[[Numbers, Numbers], Numbers]

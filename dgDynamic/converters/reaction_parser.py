@@ -1,10 +1,12 @@
-from typing import Iterable
+from typing import Generator
+from dgDynamic.utils.typehints import MødDeviationGraph, MødHyperEdge, MødHyperVertex
 from dgDynamic.utils.exceptions import ReactionParseError
 from ..utils.project_utils import log_it
 from collections import namedtuple
+from io import StringIO
 
 
-def _parse_sides(side: str) -> str:
+def _parse_sides(side: str) -> Generator[str, None, None]:
     skip_next = False
     the_splitting = side.split()
     for index, atom in enumerate(the_splitting):
@@ -28,19 +30,19 @@ def _parse_sides(side: str) -> str:
             continue
 
 
-def _get_side_vertices(graph: "DG", side: str) -> "DGVertex":
+def _get_side_vertices(graph: MødDeviationGraph, side: str) -> Generator[MødHyperVertex, None, None]:
     for sym in _parse_sides(side):
         for vertex in graph.vertices:
             if vertex.graph.name == sym:
                 yield vertex
 
 
-def _break_two_way_deviations(two_way: str) -> Iterable[str]:
+def _break_two_way_deviations(two_way: str) -> Generator[str, None, None]:
     yield " -> ".join(two_way.split(" <=> "))
     yield " -> ".join(reversed(two_way.split(" <=> ")))
 
 
-def _parse_mod_reaction(graph: "DG", derivation: str) -> "DGHyperEdge":
+def _parse_mod_reaction(graph: MødDeviationGraph, derivation: str) -> MødHyperEdge:
     sources, _, targets = derivation.partition(" -> ")
 
     edge = graph.findEdge(_get_side_vertices(graph, sources), _get_side_vertices(graph, targets))
@@ -52,7 +54,7 @@ def _parse_mod_reaction(graph: "DG", derivation: str) -> "DGHyperEdge":
 
 
 @log_it
-def abstract_mod_parser(deviation_graph: "DG", reaction: str) -> namedtuple:
+def abstract_mod_parser(deviation_graph: MødDeviationGraph, reaction: str) -> namedtuple:
 
     parse_result = namedtuple('parse_result', 'mod_edges representation has_inverse')
     if reaction.find(" <=> ") != -1:
@@ -66,3 +68,19 @@ def abstract_mod_parser(deviation_graph: "DG", reaction: str) -> namedtuple:
         return parse_result(mod_edges=result, representation=reaction, has_inverse=False)
     else:
         raise ReactionParseError("Unknown reaction format for reaction: {}".format(reaction))
+
+
+def hyper_edge_to_string(edge: MødHyperEdge) -> str:
+    with StringIO() as out:
+        for index, source_vertex in enumerate(edge.sources):
+            out.write(source_vertex.graph.name)
+            if index < edge.numSources - 1:
+                out.write(" + ")
+        out.write(" -> ")
+
+        for index, target_vertex in enumerate(edge.targets):
+            out.write(target_vertex.graph.name)
+            if index < edge.numTargets - 1:
+                out.write(" + ")
+        out.write("\n")
+        return out.getvalue()
