@@ -1,5 +1,7 @@
 from abc import abstractmethod, ABC
 from ..plugin_base import PluginBase
+import dgDynamic.utils.typehints as th
+import typing as tp
 
 
 def parameter_validation(plugin_instance, initial_values, reaction_count, species_count):
@@ -31,8 +33,10 @@ class OdePlugin(PluginBase, ABC):
     interface for all the ODE plugins.
     """
 
-    def __init__(self, simulator, simulation_range=(0, 0), initial_conditions=None,
-                 rate_parameters=None, drain_parameters=None, delta_t=0.1, initial_t=0, ode_method=None):
+    def __init__(self, simulator, simulation_range: tp.Tuple[th.Real, th.Real]=(0, 0),
+                 initial_conditions: th.Opt_Input_Type=None, rate_parameters: th.Opt_Input_Type=None,
+                 drain_parameters: th.Opt_Input_Type=None,
+                 delta_t: float=0.1, initial_t: th.Real=0, ode_method: tp.Optional[tp.Union[str, th.Enum]]=None):
         super().__init__(simulation_range=simulation_range, rate_parameters=rate_parameters,
                          initial_conditions=initial_conditions, drain_parameters=drain_parameters)
         self.simulation_range = simulation_range
@@ -41,8 +45,12 @@ class OdePlugin(PluginBase, ABC):
         self.ode_method = ode_method
         self.delta_t = delta_t
 
-    def __call__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None,
-                 ode_solver=None, delta_t=None, **kwargs):
+    def __call__(self, simulation_range: tp.Tuple[th.Real, th.Real],
+                 initial_conditions: th.Input_Type,
+                 rate_parameters: th.Input_Type,
+                 drain_parameters: tp.Optional[th.Input_Type]=None,
+                 ode_solver: tp.Optional[tp.Union[str, th.Enum]]=None,
+                 delta_t: tp.Optional[float]=None, **kwargs):
         self.drain_parameters = drain_parameters
         self.ode_method = ode_solver
         self.simulation_range = simulation_range
