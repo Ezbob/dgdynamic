@@ -15,7 +15,7 @@ class StochasticPlugin(PluginBase, abc.ABC):
     def __call__(self, simulation_range, initial_conditions, rate_parameters, *args, diffusion_parameters=None,
                  **kwargs):
         self.simulation_range = simulation_range
-        self.parameters = rate_parameters
+        self.rate_parameters = rate_parameters
         self.initial_conditions = initial_conditions
         self.diffusion_parameters = diffusion_parameters
         output = self.solve(*args, **kwargs)

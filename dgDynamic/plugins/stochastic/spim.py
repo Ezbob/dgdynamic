@@ -32,32 +32,32 @@ class SpimStochastic(StochasticPlugin):
         self._simulator = simulator
         self._ocamlrun_path = os.path.abspath(config['Simulation']['OCAML_RUN'])
 
-    def solve(self, timeout=None, rel_tol=1e-09, abs_tol=0.0) -> SimulationOutput:
-        def generate_code_file(file_path):
-            with open(file_path, mode="w") as code_file:
-                code_file.write(generate_preamble(sample_range=self.simulation_range,
-                                                  symbols_dict=symbol_translate_dict,
-                                                  species_count=self._simulator.species_count,
-                                                  ignored=self._simulator.ignored,
-                                                  float_precision=fixed_point_precision))
-                code_file.write('\n')
-                code_file.write(generate_rates(derivation_graph=self._simulator.graph, channel_dict=channels,
-                                               parameters=self.parameters, float_precision=fixed_point_precision))
-                code_file.write('\n')
-                code_file.write(generate_automata_code(channel_dict=channels,
-                                                       symbols_dict=symbol_translate_dict,
-                                                       species_count=self._simulator.species_count,))
-                code_file.write('\n\n')
-                code_file.write(generate_initial_values(symbols_dict=symbol_translate_dict,
-                                                        initial_conditions=self.initial_conditions,))
-
-        if self.parameters is None or self.initial_conditions is None:
-            raise ValueError("Missing parameters or initial values")
-
+    def generate_code_file(self, writable_stream):
         fixed_point_precision = abs(config.getint('Simulation', 'FIXED_POINT_PRECISION', fallback=18))
-        symbol_translate_dict = OrderedDict((sym, "_SYM{}".format(index))
+        symbol_translate_dict = OrderedDict((sym, "SYM{}".format(index))
                                             for index, sym in enumerate(self._simulator.symbols))
         channels = self._simulator.generate_channels()
+        writable_stream.write(generate_preamble(sample_range=self.simulation_range,
+                                                symbols_dict=symbol_translate_dict,
+                                                species_count=self._simulator.species_count,
+                                                ignored=self._simulator.ignored,
+                                                float_precision=fixed_point_precision))
+        writable_stream.write('\n')
+        writable_stream.write(generate_rates(derivation_graph=self._simulator.graph, channel_dict=channels,
+                                             parameters=self.rate_parameters, float_precision=fixed_point_precision))
+        writable_stream.write('\n')
+        writable_stream.write(generate_automata_code(channel_dict=channels,
+                                                     symbols_dict=symbol_translate_dict,
+                                                     species_count=self._simulator.species_count, ))
+        writable_stream.write('\n\n')
+        writable_stream.write(generate_initial_values(symbols_dict=symbol_translate_dict,
+                                                      initial_conditions=self.initial_conditions, ))
+
+    def solve(self, timeout=None, rel_tol=1e-09, abs_tol=0.0) -> SimulationOutput:
+
+        if self.rate_parameters is None or self.initial_conditions is None:
+            raise ValueError("Missing parameters or initial values")
+
         independent = array.array('d')
         dependent = list()
         errors = list()
@@ -65,18 +65,27 @@ class SpimStochastic(StochasticPlugin):
         with tempfile.TemporaryDirectory() as tmpdir:
 
             file_path_code = os.path.join(tmpdir, "spim.spi")
-            generate_code_file(file_path_code)
+            with open(file_path_code, mode="w") as script:
+                self.generate_code_file(script)
 
             if config.getboolean('Logging', 'ENABLE_LOGGING', fallback=False):
                 with open(file_path_code) as debug_file:
                     self.logger.info("SPiM simulation file:\n{}".format(debug_file.read()))
 
-            run_parameters = (self._ocamlrun_path, self._spim_path, file_path_code)
+            run_parameters = [self._ocamlrun_path, self._spim_path, file_path_code]
             try:
-                stdout = subprocess.run(run_parameters, timeout=timeout, stdout=subprocess.PIPE).stdout
-                self.logger.info("SPiM stdout:\n{}".format(stdout.decode()))
+                process = subprocess.Popen(run_parameters, stdin=subprocess.PIPE,
+                                           stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                           universal_newlines=True)
+                stdout, stderr = process.communicate(input="\n", timeout=timeout)
+
+                self.logger.info("SPiM stdout:\n{}".format(stdout))
             except subprocess.TimeoutExpired:
+                process.kill()
+                process.communicate()
                 errors.append(SimulationError("Simulation time out"))
+                messages.print_solver_done(name, was_failure=True)
+                return SimulationOutput(SupportedStochasticPlugins.SPiM, errors=errors)
 
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             if not os.path.isfile(csv_file_path):
