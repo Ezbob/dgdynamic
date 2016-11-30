@@ -43,12 +43,17 @@ class SpimStochastic(StochasticPlugin):
                                                 ignored=self._simulator.ignored,
                                                 float_precision=fixed_point_precision))
         writable_stream.write('\n')
-        writable_stream.write(generate_rates(derivation_graph=self._simulator.graph, channel_dict=channels,
-                                             parameters=self.rate_parameters, float_precision=fixed_point_precision))
+        writable_stream.write(generate_rates(derivation_graph=self._simulator.graph,
+                                             channel_dict=channels,
+                                             parameters=self.rate_parameters,
+                                             drain_parameters=self.drain_parameters,
+                                             internal_drains=self._simulator.internal_drain_dict,
+                                             float_precision=fixed_point_precision))
         writable_stream.write('\n')
         writable_stream.write(generate_automata_code(channel_dict=channels,
                                                      symbols_dict=symbol_translate_dict,
-                                                     species_count=self._simulator.species_count, ))
+                                                     species_count=self._simulator.species_count,
+                                                     internal_drains=self._simulator.internal_drain_dict,))
         writable_stream.write('\n\n')
         writable_stream.write(generate_initial_values(symbols_dict=symbol_translate_dict,
                                                       initial_conditions=self.initial_conditions, ))
