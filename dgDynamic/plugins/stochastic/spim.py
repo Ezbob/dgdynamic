@@ -14,7 +14,7 @@ from dgDynamic.choices import SupportedStochasticPlugins
 from collections import OrderedDict
 import dgDynamic.utils.messages as messages
 
-name = SupportedStochasticPlugins.SPiM.name
+name = SupportedStochasticPlugins.SPiM
 
 
 class SpimStochastic(StochasticPlugin):
@@ -58,6 +58,22 @@ class SpimStochastic(StochasticPlugin):
         if self.rate_parameters is None or self.initial_conditions is None:
             raise ValueError("Missing parameters or initial values")
 
+        def collect_data(errors=None):
+            errors = [] if errors is None else errors
+            with open(csv_file_path) as file:
+                reader = csv.reader(file)
+                next(reader)
+                old_time = 0.0
+                for line in reader:
+                    new_time = float(line[0])
+                    if new_time > old_time or math.isclose(new_time, old_time, rel_tol=rel_tol, abs_tol=abs_tol):
+                        independent.append(new_time)
+                        dependent.append(array.array('d', map(float, line[1:])))
+                        old_time = new_time
+                    else:
+                        errors.append(SimulationError("Simulation time regression detected"))
+            return independent, dependent
+
         independent = array.array('d')
         dependent = list()
         errors = list()
@@ -65,6 +81,7 @@ class SpimStochastic(StochasticPlugin):
         with tempfile.TemporaryDirectory() as tmpdir:
 
             file_path_code = os.path.join(tmpdir, "spim.spi")
+            csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             with open(file_path_code, mode="w") as script:
                 self.generate_code_file(script)
 
@@ -85,32 +102,25 @@ class SpimStochastic(StochasticPlugin):
                 process.communicate()
                 errors.append(SimulationError("Simulation time out"))
                 messages.print_solver_done(name, was_failure=True)
-                return SimulationOutput(SupportedStochasticPlugins.SPiM, errors=errors)
+                independent, dependent = collect_data(errors)
+                return SimulationOutput(name, abstract_system=self._simulator,
+                                        independent=independent, dependent=dependent,
+                                        errors=errors)
 
-            csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             if not os.path.isfile(csv_file_path):
                 if config.getboolean('Logging', 'ENABLE_LOGGING', fallback=False):
                     self.logger.error("Missing SPiM output")
                 errors.append(SimulationError("Missing SPiM output"))
                 messages.print_solver_done(name, was_failure=True)
-                return SimulationOutput(SupportedStochasticPlugins.SPiM, errors=errors)
+                return SimulationOutput(name, abstract_system=self._simulator, errors=errors)
 
-            with open(csv_file_path) as file:
-                reader = csv.reader(file)
-                next(reader)
-                old_time = 0.0
-                for line in reader:
-                    new_time = float(line[0])
-                    if new_time > old_time or math.isclose(new_time, old_time, rel_tol=rel_tol, abs_tol=abs_tol):
-                        independent.append(new_time)
-                        dependent.append(array.array('d', map(float, line[1:])))
-                        old_time = new_time
-                    else:
-                        errors.append(SimulationError("Simulation time regression detected"))
-                        messages.print_solver_done(name, was_failure=True)
-                        return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent,
-                                                independent=independent, abstract_system=self._simulator, errors=errors)
-
-        messages.print_solver_done(name)
-        return SimulationOutput(SupportedStochasticPlugins.SPiM, dependent=dependent, independent=independent,
-                                abstract_system=self._simulator, errors=errors)
+            independent, dependent = collect_data(errors)
+            if errors:
+                messages.print_solver_done(name, was_failure=True)
+                return SimulationOutput(name, abstract_system=self._simulator,
+                                        independent=independent, dependent=dependent,
+                                        errors=errors)
+            else:
+                messages.print_solver_done(name, was_failure=False)
+                return SimulationOutput(name, abstract_system=self._simulator,
+                                        independent=independent, dependent=dependent)
