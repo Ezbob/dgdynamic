@@ -90,19 +90,20 @@ def get_drain_rate_dict(internal_drains: dict, user_drain_rates: dict):
             else:
                 raise TypeError("Type error for values mapped to key {}; expected float or int value".format(key))
 
-        for vertex, rate in user_drain_rates.items():
+        for external_vertex, drain_symbols in internal_drains.items():
+            rate = user_drain_rates[external_vertex] if external_vertex in user_drain_rates else 0.0
             if isinstance(rate, (float, int)):
-                yield from add_to_result(vertex, rate, rate)
+                yield from add_to_result(external_vertex, rate, rate)
             elif isinstance(rate, (tuple, set, list)):
                 if len(rate) < 2:
-                    raise ValueError('Not enough diffusion rates given for key: {}'.format(vertex))
+                    raise ValueError('Not enough diffusion rates given for key: {}'.format(external_vertex))
                 in_val, out_val = rate[:2]
-                yield from add_to_result(vertex, in_val, out_val)
+                yield from add_to_result(external_vertex, in_val, out_val)
             elif isinstance(rate, dict):
                 if 'in' in rate and 'out' in rate:
-                    yield from add_to_result(vertex, rate['in'], rate['out'])
+                    yield from add_to_result(external_vertex, rate['in'], rate['out'])
                 else:
-                    raise ValueError('Missing "in" and "out" keys for vertex key {}'.format(vertex))
+                    raise ValueError('Missing "in" and "out" keys for vertex key {}'.format(external_vertex))
 
 
 @log_it

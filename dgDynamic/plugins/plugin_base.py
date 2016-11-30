@@ -188,5 +188,5 @@ class PluginBase(abc.ABC, LogMixin):
         pass
 
     @abc.abstractmethod
-    def __call__(self, simulation_range, initial_conditions, rate_parameters, diffusion_parameters):
+    def __call__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters):
         pass
