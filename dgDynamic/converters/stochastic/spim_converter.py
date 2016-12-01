@@ -118,10 +118,10 @@ def generate_automata_code(channel_dict, symbols_dict, species_count, internal_d
 
             if symbol[0] in channel_dict:
                 current_channels = channel_dict[symbol[0]]
+                str_result.write('do ')
                 if len(current_channels) == 1:
                     generate_channel(str_result, current_channels[0])
                 elif len(current_channels) > 1:
-                    str_result.write('do ')
                     for channel_index, channel in enumerate(current_channels):
                         generate_channel(str_result, channel)
                         if len(current_channels) - 1 > channel_index:
