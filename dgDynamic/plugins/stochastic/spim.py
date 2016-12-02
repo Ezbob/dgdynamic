@@ -1,3 +1,11 @@
+from dgDynamic.utils.exceptions import SimulationError
+from dgDynamic.config.settings import config
+from .stochastic_plugin import StochasticPlugin
+from dgDynamic.output import SimulationOutput
+import dgDynamic.converters.stochastic.spim_converter as converters
+from dgDynamic.choices import SupportedStochasticPlugins
+from collections import OrderedDict
+import dgDynamic.utils.messages as messages
 import os.path
 import os
 import array
@@ -5,15 +13,7 @@ import csv
 import subprocess
 import tempfile
 import math
-from dgDynamic.utils.exceptions import SimulationError
-from dgDynamic.config.settings import config
-from .stochastic_plugin import StochasticPlugin
-from dgDynamic.output import SimulationOutput
-from ...converters.stochastic.spim_converter import generate_initial_values, generate_rates, generate_automata_code, \
-    generate_preamble
-from dgDynamic.choices import SupportedStochasticPlugins
-from collections import OrderedDict
-import dgDynamic.utils.messages as messages
+
 
 name = SupportedStochasticPlugins.SPiM
 
@@ -38,25 +38,25 @@ class SpimStochastic(StochasticPlugin):
         symbol_translate_dict = OrderedDict((sym, "SYM{}".format(index))
                                             for index, sym in enumerate(self._simulator.symbols))
         channels = self._simulator.generate_channels()
-        writable_stream.write(generate_preamble(sample_range=self.simulation_range,
-                                                symbols_dict=symbol_translate_dict,
-                                                species_count=self._simulator.species_count,
-                                                ignored=self._simulator.ignored,
-                                                float_precision=fixed_point_precision))
+        writable_stream.write(converters.generate_preamble(sample_range=self.simulation_range,
+                                                           symbols_dict=symbol_translate_dict,
+                                                           species_count=self._simulator.species_count,
+                                                           ignored=self._simulator.ignored,
+                                                           float_precision=fixed_point_precision))
         writable_stream.write('\n')
-        writable_stream.write(generate_rates(derivation_graph=self._simulator.graph,
-                                             channel_dict=channels,
-                                             parameters=self.rate_parameters,
-                                             drain_parameters=self.drain_parameters,
-                                             internal_drains=self._simulator.internal_drain_dict,
-                                             float_precision=fixed_point_precision))
+        writable_stream.write(converters.generate_rates(derivation_graph=self._simulator.graph,
+                                                        channel_dict=channels,
+                                                        parameters=self.rate_parameters,
+                                                        drain_parameters=self.drain_parameters,
+                                                        internal_drains=self._simulator.internal_drain_dict,
+                                                        float_precision=fixed_point_precision))
         writable_stream.write('\n')
-        writable_stream.write(generate_automata_code(channel_dict=channels,
-                                                     symbols_dict=symbol_translate_dict,
-                                                     internal_drains=self._simulator.internal_drain_dict,))
+        writable_stream.write(converters.generate_automata_code(channel_dict=channels,
+                                                                symbols_dict=symbol_translate_dict,
+                                                                internal_drains=self._simulator.internal_drain_dict,))
         writable_stream.write('\n\n')
-        writable_stream.write(generate_initial_values(symbols_dict=symbol_translate_dict,
-                                                      initial_conditions=self.initial_conditions, ))
+        writable_stream.write(converters.generate_initial_values(symbols_dict=symbol_translate_dict,
+                                                                 initial_conditions=self.initial_conditions, ))
 
     def solve(self, timeout=None, rel_tol=1e-09, abs_tol=0.0) -> SimulationOutput:
 
