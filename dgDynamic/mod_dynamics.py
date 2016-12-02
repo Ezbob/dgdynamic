@@ -1,12 +1,14 @@
 from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.simulators.stochastic_pi_simulator import StochasticPiSystem
-from typing import Union
+import typing as tp
 from .structures import HyperGraph
 from dgDynamic.output import SimulationOutput
 import enum
+import mod
 
 
-def dgDynamicSim(derivation_graph, simulator_choice="ode", unchanging_species=()) -> Union[ODESystem, StochasticPiSystem]:
+def dgDynamicSim(derivation_graph: mod.DG, simulator_choice: tp.Union[str, enum.Enum]="ode", unchanging_species:
+                 tp.Union[str, tuple]=()) -> tp.Optional[tp.Union[ODESystem, StochasticPiSystem]]:
     deviation_graph = derivation_graph if isinstance(derivation_graph, HyperGraph) else HyperGraph(derivation_graph)
     if isinstance(simulator_choice, str):
         if simulator_choice.strip().lower() == "ode":
