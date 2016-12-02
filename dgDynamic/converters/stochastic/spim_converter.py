@@ -83,7 +83,7 @@ def generate_initial_values(symbols_dict, initial_conditions) -> str:
         return str_out.getvalue()
 
 
-def generate_automata_code(channel_dict, symbols_dict, species_count, internal_drains=None):
+def generate_automata_code(channel_dict, symbols_dict, internal_drains=None):
 
     def generate_channel(stream, channel):
 
