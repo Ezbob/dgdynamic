@@ -2,7 +2,7 @@ from dgDynamic.simulators.ode_simulator import ODESystem
 from dgDynamic.simulators.stochastic_pi_simulator import StochasticPiSystem
 from typing import Union
 from .structures import HyperGraph
-from dgDynamic.plugins.plugin_base import SimulationOutput
+from dgDynamic.output import SimulationOutput
 import enum
 
 

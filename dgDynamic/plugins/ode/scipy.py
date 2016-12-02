@@ -6,7 +6,7 @@ from dgDynamic.converters.ode.scipy_converter import get_scipy_lambda
 from dgDynamic.converters.convert_base import get_initial_values
 from dgDynamic.plugins.ode.ode_plugin import OdePlugin, parameter_validation
 from dgDynamic.utils.project_utils import LogMixin
-from dgDynamic.plugins.plugin_base import SimulationOutput
+from dgDynamic.output import SimulationOutput
 from dgDynamic.config.settings import config
 import dgDynamic.utils.messages as messages
 

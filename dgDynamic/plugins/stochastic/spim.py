@@ -7,7 +7,8 @@ import tempfile
 import math
 from dgDynamic.utils.exceptions import SimulationError
 from dgDynamic.config.settings import config
-from .stochastic_plugin import StochasticPlugin, SimulationOutput
+from .stochastic_plugin import StochasticPlugin
+from dgDynamic.output import SimulationOutput
 from ...converters.stochastic.spim_converter import generate_initial_values, generate_rates, generate_automata_code, \
     generate_preamble
 from dgDynamic.choices import SupportedStochasticPlugins

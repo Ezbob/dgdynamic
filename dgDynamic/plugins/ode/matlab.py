@@ -3,13 +3,13 @@
 ##
 import sys
 import matlab.engine
-from typing import Union, Tuple, List, Set, Dict
+from typing import Union
 from dgDynamic.utils.exceptions import SimulationError
 from dgDynamic.choices import MatlabOdeSolvers, SupportedOdePlugins
 from dgDynamic.converters.ode.matlab_converter import get_matlab_lambda
 from dgDynamic.converters.convert_base import get_initial_values
 from dgDynamic.plugins.ode.ode_plugin import OdePlugin, parameter_validation
-from dgDynamic.plugins.plugin_base import SimulationOutput
+from dgDynamic.output import SimulationOutput
 from dgDynamic.utils.project_utils import LogMixin
 import dgDynamic.utils.messages as messages
 

@@ -1,5 +1,6 @@
 import abc
-from ..plugin_base import PluginBase, SimulationOutput
+from ..plugin_base import PluginBase
+from dgDynamic.output import SimulationOutput
 
 
 class StochasticPlugin(PluginBase, abc.ABC):
