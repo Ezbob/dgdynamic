@@ -166,7 +166,7 @@ class SimulationOutput(LogMixin):
             yield self.independent[i], self.dependent[i]
 
     def __len__(self):
-        return len(self.independent)
+        return (len(self.independent) + len(self.dependent)) // 2
 
 
 class PluginBase(abc.ABC, LogMixin):

@@ -55,25 +55,34 @@ initial_conditions = {
     'Glycolaldehyde': 1,
 }
 
-sim_range = (0, 200)
+drain_parameters = {symbol: {'in': 0.0, 'out': 0.015} for symbol in ode.symbols}
+
+drain_parameters['Formaldehyde'] = {'in': 0.03, 'out': 0.015}
+
+sim_range = (0, 300)
 
 scipy = ode("scipy")
 
-scipy(sim_range, initial_conditions, parameters).plot(filename="scipy_plot.png",
-    figure_size=(40, 20), title="SciPy VODE Formose cycle solution simulation")
+scipy_sol = scipy(sim_range, initial_conditions, parameters).plot(filename="closed_scipy_plot.png",
+    figure_size=(40, 20), title="SciPy VODE Formose closed cycle solution simulation")
 
-sim_range = (200, 2000)
+scipy(sim_range, initial_conditions, parameters, drain_parameters).plot(
+    filename="open_scipy_plot.png",
+    figure_size=(40, 20), title="SciPy VODE Formose open cycle solution simulation"
+)
 
-for i in range(10):
+sim_range = (300, 2500)
+
+for i in range(5):
     stochastic("spim")(sim_range, initial_conditions, parameters, timeout=120).plot(
         filename="spim_plot{}.png".format(i), figure_size=(40, 20),
-        title="SPIM {}. Formose cycle solution simulation".format(i + 1))
+        title="SPIM {}. Formose closed cycle solution simulation".format(i + 1))
+
+for i in range(5):
+    stochastic("spim")(sim_range, initial_conditions, parameters, drain_parameters, timeout=120).plot(
+        filename="spim_plot{}.png".format(i), figure_size=(40, 20),
+        title="SPIM {}. Formose open cycle solution simulation".format(i + 1))
+
 
 show_simulation_plots()
-
-#def get_flow_solution_graph(solution):
-#    """Get a tuple of hyper vertices and hyper edges from a flow solution"""
-#    orign_graph = solution.dgFlow.dg
-#    return tuple( v for v in orign_graph.vertices if solution.eval(vertex(v.graph)) != 0.0),
-# tuple( e for e in orign_graph.edges if solution.eval(edge(e)) != 0.0)
 
