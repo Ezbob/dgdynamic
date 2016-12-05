@@ -49,15 +49,18 @@ def get_edge_rate_dict(deviation_graph: th.MødDeviationGraph,
                     for edge in hyper_edges:
                         yield from add_to_result(edge.id, rate['<=>'])
                 elif '->' in rate and '<-' in rate:
-                    if len(rate) != len(hyper_edges):
+                    if len(hyper_edges) != len(rate):
                         raise ValueError("Expected {} rates, got {} for parameter {}"
-                                         .format(len(edges_representation), len(rate), edges_representation))
+                                         .format(len(hyper_edges), len(rate), edges_representation))
 
                     for index, edge in enumerate(hyper_edges):
                         if index == 0:
                             yield from add_to_result(edge.id, rate['->'])
                         elif index == 1:
                             yield from add_to_result(edge.id, rate['<-'])
+                elif '->' in rate and len(hyper_edges) == 1:
+                    for edge in hyper_edges:
+                        yield from add_to_result(edge.id, rate['->'])
                 else:
                     raise InitialValueError("Not enough initial conditions given for parameter: {}"
                                             .format(edges_representation))
