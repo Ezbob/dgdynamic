@@ -5,7 +5,7 @@ Here we numerically solve for the first-order autocatalytic cycles as described 
 import mod
 import numpy
 
-from dgDynamic.mod_dynamics import dgDynamicSim
+from dgDynamic.mod_dynamics import dgDynamicSim, HyperGraph, show_simulation_plots
 from dgDynamic.choices import ScipyOdeSolvers
 
 root_symbol = 'A'
@@ -62,16 +62,17 @@ for reaction in get_reactions():
 
 print("K = {}".format(theta * (k_s / k_d)))
 
-dg = mod.dgAbstract(reactions)
+dg = HyperGraph.from_abstract(reactions)
 
 ode = dgDynamicSim(dg).unchanging_species(*unchanging_species)
 
 solver = ode("scipy")
 
-solver.integration_range = integration_range
+solver.simulation_range = integration_range
 solver.parameters = parameters
 solver.initial_conditions = initial_conditions
 solver.ode_method = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.1
 
 solver.solve().save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))
+show_simulation_plots()
