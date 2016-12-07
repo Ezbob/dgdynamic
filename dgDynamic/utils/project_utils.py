@@ -7,6 +7,13 @@ from typing import *
 from .logger import logging_handler
 
 
+def pop_or_default(kwargs, key, default=None):
+    try:
+        return kwargs.pop(key)
+    except KeyError:
+        return default
+
+
 def log_it(function):
     """
     Use this function as decorator, to enable logging for a function
