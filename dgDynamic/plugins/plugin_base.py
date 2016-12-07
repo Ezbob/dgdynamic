@@ -7,7 +7,7 @@ import time
 import os.path
 import matplotlib.pyplot as plt
 from dgDynamic.config.settings import config
-from dgDynamic.utils.plotter import plot
+from dgDynamic.utils.plotter import matplotlib_plot
 
 
 class PluginBase(abc.ABC, LogMixin):

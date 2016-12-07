@@ -2,13 +2,12 @@ import matplotlib.pyplot as pyplt
 import math
 
 
-def plot(input_data):
+def matplotlib_plot(input_data):
     """
     Tries to plot the data using the MatPlotLib
     :return: self (chaining enabled)
     """
     pyplt.figure()
-
     x_data, y_data = input_data['independent'], input_data['dependent']
 
     def get_input(field):
@@ -24,25 +23,31 @@ def plot(input_data):
 
     lines = plt.plot(x_data, y_data)
 
-    pyplt.tight_layout()
+    use_tight_layout = get_input('has_tight_layout')
+    if use_tight_layout:
+        pyplt.tight_layout()
 
     axis_limits = get_input('axis_limits')
-    if axis_limits is not None:
+    if axis_limits:
         assert isinstance(axis_limits, (tuple, list))
         assert len(axis_limits) == 2
         plt.set_ylim(axis_limits[1])
         plt.set_xlim(axis_limits[0])
 
+    has_grid = get_input('show_grid')
+    if has_grid:
+        pyplt.grid()
+
     axis_labels = get_input('axis_labels')
-    if axis_labels is not None:
+    if axis_labels:
         assert isinstance(axis_labels, (tuple, list))
         assert len(axis_labels) >= 2
         assert isinstance(axis_labels[0], str) and isinstance(axis_labels[1], str)
-        plt.xlabel(axis_labels[0])
-        plt.ylabel(axis_labels[1])
+        pyplt.xlabel(axis_labels[0])
+        pyplt.ylabel(axis_labels[1])
 
     symbols = get_input('symbols')
-    if symbols is not None:
+    if symbols:
         labels = get_input('labels')
         if labels is not None:
             assert len(input_data['labels']) >= len(lines)
@@ -69,7 +74,7 @@ def plot(input_data):
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=math.ceil(len(labels) / 32.))
 
     figure_size = get_input('figure_size')
-    if figure_size is not None:
+    if figure_size:
         assert len(figure_size) >= 2
 
         def cm2inch(number): return number / 2.54
@@ -78,10 +83,10 @@ def plot(input_data):
         fig.set_size_inches(cm2inch(figure_size[0]), cm2inch(figure_size[1]), forward=True)
 
     title = get_input('title')
-    if title is not None:
+    if title:
         pyplt.title(title)
 
     filename = get_input('filename')
-    if filename is not None and type(filename) is str:
+    if filename and isinstance(filename, str):
         pyplt.savefig(filename, bbox_inches='tight')
 

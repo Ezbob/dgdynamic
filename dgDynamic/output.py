@@ -1,6 +1,6 @@
 from dgDynamic.utils.project_utils import LogMixin, make_directory
 from dgDynamic.config.settings import config
-from dgDynamic.utils.plotter import plot
+from dgDynamic.utils.plotter import matplotlib_plot
 import threading
 import time
 import csv
@@ -53,7 +53,7 @@ class SimulationOutput(LogMixin):
                                                                          self.dependent)
 
     def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None,
-             axis_limits=None, title=None):
+             axis_limits=None, title=None, show_grid=True, has_tight_layout=False):
         if title is None:
             title = self.solver_used.name.title()
             if self.solver_method_used is not None:
@@ -70,8 +70,10 @@ class SimulationOutput(LogMixin):
             'figure_size': figure_size,
             'axis_labels': axis_labels,
             'axis_limits': axis_limits,
+            'show_grid': show_grid,
+            'has_tight_layout': has_tight_layout,
         }
-        plot(input_values)
+        matplotlib_plot(input_values)
         return self
 
     @staticmethod
