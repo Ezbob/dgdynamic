@@ -27,6 +27,14 @@ class SimulationOutput(LogMixin):
         else:
             self.symbols = None
 
+    def column(self, index):
+        for i in range(len(self.dependent)):
+            yield self.dependent[i][index]
+
+    def column_pair(self, index):
+        for i, x in enumerate(self.independent):
+            yield x, self.dependent[i][index]
+
     @property
     def has_errors(self):
         return len(self.errors) > 0
