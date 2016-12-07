@@ -11,9 +11,10 @@ import os.path
 class SimulationOutput(LogMixin):
 
     def __init__(self, solved_by, dependent=(), independent=(), ignore=(),
-                 solver_method=None, abstract_system=None, errors=()):
+                 solver_method=None, abstract_system=None, errors=(), data_labels=None):
         self.dependent = dependent
         self.independent = independent
+        self.labels = data_labels
         self.errors = errors
         self.solver_used = solved_by
         self.solver_method_used = solver_method
