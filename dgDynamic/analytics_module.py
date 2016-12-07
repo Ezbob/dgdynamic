@@ -54,7 +54,7 @@ class DynamicAnalytics:
     def nonzero_maximum(self, data, frequencies=None):
         maxima, maxima_frequencies = self.nonzero_maxima(data, frequencies)
         arg_maximum = np.argmax(maxima)
-        return maxima_frequencies[arg_maximum], maxima[arg_maximum]
+        return maxima[arg_maximum], maxima_frequencies[arg_maximum]
 
     @property
     def frequencies(self):
