@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.signal as signal
 from dgDynamic.output import SimulationOutput
 from dgDynamic.utils.project_utils import pop_or_default
 
@@ -28,29 +29,39 @@ class DynamicAnalytics:
             else:
                 yield np.fft.rfft(numpy_array, n=bins, *args, **kwargs)
 
-    def generate_amplitude_spectrum(self, with_freqs=False, *args, **kwargs):
+    def generate_amplitude_spectrum(self, with_frequencies=False, *args, **kwargs):
         for fourier_trans in self.generate_fourier_transformations(*args, **kwargs):
             amplitudes = self._scale_fourier(np.absolute(fourier_trans))
-            if with_freqs:
+            if with_frequencies:
                 yield amplitudes, np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
             else:
                 yield amplitudes
 
-    def generate_power_spectrum(self, with_freqs=False, *args, **kwargs):
+    def generate_power_spectrum(self, with_frequencies=False, *args, **kwargs):
         for trans in self.generate_fourier_transformations(*args, **kwargs):
             power_spectrum = self._scale_fourier(np.absolute(self._scale_fourier(trans)) ** 2)
-            if with_freqs:
-                yield power_spectrum, np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
+            if with_frequencies:
+                yield power_spectrum, self.frequencies
             else:
                 yield power_spectrum
 
-    def get_power_spectrum(self, *args, **kwargs):
-        return tuple(self.generate_power_spectrum(*args, **kwargs))
+    def nonzero_maxima(self, data, frequencies=None):
+        arg_maxima = tuple(m for m in signal.argrelmax(data=data, mode="wrap")[0] if m > 0)
+        maxima = np.fromiter((data[i] for i in arg_maxima), dtype=float)
+        frequencies = self.frequencies if frequencies is None else frequencies
+        return maxima, np.fromiter((frequencies[i] for i in arg_maxima), dtype=float)
 
-    def get_amplitude_spectrum(self, with_freqs=False, *args, **kwargs):
-        if with_freqs:
-            instance = tuple(self.generate_amplitude_spectrum(with_freqs=with_freqs, *args, **kwargs))
-            return tuple(amp_set[0] for amp_set in instance), tuple(amp_set[1] for amp_set in instance)
-        else:
-            return tuple(self.generate_amplitude_spectrum(with_freqs=with_freqs, *args, **kwargs))
+    def nonzero_maximum(self, data, frequencies=None):
+        maxima, maxima_frequencies = self.nonzero_maxima(data, frequencies)
+        arg_maximum = np.argmax(maxima)
+        return maxima_frequencies[arg_maximum], maxima[arg_maximum]
 
+    @property
+    def frequencies(self):
+        return np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
+
+    def power_spectrum(self, index):
+        return tuple(self.generate_power_spectrum())[index]
+
+    def amplitude_spectrum(self, index):
+        return tuple(self.generate_amplitude_spectrum())[index]
