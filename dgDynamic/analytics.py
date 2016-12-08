@@ -64,7 +64,7 @@ class DynamicAnalysisDevice:
                 yield power_spectrum
 
     def nonzero_maxima(self, data, frequencies=None):
-        arg_maxima = tuple(m for m in signal.argrelmax(data=data, mode="wrap")[0] if m > 0)
+        arg_maxima = np.trim_zeros(signal.argrelmax(data=data, mode="wrap")[0])
         maxima = np.fromiter((data[i] for i in arg_maxima), dtype=float)
         freqs = self.frequencies if frequencies is None else frequencies
         return maxima, np.fromiter((freqs[i] for i in arg_maxima), dtype=float)
