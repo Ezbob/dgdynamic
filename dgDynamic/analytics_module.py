@@ -76,8 +76,8 @@ class DynamicAnalytics:
     def power_spectra(self):
         return tuple(self.generate_power_spectrum())
 
-    def plot_spectra(self, spectra_data, frequencies, maxima_data=None, maxima_frequencies=None,
-                     maximum_data=None, maximum_frequency=None, is_power_spectra=False):
+    def plot_spectra(self, spectra_data, frequencies, include_maxima=False, include_maximum=False,
+                     is_power_spectra=False):
         plt.figure()
         for data in spectra_data:
             if is_power_spectra:
@@ -87,8 +87,10 @@ class DynamicAnalytics:
             plt.xlabel("frequencies")
             plt.plot(frequencies, data, marker='o')
 
-            if maxima_data and maxima_frequencies:
-                plt.plot(maxima_frequencies, maxima_data, 'ro', color='white')
-            if maximum_data and maximum_frequency:
-                plt.plot(maximum_frequency, maximum_data, 'ro', marker='+', color='black')
+            if include_maxima:
+                maxima_values, maxima_frequency = self.nonzero_maxima(data, frequencies)
+                plt.plot(maxima_frequency, maxima_values, 'ro', color='white')
+            if include_maximum:
+                maximum_value, maximum_frequency = self.nonzero_maximum(data, frequencies)
+                plt.plot(maximum_frequency, maximum_value, 'ro', marker='+', color='black')
 
