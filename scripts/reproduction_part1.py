@@ -5,7 +5,7 @@ Here we numerically solve for the first-order autocatalytic cycles as described 
 import mod
 import numpy
 
-from dgDynamic.mod_dynamics import dgDynamicSim, HyperGraph, show_simulation_plots
+from dgDynamic.mod_dynamics import dgDynamicSim, HyperGraph, show_plots
 from dgDynamic.choices import ScipyOdeSolvers
 
 root_symbol = 'A'
@@ -75,4 +75,4 @@ solver.ode_method = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.1
 
 solver.solve().save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))
-show_simulation_plots()
+show_plots()

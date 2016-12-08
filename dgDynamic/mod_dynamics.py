@@ -24,5 +24,5 @@ def dgDynamicSim(derivation_graph: mod.DG, simulator_choice: tp.Union[str, enum.
         return None
 
 
-def show_simulation_plots(*args, **kwargs):
+def show_plots(*args, **kwargs):
     SimulationOutput.show(*args, **kwargs)

@@ -7,7 +7,7 @@ sys.path.append(dynamic_module_path)
 mod_path = os.path.abspath("/usr/local/lib/")
 sys.path.append(mod_path)
 
-from dgDynamic import dgDynamicSim, show_simulation_plots
+from dgDynamic import dgDynamicSim, show_plots
 from dgDynamic.structures import HyperGraph
 import matplotlib.pyplot as plt
 import numpy as np

@@ -5,7 +5,7 @@ This model, models the relationship between the
 The recovered becomes immune to the infected once they recover,
 and the model starts out with some infected.
 """
-from dgDynamic import dgDynamicSim, show_simulation_plots, HyperGraph
+from dgDynamic import dgDynamicSim, show_plots, HyperGraph
 from dgDynamic.choices import MatlabOdeSolvers
 import numpy
 
@@ -61,4 +61,4 @@ with ode.get_plugin("Matlab") as matlab:
     for supported in MatlabOdeSolvers:
         matlab(integration_range, initial_conditions, parameters, ode_method=supported).plot(figure_size=figure_size)
 
-show_simulation_plots()
+show_plots()

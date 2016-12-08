@@ -1,7 +1,7 @@
 import mod
 
 from dgDynamic.choices import SupportedOdePlugins, MatlabOdeSolvers, ScipyOdeSolvers, SupportedStochasticPlugins
-from dgDynamic.mod_dynamics import dgDynamicSim, show_simulation_plots, HyperGraph
+from dgDynamic.mod_dynamics import dgDynamicSim, show_plots, HyperGraph
 
 # Enable logging when uncommented
 # set_logging(new_session=True)
@@ -119,7 +119,7 @@ output.plot("plot.svg", figure_size=(60, 30))
 #spim(simulation_range=(40, 200), parameters=parameters, initial_conditions=spim_initial_conditions)\
 #    .plot("plot2.svg", figure_size=(40, 20))
 
-show_simulation_plots()
+show_plots()
 
 # The following solver uses the matlab engine for python to compute the solutions to the ODEs
 # matlab_ode = ode.get_ode_plugin(SupportedSolvers.Matlab, initial_conditions=initial_conditions,

@@ -4,7 +4,7 @@ A Lotka model with (F)oxes and (R)abbits (prey-predator model).
     Foxes hunt and eat rabbits and multiples
     Foxes also dies of old age
 """
-from dgDynamic import dgDynamicSim, show_simulation_plots, HyperGraph
+from dgDynamic import dgDynamicSim, show_plots, HyperGraph
 from dgDynamic.choices import SupportedOdePlugins
 
 rabbit_multiples = "R -> 2 R"
@@ -43,4 +43,4 @@ with stochastic('spim') as spim:
         spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
              rate_parameters=parameters, timeout=60).plot(figure_size=figure_size)
 
-show_simulation_plots()
+show_plots()
