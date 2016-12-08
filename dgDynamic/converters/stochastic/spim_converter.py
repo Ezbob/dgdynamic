@@ -12,7 +12,7 @@ def generate_preamble(sample_range, draw_automata=False, symbols_dict=None, spec
                                                                      sample_range[1]))
             elif len(sample_range) == 1:
                 str_out.write("directive sample {:.{}f}\n".format(float(sample_range[0]), float_precision))
-        elif issubclass(sample_range, float):
+        elif isinstance(sample_range, float):
             str_out.write("directive sample {:.{}f}\n".format(sample_range, float_precision))
 
         if symbols_dict is not None:

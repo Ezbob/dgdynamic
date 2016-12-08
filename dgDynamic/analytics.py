@@ -98,6 +98,7 @@ class DynamicAnalysisDevice:
     def plot_spectra(self, spectra_data, frequencies, include_maxima=False, include_maximum=False,
                      is_power_spectra=False):
         plt.figure()
+        plt.grid()
         for data in spectra_data:
             if is_power_spectra:
                 plt.ylabel("power")
