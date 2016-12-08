@@ -2,10 +2,9 @@ import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 from dgDynamic.output import SimulationOutput
-from dgDynamic.utils.project_utils import pop_or_default
 
 
-class DynamicAnalytics:
+class DynamicAnalysisDevice:
     def __init__(self, simulation_output: SimulationOutput, sample_spacing=None, plugin_solver=None,
                  sample_rate=None, windowing_function=None):
         self.output = simulation_output
@@ -18,8 +17,8 @@ class DynamicAnalytics:
         self.sample_spacing = 1 / self.sample_rate if sample_spacing is None else sample_spacing
 
     @staticmethod
-    def from_calculated_solution(plugin, with_filtered_output=True, *args, **kwargs):
-        if with_filtered_output:
+    def from_calculated_solution(plugin, using_filtered_output=True, *args, **kwargs):
+        if using_filtered_output:
             output = plugin(*args, **kwargs).filtered_output
         else:
             output = plugin(*args, **kwargs)
@@ -30,8 +29,8 @@ class DynamicAnalytics:
             sample_spacing = plugin.delta_t
             sample_rate = plugin.simulation_range[1] * sample_spacing
 
-        return output, DynamicAnalytics(output, plugin_solver=plugin, sample_rate=sample_rate,
-                                        sample_spacing=sample_spacing)
+        return output, DynamicAnalysisDevice(output, plugin_solver=plugin, sample_rate=sample_rate,
+                                             sample_spacing=sample_spacing)
 
     def _scale_fourier(self, fourier):
         # http://stackoverflow.com/questions/15147287/numpy-wrong-amplitude-of-fftd-array
@@ -82,17 +81,19 @@ class DynamicAnalytics:
     def frequencies(self):
         return np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
 
+    @property
+    def amplitude_spectra(self):
+        return tuple(self.generate_amplitude_spectrum())
+
+    @property
+    def power_spectra(self):
+        return tuple(self.generate_power_spectrum())
+
     def power_spectrum(self, index):
         return tuple(self.generate_power_spectrum())[index]
 
     def amplitude_spectrum(self, index):
         return tuple(self.generate_amplitude_spectrum())[index]
-
-    def amplitude_spectra(self):
-        return tuple(self.generate_amplitude_spectrum())
-
-    def power_spectra(self):
-        return tuple(self.generate_power_spectrum())
 
     def plot_spectra(self, spectra_data, frequencies, include_maxima=False, include_maximum=False,
                      is_power_spectra=False):
