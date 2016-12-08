@@ -10,8 +10,8 @@ import os.path
 
 class SimulationOutput(LogMixin):
 
-    def __init__(self, solved_by, dependent=(), independent=(), ignore=(),
-                 solver_method=None, abstract_system=None, errors=(), data_labels=None):
+    def __init__(self, solved_by, dependent=(), independent=(), ignore=(), solver_method=None, symbols=None,
+                 errors=(), data_labels=None):
         self.dependent = dependent
         self.independent = independent
         self.labels = data_labels
@@ -22,11 +22,7 @@ class SimulationOutput(LogMixin):
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])
         self._file_writer_thread = None
-
-        if abstract_system is not None:
-            self.symbols = abstract_system.symbols
-        else:
-            self.symbols = None
+        self.symbols = symbols
 
     def column(self, index):
         for i in range(len(self.dependent)):
@@ -53,7 +49,7 @@ class SimulationOutput(LogMixin):
                                                                          self.dependent)
 
     def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None,
-             axis_limits=None, title=None, show_grid=True, has_tight_layout=False):
+             axis_limits=None, title=None, show_grid=True, has_tight_layout=True):
         if title is None:
             title = self.solver_used.name.title()
             if self.solver_method_used is not None:
@@ -93,6 +89,17 @@ class SimulationOutput(LogMixin):
                 if index not in self._ignored:
                     filtered_row += (item,)
             yield filtered_row
+
+    @property
+    def filtered_output(self):
+        return SimulationOutput(self.solver_used,
+                                dependent=tuple(self._filter_out_ignores()),
+                                independent=self.independent,
+                                ignore=(),
+                                solver_method=self.solver_method_used,
+                                symbols=self.symbols,
+                                errors=self.errors,
+                                data_labels=self.labels)
 
     def save(self, filename=None, float_precision=15, prefix=None, unfiltered=False, stream=None):
         """

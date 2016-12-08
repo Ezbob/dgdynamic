@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.signal as signal
+import matplotlib.pyplot as plt
 from dgDynamic.output import SimulationOutput
 from dgDynamic.utils.project_utils import pop_or_default
 
@@ -48,13 +49,16 @@ class DynamicAnalytics:
     def nonzero_maxima(self, data, frequencies=None):
         arg_maxima = tuple(m for m in signal.argrelmax(data=data, mode="wrap")[0] if m > 0)
         maxima = np.fromiter((data[i] for i in arg_maxima), dtype=float)
-        frequencies = self.frequencies if frequencies is None else frequencies
-        return maxima, np.fromiter((frequencies[i] for i in arg_maxima), dtype=float)
+        freqs = self.frequencies if frequencies is None else frequencies
+        return maxima, np.fromiter((freqs[i] for i in arg_maxima), dtype=float)
 
     def nonzero_maximum(self, data, frequencies=None):
-        maxima, maxima_frequencies = self.nonzero_maxima(data, frequencies)
-        arg_maximum = np.argmax(maxima)
-        return maxima[arg_maximum], maxima_frequencies[arg_maximum]
+        maxima, maxima_freqs = self.nonzero_maxima(data, frequencies)
+        try:
+            arg_maximum = np.argmax(maxima)
+            return maxima[arg_maximum], maxima_freqs[arg_maximum]
+        except ValueError:
+            return np.nan, np.nan
 
     @property
     def frequencies(self):
@@ -65,3 +69,26 @@ class DynamicAnalytics:
 
     def amplitude_spectrum(self, index):
         return tuple(self.generate_amplitude_spectrum())[index]
+
+    def amplitude_spectra(self):
+        return tuple(self.generate_amplitude_spectrum())
+
+    def power_spectra(self):
+        return tuple(self.generate_power_spectrum())
+
+    def plot_spectra(self, spectra_data, frequencies, maxima_data=None, maxima_frequencies=None,
+                     maximum_data=None, maximum_frequency=None, is_power_spectra=False):
+        plt.figure()
+        for data in spectra_data:
+            if is_power_spectra:
+                plt.ylabel("power")
+            else:
+                plt.ylabel("amplitude")
+            plt.xlabel("frequencies")
+            plt.plot(frequencies, data, marker='o')
+
+            if maxima_data and maxima_frequencies:
+                plt.plot(maxima_frequencies, maxima_data, 'ro', color='white')
+            if maximum_data and maximum_frequency:
+                plt.plot(maximum_frequency, maximum_data, 'ro', marker='+', color='black')
+

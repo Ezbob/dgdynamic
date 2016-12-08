@@ -91,7 +91,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, self.simulation_range
         messages.print_solver_done(name, method_name=self.ode_method.name)
         return SimulationOutput(solved_by=SupportedOdePlugins.MATLAB, dependent=y_result, independent=t_result,
                                 ignore=self._simulator.ignored, solver_method=self.ode_method,
-                                abstract_system=self._simulator)
+                                symbols=self._simulator.symbols)
 
     def close_engine(self):
         self.logger.debug("Closing MATLAB engine...")

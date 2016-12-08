@@ -80,7 +80,7 @@ class ScipyOde(OdePlugin, LogMixin):
             self.logger.debug("Solving finished using fixed step integration")
             messages.print_solver_done(name, method_name=self.ode_method.name)
             return SimulationOutput(solved_by=SupportedOdePlugins.SciPy, dependent=y_solution, independent=t_solution,
-                                    abstract_system=self._simulator, ignore=self._simulator.ignored,
+                                    symbols=self._simulator.symbols, ignore=self._simulator.ignored,
                                     solver_method=self.ode_method)
 
         def variable_step_integration():
@@ -104,7 +104,7 @@ class ScipyOde(OdePlugin, LogMixin):
             self.logger.debug("Solving finished using variable step integration")
             messages.print_solver_done(name, method_name=self.ode_method.name)
             return SimulationOutput(solved_by=SupportedOdePlugins.SciPy, dependent=y_solution, independent=t_solution,
-                                    abstract_system=self._simulator, ignore=self._simulator.ignored,
+                                    symbols=self._simulator.symbols, ignore=self._simulator.ignored,
                                     solver_method=self.ode_method)
 
         if self.ode_method is ScipyOdeSolvers.DOP853 or self.ode_method is ScipyOdeSolvers.DOPRI5:

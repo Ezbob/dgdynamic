@@ -108,7 +108,7 @@ class SpimStochastic(StochasticPlugin):
                 errors.append(SimulationError("Simulation time out"))
                 messages.print_solver_done(name, was_failure=True)
                 independent, dependent = collect_data(errors)
-                return SimulationOutput(name, abstract_system=self._simulator,
+                return SimulationOutput(name, symbols=self._simulator.symbols,
                                         independent=independent, dependent=dependent,
                                         errors=errors)
 
@@ -117,15 +117,15 @@ class SpimStochastic(StochasticPlugin):
                     self.logger.error("Missing SPiM output")
                 errors.append(SimulationError("Missing SPiM output"))
                 messages.print_solver_done(name, was_failure=True)
-                return SimulationOutput(name, abstract_system=self._simulator, errors=errors)
+                return SimulationOutput(name, symbols=self._simulator.symbols, errors=errors)
 
             independent, dependent = collect_data(errors)
             if errors:
                 messages.print_solver_done(name, was_failure=True)
-                return SimulationOutput(name, abstract_system=self._simulator,
+                return SimulationOutput(name, symbols=self._simulator.symbols,
                                         independent=independent, dependent=dependent,
                                         errors=errors)
             else:
                 messages.print_solver_done(name, was_failure=False)
-                return SimulationOutput(name, abstract_system=self._simulator,
+                return SimulationOutput(name, symbols=self._simulator.symbols,
                                         independent=independent, dependent=dependent)
