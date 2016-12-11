@@ -20,12 +20,7 @@ name = SupportedStochasticPlugins.SPiM
 
 class SpimStochastic(StochasticPlugin):
 
-    def __init__(self, simulator, sample_range=None, rate_parameters=None, initial_conditions=None,
-                 drain_parameters=None):
-        sample_range = sample_range if sample_range is None else (float(sample_range[0]), sample_range[1])
-
-        super().__init__(sample_range=sample_range, rate_parameters=rate_parameters,
-                         initial_conditions=initial_conditions, drain_parameters=drain_parameters)
+    def __init__(self, simulator):
         self._spim_path = config['Simulation']['SPIM_PATH']
         if not self._spim_path:
             self._spim_path = os.path.join(os.path.dirname(__file__), "spim.ocaml")
@@ -33,12 +28,13 @@ class SpimStochastic(StochasticPlugin):
         self._simulator = simulator
         self._ocamlrun_path = os.path.abspath(config['Simulation']['OCAML_RUN'])
 
-    def generate_code_file(self, writable_stream):
+    def generate_code_file(self, writable_stream, simulation_range, initial_conditions, rate_parameters,
+                           drain_parameters=None):
         fixed_point_precision = abs(config.getint('Simulation', 'FIXED_POINT_PRECISION', fallback=18))
         symbol_translate_dict = OrderedDict((sym, "SYM{}".format(index))
                                             for index, sym in enumerate(self._simulator.symbols))
         channels = self._simulator.generate_channels()
-        writable_stream.write(converters.generate_preamble(sample_range=self.simulation_range,
+        writable_stream.write(converters.generate_preamble(sample_range=simulation_range,
                                                            symbols_dict=symbol_translate_dict,
                                                            species_count=self._simulator.species_count,
                                                            ignored=self._simulator.ignored,
@@ -46,8 +42,8 @@ class SpimStochastic(StochasticPlugin):
         writable_stream.write('\n')
         writable_stream.write(converters.generate_rates(derivation_graph=self._simulator.graph,
                                                         channel_dict=channels,
-                                                        parameters=self.rate_parameters,
-                                                        drain_parameters=self.drain_parameters,
+                                                        parameters=rate_parameters,
+                                                        drain_parameters=drain_parameters,
                                                         internal_drains=self._simulator.internal_drain_dict,
                                                         float_precision=fixed_point_precision))
         writable_stream.write('\n')
@@ -56,11 +52,12 @@ class SpimStochastic(StochasticPlugin):
                                                                 internal_drains=self._simulator.internal_drain_dict,))
         writable_stream.write('\n\n')
         writable_stream.write(converters.generate_initial_values(symbols_dict=symbol_translate_dict,
-                                                                 initial_conditions=self.initial_conditions, ))
+                                                                 initial_conditions=initial_conditions, ))
 
-    def simulate(self, timeout=None, rel_tol=1e-09, abs_tol=0.0) -> SimulationOutput:
+    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None,
+                 timeout=None, rel_tol=1e-09, abs_tol=0.0) -> SimulationOutput:
 
-        if self.rate_parameters is None or self.initial_conditions is None:
+        if rate_parameters is None or initial_conditions is None:
             raise ValueError("Missing parameters or initial values")
 
         def collect_data(errors=None):
@@ -88,7 +85,8 @@ class SpimStochastic(StochasticPlugin):
             file_path_code = os.path.join(tmpdir, "spim.spi")
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             with open(file_path_code, mode="w") as script:
-                self.generate_code_file(script)
+                self.generate_code_file(script, simulation_range, initial_conditions,
+                                        rate_parameters, drain_parameters)
 
             if config.getboolean('Logging', 'ENABLE_LOGGING', fallback=False):
                 with open(file_path_code) as debug_file:

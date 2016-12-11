@@ -30,8 +30,8 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine.clear(nargout=0)
         self.engine.exit()
 
-    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, **kwargs) -> \
-            SimulationOutput:
+    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs) \
+            -> SimulationOutput:
         ode_function = get_matlab_lambda(simulator=self._simulator, parameter_substitutions=rate_parameters,
                                          drain_substitutions=drain_parameters)
 

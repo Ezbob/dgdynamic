@@ -33,7 +33,7 @@ class OdePlugin(PluginBase, ABC):
     interface for all the ODE plugins.
     """
 
-    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters):
+    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters, *args, **kwargs):
         pass
 
     def __init__(self, simulator, delta_t: tp.Optional[float]=0.1, initial_t: th.Real=0,

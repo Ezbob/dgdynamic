@@ -1,5 +1,5 @@
 import sys
-from scipy.integrate import ode
+import scipy.integrate
 from dgDynamic.utils.exceptions import SimulationError
 from dgDynamic.choices import ScipyOdeSolvers, SupportedOdePlugins
 from dgDynamic.converters.ode.scipy_converter import get_scipy_lambda
@@ -20,8 +20,8 @@ class ScipyOde(OdePlugin, LogMixin):
     def __init__(self, simulator, solver_method=ScipyOdeSolvers.VODE, delta_t=0.1, initial_t=0):
         super().__init__(simulator, delta_t=delta_t, initial_t=initial_t, ode_method=solver_method)
 
-    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, **kwargs) -> \
-            SimulationOutput:
+    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs) \
+            -> SimulationOutput:
         ode_function = get_scipy_lambda(self._simulator, rate_parameters, drain_parameters)
 
         if not ode_function:
@@ -49,7 +49,7 @@ class ScipyOde(OdePlugin, LogMixin):
 
         y_solution = list()
         t_solution = list()
-        solver = ode(ode_function).set_integrator(self.ode_method.value, **kwargs)
+        solver = scipy.integrate.ode(ode_function).set_integrator(self.ode_method.value, **kwargs)
         solver.set_initial_value(y=initial_y, t=self.initial_t)
         solver.t = simulation_range[0]
 
