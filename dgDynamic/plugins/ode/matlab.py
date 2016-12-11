@@ -66,14 +66,12 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, simulation_range, ini
         # http://stackoverflow.com/questions/30013853/convert-matlab-double-array-to-python-array
         def convert_matrix(double_matrix):
             row_width = double_matrix.size[0]
-            converts = []
             for x in range(row_width):
-                converts.append(double_matrix._data[x::row_width].tolist())
-            return converts
+                yield double_matrix._data[x::row_width].tolist()
 
         # flat that list
-        t_result = [a for i in t_result for a in i]
-        y_result = convert_matrix(y_result)
+        t_result = tuple(a for i in t_result for a in i)
+        y_result = tuple(convert_matrix(y_result))
 
         self.logger.info("Return output object")
         messages.print_solver_done(name, method_name=self.ode_method.name)
