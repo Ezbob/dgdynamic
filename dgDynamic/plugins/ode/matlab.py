@@ -12,7 +12,7 @@ from dgDynamic.output import SimulationOutput
 from dgDynamic.utils.project_utils import LogMixin
 import dgDynamic.utils.messages as messages
 
-name = SupportedOdePlugins.MATLAB.name
+name = SupportedOdePlugins.MATLAB
 
 
 class MatlabOde(OdePlugin, LogMixin):

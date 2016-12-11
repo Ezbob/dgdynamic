@@ -6,6 +6,7 @@ import time
 import csv
 import matplotlib.pyplot as plt
 import os.path
+import enum
 
 
 class SimulationOutput(LogMixin):
@@ -51,8 +52,11 @@ class SimulationOutput(LogMixin):
 
     def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None,
              axis_limits=None, title=None, show_grid=True, has_tight_layout=True):
-        if title is None:
-            title = self.solver_used.name.title()
+        if title is None and isinstance(self.solver_used, (str, enum.Enum)):
+            if isinstance(self.solver_used, enum.Enum):
+                title = self.solver_used.name.title()
+            else:
+                title = self.solver_used
             if self.solver_method_used is not None:
                 title += (" - " + self.solver_method_used.name)
 

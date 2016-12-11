@@ -17,11 +17,14 @@ class DynamicAnalysisDevice:
         self.sample_spacing = 1 / self.sample_rate if sample_spacing is None else sample_spacing
 
     @staticmethod
-    def from_calculated_solution(plugin, using_filtered_output=True, *args, **kwargs):
+    def from_simulation(plugin, simulation_range, initial_conditions, rate_parameters,
+                        drain_parameters=None, using_filtered_output=True, *args, **kwargs):
         if using_filtered_output:
-            output = plugin(*args, **kwargs).filtered_output
+            output = plugin(simulation_range, initial_conditions, rate_parameters,
+                            drain_parameters, *args, **kwargs).filtered_output
         else:
-            output = plugin(*args, **kwargs)
+            output = plugin(simulation_range, initial_conditions, rate_parameters,
+                            drain_parameters, *args, **kwargs)
 
         sample_spacing = None
         sample_rate = None
