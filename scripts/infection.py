@@ -51,14 +51,12 @@ with stochastic("spim") as spim:
 with ode.get_plugin("scipy") as scipy:
     # Let's generate some sample delta_ts
     for dt in numpy.linspace(0.1, 1, num=5):
-        scipy.simulation_range = integration_range
-        scipy.initial_conditions = initial_conditions
-        scipy.parameters = parameters
         scipy.delta_t = dt
-        scipy.simulate().plot(figure_size=figure_size)
+        scipy.simulate(integration_range, initial_conditions, parameters,).plot(figure_size=figure_size)
 
 with ode.get_plugin("Matlab") as matlab:
     for supported in MatlabOdeSolvers:
-        matlab(integration_range, initial_conditions, parameters, ode_method=supported).plot(figure_size=figure_size)
+        matlab.ode_method = supported
+        matlab(integration_range, initial_conditions, parameters,).plot(figure_size=figure_size)
 
 show_plots()
