@@ -74,5 +74,5 @@ solver.initial_conditions = initial_conditions
 solver.ode_method = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.1
 
-solver.solve().save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))
+solver.simulate().save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))
 show_plots()

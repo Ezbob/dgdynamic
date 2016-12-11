@@ -58,7 +58,7 @@ class SpimStochastic(StochasticPlugin):
         writable_stream.write(converters.generate_initial_values(symbols_dict=symbol_translate_dict,
                                                                  initial_conditions=self.initial_conditions, ))
 
-    def solve(self, timeout=None, rel_tol=1e-09, abs_tol=0.0) -> SimulationOutput:
+    def simulate(self, timeout=None, rel_tol=1e-09, abs_tol=0.0) -> SimulationOutput:
 
         if self.rate_parameters is None or self.initial_conditions is None:
             raise ValueError("Missing parameters or initial values")

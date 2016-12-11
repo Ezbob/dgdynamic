@@ -109,7 +109,7 @@ scipy_ode.parameters = parameters
 scipy_ode.drain_parameters = drain_par
 
 # Solve the ODE system to get the output object
-output = scipy_ode.solve()
+output = scipy_ode.simulate()
 
 # Save the data to a file in the data folder using the output object
 output.save(name)

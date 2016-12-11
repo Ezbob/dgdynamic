@@ -55,7 +55,7 @@ with ode.get_plugin("scipy") as scipy:
         scipy.initial_conditions = initial_conditions
         scipy.parameters = parameters
         scipy.delta_t = dt
-        scipy.solve().plot(figure_size=figure_size)
+        scipy.simulate().plot(figure_size=figure_size)
 
 with ode.get_plugin("Matlab") as matlab:
     for supported in MatlabOdeSolvers:

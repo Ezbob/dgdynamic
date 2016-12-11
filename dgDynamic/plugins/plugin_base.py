@@ -12,14 +12,8 @@ from dgDynamic.utils.plotter import matplotlib_plot
 
 class PluginBase(abc.ABC, LogMixin):
 
-    def __init__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None):
-        self.simulation_range = simulation_range
-        self.rate_parameters = rate_parameters
-        self.initial_conditions = initial_conditions
-        self.drain_parameters = drain_parameters
-
     @abc.abstractmethod
-    def solve(self):
+    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters):
         pass
 
     def __enter__(self):
@@ -28,6 +22,6 @@ class PluginBase(abc.ABC, LogMixin):
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    @abc.abstractmethod
-    def __call__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters):
-        pass
+    def __call__(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None):
+        return self.simulate(simulation_range=simulation_range, initial_conditions=initial_conditions,
+                             rate_parameters=rate_parameters, drain_parameters=drain_parameters)

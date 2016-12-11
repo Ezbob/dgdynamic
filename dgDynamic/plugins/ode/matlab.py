@@ -3,12 +3,11 @@
 ##
 import sys
 import matlab.engine
-from typing import Union
 from dgDynamic.utils.exceptions import SimulationError
 from dgDynamic.choices import MatlabOdeSolvers, SupportedOdePlugins
 from dgDynamic.converters.ode.matlab_converter import get_matlab_lambda
 from dgDynamic.converters.convert_base import get_initial_values
-from dgDynamic.plugins.ode.ode_plugin import OdePlugin, parameter_validation
+from dgDynamic.plugins.ode.ode_plugin import OdePlugin
 from dgDynamic.output import SimulationOutput
 from dgDynamic.utils.project_utils import LogMixin
 import dgDynamic.utils.messages as messages
@@ -20,31 +19,21 @@ class MatlabOde(OdePlugin, LogMixin):
     """
     Wrapper for working with odes using the MATLAB python engine.
     """
-    def __init__(self, simulator, simulation_range=(0, 0), initial_conditions=None, rate_parameters=None,
-                 drain_parameters=None, solver_method=MatlabOdeSolvers.ode45):
-        super().__init__(simulator, simulation_range=simulation_range, initial_conditions=initial_conditions,
-                         rate_parameters=rate_parameters, drain_parameters=drain_parameters, ode_method=solver_method)
+    def __init__(self, simulator, solver_method=MatlabOdeSolvers.ode45):
+        super().__init__(simulator, ode_method=solver_method, delta_t=None)
 
         self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
         self.logger.debug("MATLAB engine started.")
 
-    def __call__(self, simulation_range: tuple,
-                 initial_conditions: Union[tuple, set, list, dict],
-                 rate_parameters: Union[tuple, set, list, dict],
-                 drain_parameters: Union[tuple, set, list, dict]=(),
-                 ode_solver: MatlabOdeSolvers=MatlabOdeSolvers.ode45, **kwargs):
-        return super().__call__(simulation_range=simulation_range, initial_conditions=initial_conditions,
-                                rate_parameters=rate_parameters, drain_parameters=drain_parameters,
-                                ode_solver=ode_solver, **kwargs)
-
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.engine.clear(nargout=0)
         self.engine.exit()
 
-    def solve(self, **kwargs) -> SimulationOutput:
-        ode_function = get_matlab_lambda(simulator=self._simulator, parameter_substitutions=self.parameters,
-                                         drain_substitutions=self.drain_parameters)
+    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, **kwargs) -> \
+            SimulationOutput:
+        ode_function = get_matlab_lambda(simulator=self._simulator, parameter_substitutions=rate_parameters,
+                                         drain_substitutions=drain_parameters)
 
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Matlab ode function was not generated")
@@ -54,8 +43,7 @@ class MatlabOde(OdePlugin, LogMixin):
 
         self.logger.debug("Solving ode using MATLAB")
 
-        conditions = get_initial_values(self.initial_conditions, self._simulator.symbols)
-        parameter_validation(self, list(conditions), self._simulator.reaction_count, self._simulator.species_count)
+        conditions = get_initial_values(initial_conditions, self._simulator.symbols)
 
         if isinstance(conditions, (list, tuple)):
             self.add_to_workspace('y0', matlab.double(conditions))
@@ -63,11 +51,11 @@ class MatlabOde(OdePlugin, LogMixin):
             # python 3 returns a view not a list of values
             self.add_to_workspace('y0', matlab.double(list(conditions)))
 
-        self.add_to_workspace('tspan', matlab.double(self.simulation_range))
+        self.add_to_workspace('tspan', matlab.double(simulation_range))
 
         eval_str = "ode" + str(self.ode_method.value) + "(" + ode_function + ", tspan, y0)"
         self.logger.debug("evaluating matlab \
-expression: {} with tspan: {} and y0: {}".format(eval_str, self.simulation_range, self.initial_conditions))
+expression: {} with tspan: {} and y0: {}".format(eval_str, simulation_range, initial_conditions))
 
         t_result, y_result = self.engine.eval(eval_str, nargout=2)
         if len(t_result) >= 2:
