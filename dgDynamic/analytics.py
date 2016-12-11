@@ -27,7 +27,7 @@ class DynamicAnalysisDevice:
         sample_rate = None
         if hasattr(plugin, "delta_t"):
             sample_spacing = plugin.delta_t
-            sample_rate = plugin.simulation_range[1] * sample_spacing
+            sample_rate = output.requested_simulation_range[1] * sample_spacing
 
         return output, DynamicAnalysisDevice(output, plugin_solver=plugin, sample_rate=sample_rate,
                                              sample_spacing=sample_spacing)
@@ -59,14 +59,14 @@ class DynamicAnalysisDevice:
         for trans in self.generate_fourier_transformations(*args, **kwargs):
             power_spectrum = self._scale_fourier(np.absolute(self._scale_fourier(trans)) ** 2)
             if with_frequencies:
-                yield power_spectrum, self.frequencies
+                yield power_spectrum, self.fourier_frequencies
             else:
                 yield power_spectrum
 
     def nonzero_maxima(self, data, frequencies=None):
         arg_maxima = np.trim_zeros(signal.argrelmax(data=data, mode="wrap")[0])
         maxima = np.fromiter((data[i] for i in arg_maxima), dtype=float)
-        freqs = self.frequencies if frequencies is None else frequencies
+        freqs = self.fourier_frequencies if frequencies is None else frequencies
         return maxima, np.fromiter((freqs[i] for i in arg_maxima), dtype=float)
 
     def nonzero_maximum(self, data, frequencies=None):
@@ -78,7 +78,7 @@ class DynamicAnalysisDevice:
             return np.nan, np.nan
 
     @property
-    def frequencies(self):
+    def fourier_frequencies(self):
         return np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
 
     @property

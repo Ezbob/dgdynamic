@@ -10,14 +10,15 @@ import os.path
 
 class SimulationOutput(LogMixin):
 
-    def __init__(self, solved_by, dependent=(), independent=(), ignore=(), solver_method=None, symbols=None,
-                 errors=(), data_labels=None):
+    def __init__(self, solved_by, user_sim_range, dependent=(), independent=(), ignore=(), solver_method=None, symbols=None,
+                 errors=(), data_labels=None,):
         self.dependent = dependent
         self.independent = independent
         self.labels = data_labels
         self.errors = errors
         self.solver_used = solved_by
         self.solver_method_used = solver_method
+        self.requested_simulation_range = user_sim_range
         self.simulation_duration = abs(independent[-1] - independent[0])
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])
@@ -99,7 +100,8 @@ class SimulationOutput(LogMixin):
                                 solver_method=self.solver_method_used,
                                 symbols=self.symbols,
                                 errors=self.errors,
-                                data_labels=self.labels)
+                                data_labels=self.labels,
+                                user_sim_range=self.requested_simulation_range)
 
     def save(self, filename=None, float_precision=15, prefix=None, unfiltered=False, stream=None):
         """

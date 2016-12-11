@@ -38,7 +38,7 @@ class MatlabOde(OdePlugin, LogMixin):
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Matlab ode function was not generated")
             messages.print_solver_done(name, method_name=self.ode_method.name, was_failure=True)
-            return SimulationOutput(SupportedOdePlugins.MATLAB,
+            return SimulationOutput(name, simulation_range,
                                     errors=(SimulationError("Ode function could not be generated"),))
 
         self.logger.debug("Solving ode using MATLAB")
@@ -75,7 +75,8 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, simulation_range, ini
 
         self.logger.info("Return output object")
         messages.print_solver_done(name, method_name=self.ode_method.name)
-        return SimulationOutput(solved_by=SupportedOdePlugins.MATLAB, dependent=y_result, independent=t_result,
+        return SimulationOutput(solved_by=name, user_sim_range=simulation_range,
+                                dependent=y_result, independent=t_result,
                                 ignore=self._simulator.ignored, solver_method=self.ode_method,
                                 symbols=self._simulator.symbols)
 
