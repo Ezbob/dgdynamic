@@ -27,7 +27,7 @@ class MatlabOde(OdePlugin, LogMixin):
         self.logger.debug("MATLAB engine started.")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.engine.clear(nargout=0)
+        self.clear_workspace()
         self.engine.exit()
 
     def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs) \

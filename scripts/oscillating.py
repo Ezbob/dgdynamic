@@ -9,7 +9,6 @@ dg = HyperGraph.from_abstract(
     'C + F -> C + C',
     'B -> F',
     'F -> C',
-    'C -> D',
 )
 
 ode = dgDynamicSim(dg)
@@ -17,8 +16,8 @@ stochastic = dgDynamicSim(dg, simulator_choice="stochastic")
 
 # Set the species that you wish to remain unchanged in the integration process.
 # Since these species don't contribute they don't get saved or plotted
-ode.unchanging_species('B', 'D')
-stochastic.unchanging_species('B', 'D')
+ode.unchanging_species('B')
+stochastic.unchanging_species('B')
 
 # Name of the data set
 name = "abstractReactions1"
@@ -28,7 +27,6 @@ initial_conditions = {
     'F': 1,
     'B': 1,
     'C': 0,
-    'D': 0,
 }
 
 # Specify the mass action parameters for each reaction
@@ -37,10 +35,11 @@ parameters = {
    'C + F -> C + C': 0.000001,
    'B -> F': 0.001,
    'F -> C': 0.001,
-   'C -> D': 0.01,
 }
 
-drain_par = {}
+drain_para = {
+    'C': {'in': 0, 'out': 0.01}
+}
 
 # Specify the integration range
 integration_range = (0, 6000)
@@ -65,14 +64,14 @@ spim = stochastic.get_plugin(SupportedStochasticPlugins.SPiM)
 #    DOP853 : Has dense output and variable time step
 scipy_ode.ode_method = ScipyOdeSolvers.VODE
 
-# Set the time step, default is 0.05
+# Set the time step, default is 0.1
 scipy_ode.delta_t = 0.1
 
 # Set initial t value, default is 0
 scipy_ode.initial_t = 0
 
 # Solve the ODE system to get the output object
-output = scipy_ode.simulate(integration_range, initial_conditions, parameters)
+output = scipy_ode.simulate(integration_range, initial_conditions, parameters, drain_para)
 
 # Save the data to a file in the data folder using the output object
 output.save(name)
@@ -81,8 +80,8 @@ output.save(name)
 output.plot("plot.svg", figure_size=(60, 30))
 
 # Using the stochastic pi machine for simulations
-spim.simulate((40, 200), initial_conditions, parameters)\
-    .plot("plot2.svg", figure_size=(40, 20))
+spim.simulate((40, 200), initial_conditions, parameters, drain_para)\
+   .plot("plot2.svg", figure_size=(40, 20))
 
 show_plots()
 
