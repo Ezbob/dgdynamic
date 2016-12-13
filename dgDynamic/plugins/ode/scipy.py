@@ -62,7 +62,8 @@ class ScipyOde(OdePlugin, LogMixin):
             except SystemError as integration_error:
                 self.logger.exception("Integration process failed", integration_error)
                 messages.print_solver_done(name, method_name=self.ode_method.name, was_failure=True)
-                return SimulationOutput(name, user_sim_range=simulation_range,
+                return SimulationOutput(name, data_labels=self._simulator.symbols,
+                                        user_sim_range=simulation_range,
                                         dependent=y_solution, independent=t_solution,
                                         errors=(SimulationError("Integration failure"),))
 
@@ -87,7 +88,8 @@ class ScipyOde(OdePlugin, LogMixin):
             except SystemError as integration_error:
                 self.logger.exception("Integration process failed", integration_error)
                 messages.print_solver_done(name, method_name=self.ode_method.name, was_failure=True)
-                return SimulationOutput(name, simulation_range, dependent=y_solution, independent=t_solution,
+                return SimulationOutput(name, simulation_range, data_labels=self._simulator.symbols,
+                                        dependent=y_solution, independent=t_solution,
                                         errors=(SimulationError("Integration failure"),))
 
             self.logger.debug("Solving finished using variable step integration")

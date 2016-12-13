@@ -11,11 +11,10 @@ import enum
 
 class SimulationOutput(LogMixin):
 
-    def __init__(self, solved_by, user_sim_range, dependent=(), independent=(), ignore=(), solver_method=None, symbols=None,
-                 errors=(), data_labels=None,):
+    def __init__(self, solved_by, user_sim_range, symbols, dependent=(), independent=(), ignore=(),
+                 solver_method=None, errors=(),):
         self.dependent = dependent
         self.independent = independent
-        self.labels = data_labels
         self.errors = errors
         self.solver_used = solved_by
         self.solver_method_used = solver_method
@@ -24,7 +23,7 @@ class SimulationOutput(LogMixin):
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])
         self._file_writer_thread = None
-        self.symbols = symbols
+        self.symbols = tuple(symbols)
 
     def column(self, index):
         for i in range(len(self.dependent)):
@@ -45,10 +44,6 @@ class SimulationOutput(LogMixin):
     @property
     def dependent_dimension(self):
         return len(self.dependent[0])
-
-    def __str__(self):
-        return "independent variable: {}\ndependent variable: {}".format(self.independent,
-                                                                         self.dependent)
 
     def plot(self, filename=None, labels=None, figure_size=None, axis_labels=None,
              axis_limits=None, title=None, show_grid=True, has_tight_layout=True):
@@ -99,12 +94,9 @@ class SimulationOutput(LogMixin):
     def filtered_output(self):
         return SimulationOutput(self.solver_used,
                                 dependent=tuple(self._filter_out_ignores()),
-                                independent=self.independent,
-                                ignore=(),
+                                independent=self.independent, ignore=(),
                                 solver_method=self.solver_method_used,
-                                symbols=self.symbols,
-                                errors=self.errors,
-                                data_labels=self.labels,
+                                symbols=self.symbols, errors=self.errors,
                                 user_sim_range=self.requested_simulation_range)
 
     def save(self, filename=None, float_precision=15, prefix=None, unfiltered=False, stream=None):
@@ -196,3 +188,7 @@ class SimulationOutput(LogMixin):
 
     def __len__(self):
         return (len(self.independent) + len(self.dependent)) // 2
+
+    def __str__(self):
+        return "independent variable: {}\ndependent variable: {}".format(self.independent,
+                                                                         self.dependent)

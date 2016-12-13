@@ -1,5 +1,3 @@
-import mod
-
 from dgDynamic.choices import SupportedOdePlugins, MatlabOdeSolvers, ScipyOdeSolvers, SupportedStochasticPlugins
 from dgDynamic.mod_dynamics import dgDynamicSim, show_plots, HyperGraph
 
@@ -32,21 +30,6 @@ initial_conditions = {
     'C': 0,
     'D': 0,
 }
-#
-# spim_initial_conditions = {
-#     'F': 1,
-#     'B': 1,
-#     'C': 0,
-#     'D': 0,
-# }
-
-# Alternative syntax for specifying initial conditions
-# initial_conditions = (
-#     0.5,
-#     1,
-#     0,
-#     0,
-# )
 
 # Specify the mass action parameters for each reaction
 parameters = {
@@ -58,15 +41,6 @@ parameters = {
 }
 
 drain_par = {}
-
-# Alternative specification of parameters
-# parameters = (
-#     0.01,
-#     0.005,
-#     0.001,
-#     0.001,
-#     0.01,
-# )
 
 # Specify the integration range
 integration_range = (0, 6000)
@@ -84,7 +58,7 @@ spim = stochastic.get_plugin(SupportedStochasticPlugins.SPiM)
 # Set the solver method from one of the entries in the SciOdeSolvers enumeration
 # If none are selected this default to the VODE method for Scipy
 # The available solvers are (docs: http://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html):
-#    VODE   : Same method as the sundials method
+#    VODE   : Same method as the sundials method (default)
 #    ZVODE  : A variant of the VODE solver that deals with complex numbers
 #    LSODA  : Can automatically handle stiff and non-stiff problems
 #    DOPRI5 : Has dense output and variable time step
@@ -97,19 +71,8 @@ scipy_ode.delta_t = 0.1
 # Set initial t value, default is 0
 scipy_ode.initial_t = 0
 
-# Set the integration range. This has to be a tuple of two numbers; a lower bound and a upper bound
-scipy_ode.simulation_range = integration_range
-
-# Set the initial conditions
-scipy_ode.initial_conditions = initial_conditions
-
-# Set the parameters
-scipy_ode.parameters = parameters
-
-scipy_ode.drain_parameters = drain_par
-
 # Solve the ODE system to get the output object
-output = scipy_ode.simulate()
+output = scipy_ode.simulate(integration_range, initial_conditions, parameters)
 
 # Save the data to a file in the data folder using the output object
 output.save(name)
