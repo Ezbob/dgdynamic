@@ -25,7 +25,7 @@ name = "abstractReactions1"
 
 # Specify the initial values for each species
 initial_conditions = {
-    'F': 0.5,
+    'F': 1,
     'B': 1,
     'C': 0,
     'D': 0,
