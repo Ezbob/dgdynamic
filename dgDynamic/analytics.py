@@ -102,13 +102,13 @@ class DynamicAnalysisDevice:
                      is_power_spectra=False):
         plt.figure()
         plt.grid()
-        for data in spectra_data:
+        for data, label in zip(spectra_data, self.output.symbols):
             if is_power_spectra:
                 plt.ylabel("power")
             else:
                 plt.ylabel("amplitude")
             plt.xlabel("frequencies")
-            plt.plot(frequencies, data, marker='o')
+            plt.plot(frequencies, data, marker='o', label=label)
 
             if include_maxima:
                 maxima_values, maxima_frequency = self.nonzero_maxima(data, frequencies)
@@ -117,3 +117,4 @@ class DynamicAnalysisDevice:
                 maximum_value, maximum_frequency = self.nonzero_maximum(data, frequencies)
                 plt.plot(maximum_frequency, maximum_value, 'ro', marker='+', color='black')
 
+        plt.legend()
