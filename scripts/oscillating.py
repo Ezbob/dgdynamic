@@ -80,8 +80,9 @@ output.save(name)
 # Plot the data using the MatPlotLib, also using the output object
 output.plot("plot.svg", figure_size=(60, 30))
 
-#spim(simulation_range=(40, 200), parameters=parameters, initial_conditions=spim_initial_conditions)\
-#    .plot("plot2.svg", figure_size=(40, 20))
+# Using the stochastic pi machine for simulations
+spim.simulate((40, 200), initial_conditions, parameters)\
+    .plot("plot2.svg", figure_size=(40, 20))
 
 show_plots()
 
