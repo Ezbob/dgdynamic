@@ -1,8 +1,6 @@
 from dgDynamic.choices import SupportedOdePlugins, MatlabOdeSolvers, ScipyOdeSolvers, SupportedStochasticPlugins
 from dgDynamic.mod_dynamics import dgDynamicSim, show_plots, HyperGraph
 
-# Enable logging when uncommented
-# set_logging(new_session=True)
 
 dg = HyperGraph.from_abstract(
     'F + B -> F + F',

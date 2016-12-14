@@ -37,9 +37,9 @@ class OdePlugin(PluginBase, ABC):
         pass
 
     def __init__(self, simulator, delta_t: tp.Optional[float]=0.1, initial_t: th.Real=0,
-                 ode_method: tp.Optional[tp.Union[str, th.Enum]]=None):
+                 intergrator_mode: tp.Optional[tp.Union[str, th.Enum]]=None):
         super().__init__()
         self._simulator = simulator
         self.initial_t = initial_t
-        self.ode_method = ode_method
+        self.intergrator_mode = intergrator_mode
         self.delta_t = delta_t

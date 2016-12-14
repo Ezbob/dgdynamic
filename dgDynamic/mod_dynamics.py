@@ -19,7 +19,7 @@ class dgDynamicSim:
         elif isinstance(simulator_choice, enum.Enum):
             if simulator_choice.name.lower() == "ode":
                 return ODESystem(graph=deviation_graph).unchanging_species(*unchanging_species)
-            elif simulator_choice.name.lower() == "stochastic_pi":
+            elif simulator_choice.name.lower() == "stochastic":
                 return StochasticPiSystem(graph=deviation_graph).unchanging_species(*unchanging_species)
         else:
             return None

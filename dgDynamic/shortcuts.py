@@ -9,7 +9,7 @@ def plugin_from_parameters(plugin_name: tp.Union[enum.Enum, str], rate_parameter
     if isinstance(plugin_name, str):
         if any(plugin_name.strip().lower() == member.name.lower() for member in choices.SupportedOdePlugins):
             sim_mode = choices.SimulatorModes.ODE
-        elif any(plugin_name.strip().lower() == member.name.lower() for member in choices.SupportedOdePlugins):
+        elif any(plugin_name.strip().lower() == member.name.lower() for member in choices.SupportedStochasticPlugins):
             sim_mode = choices.SimulatorModes.Stochastic
         else:
             return
