@@ -1,6 +1,5 @@
-import functools as ft
-import sympy as sp
 from collections import OrderedDict
+from ..intermedia.code import generate_rate_laws, generate_equations
 from typing import Union
 from dgDynamic.choices import SupportedOdePlugins
 from .simulator import DynamicSimulator
@@ -35,64 +34,20 @@ class ODESystem(DynamicSimulator):
         elif isinstance(plugin_name, SupportedOdePlugins):
             return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
 
-    def generate_rate_laws(self, internal=True):
-        if internal:
-            translate_internal = self.internal_symbol_dict
-        for edge in self.graph.edges:
-            if internal:
-                reduce_me = (sp.Symbol(translate_internal[vertex.graph.name]) for vertex in edge.sources)
-            else:
-                reduce_me = (sp.Symbol(vertex.graph.name) for vertex in edge.sources)
-            reduced = ft.reduce(lambda a, b: a * b, reduce_me)
-            yield sp.Symbol(self.parameters[edge.id]) * reduced
+    def generate_rate_laws(self):
+        yield from generate_rate_laws(self.graph.edges, self.parameters, self.internal_symbol_dict)
 
     @property
     def rate_laws(self):
-        return tuple(self.generate_rate_laws(internal=False))
+        return tuple(generate_rate_laws(self.graph.edges))
 
-    def generate_equations(self, internal=True, add_drain=True):
-        """
-        This function will attempt to create the symbolic ODEs using the rate laws.
-        """
-
-        if add_drain:
-            drain_dict = self.internal_drain_dict
-        if internal:
-            internal_symbol_dict = self.internal_symbol_dict
-
-        def drain():
-            in_sym, out_sym = drain_dict[vertex.graph.name]
-            if internal:
-                vertex_sym = sp.Symbol(internal_symbol_dict[vertex.graph.name])
-            else:
-                vertex_sym = sp.Symbol(vertex.graph.name)
-            return sp.Symbol(in_sym) * vertex_sym, sp.Symbol(out_sym) * vertex_sym
-
-        ignore_dict = dict(self.ignored)
-        for vertex in self.graph.vertices:
-            if vertex.graph.name in ignore_dict:
-                yield vertex.graph.name, 0
-            else:
-                # Since we use numpy, we can use the left hand expresses as mathematical expressions
-                equation_result = 0
-                for reaction_edge, lhs in zip(self.graph.edges, self.generate_rate_laws(internal=internal)):
-                    for source_vertex in reaction_edge.sources:
-                        if vertex.id == source_vertex.id:
-                            equation_result -= lhs
-                    for target_vertex in reaction_edge.targets:
-                        if vertex.id == target_vertex.id:
-                            equation_result += lhs
-
-                if add_drain:
-                    in_drain, out_drain = drain()
-                    equation_result += in_drain
-                    equation_result -= out_drain
-
-                yield vertex.graph.name, equation_result
+    def generate_equations(self):
+        yield from generate_equations(self.graph.vertices, self.graph.edges, self.ignored, self.parameters,
+                                      self.internal_symbol_dict, self.internal_drain_dict)
 
     @property
     def ode_equations(self):
-        return dict(self.generate_equations(internal=False, add_drain=False))
+        return dict(generate_equations(self.graph.vertices, self.graph.edges, self.ignored, self.parameters))
 
     def __repr__(self):
         return "<Abstract Ode Simulator>"
