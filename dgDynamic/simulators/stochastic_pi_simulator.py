@@ -1,10 +1,11 @@
 import functools as ft
-from .simulator import DynamicSimulator
-from ..converters.definitions.transition import TransitionChannel
 from collections import defaultdict
-from ..plugins.stochastic.spim import SpimStochastic
-from dgDynamic.choices import SupportedStochasticPlugins
 from io import StringIO
+
+from dgDynamic.choices import SupportedStochasticPlugins
+from dgDynamic.intermedia.transition import TransitionChannel
+from .simulator import DynamicSimulator
+from ..plugins.stochastic.spim import SpimStochastic
 
 
 def _hyper_edge_to_string(edge):

@@ -37,7 +37,7 @@ class DynamicSimulator(abc.ABC, LogMixin):
     def abstract_edges(self):
         yield from (hyper_edge_to_string(edge) for edge in self.graph.edges)
 
-    def parse_abstract_reaction(self, reaction: str) -> Union[object, Tuple[object, object]]:
+    def parse_abstract_reaction(self, reaction: str) -> Tuple:
         return abstract_mod_parser(self, reaction)
 
     def __call__(self, plugins, *args, **kwargs):
