@@ -1,8 +1,27 @@
 import sympy as sp
 import functools as ft
+from collections import defaultdict
+from .transition import TransitionChannel
+from io import StringIO
 """
 Module that provides generation of different forms of intermediate code
 """
+
+
+def _hyper_edge_to_string(edge):
+    with StringIO() as out:
+        for index, source_vertex in enumerate(edge.sources):
+            out.write(source_vertex.graph.name)
+            if index < edge.numSources - 1:
+                out.write(" + ")
+        out.write(" -> ")
+
+        for index, target_vertex in enumerate(edge.targets):
+            out.write(target_vertex.graph.name)
+            if index < edge.numTargets - 1:
+                out.write(" + ")
+        out.write("\n")
+        return out.getvalue()
 
 
 def generate_rate_laws(hyper_edges, rate_parameters: dict=None, internal_symbols: dict=None):
@@ -16,7 +35,7 @@ def generate_rate_laws(hyper_edges, rate_parameters: dict=None, internal_symbols
         yield sp.Symbol(translate_parameters.get(edge.id, "r{}".format(edge.id))) * reduced
 
 
-def generate_equations(hyper_vertices, hyper_edges, ignored, rate_parameters,
+def generate_equations(hyper_vertices, hyper_edges, ignored, rate_parameters: dict=None,
                        internal_symbols: dict=None, drain_translation: dict=None):
     """
     This function will attempt to create the symbolic ODEs using the rate laws.
@@ -52,3 +71,58 @@ def generate_equations(hyper_vertices, hyper_edges, ignored, rate_parameters,
                 equation_result -= out_drain
 
             yield vertex.graph.name, equation_result
+
+
+def generate_channels(hyper_edges):
+    result = defaultdict(tuple)
+    decay_rates = tuple()
+
+    def add_channel(vertex_key, channel):
+        result[vertex_key] += (channel,)
+
+    def homo_reaction_case(edge, edge_index):
+        channel_results = tuple()
+        first_vertex = ""
+        for vertex_index, vertex in enumerate(edge.sources):
+            if vertex_index == 0:
+                first_vertex = vertex.graph.name
+                new_input_channel = TransitionChannel(channel_edge=edge, rate_id=edge_index,
+                                                      is_input=True, is_decay=False)\
+                    .add_reagents(edge.targets)
+                channel_results += (new_input_channel,)
+            else:
+                new_output_channel = TransitionChannel(channel_edge=edge, rate_id=edge_index, is_input=False,)
+                channel_results += (new_output_channel,)
+        for channel in channel_results:
+            add_channel(vertex_key=first_vertex, channel=channel)
+
+    def hetero_reaction_case(edge, edge_index):
+        vertices = sorted(edge.sources, key=lambda instance: instance.graph.name)
+        for vertex_index, vertex in enumerate(vertices):
+            if vertex_index == 0:
+                new_input_channel = TransitionChannel(channel_edge=edge, rate_id=edge_index, is_input=True)\
+                    .add_reagents(edge.targets)
+                add_channel(vertex_key=vertex.graph.name, channel=new_input_channel)
+            else:
+                new_output_channel = TransitionChannel(channel_edge=edge, rate_id=edge_index, is_input=False)
+                add_channel(vertex_key=vertex.graph.name, channel=new_output_channel)
+
+    def unary_reaction_case(edge, edge_index, decay_rates):
+        for vertex in edge.sources:
+            new_channel = TransitionChannel(channel_edge=edge, rate_id=edge_index, is_input=False, is_decay=True) \
+                .add_reagents(edge.targets)
+            decay_rates += ("r{}".format(edge_index),)
+            add_channel(vertex_key=vertex.graph.name, channel=new_channel)
+
+    for reaction_index, hyper_edge in enumerate(hyper_edges):
+        if hyper_edge.numSources == 1:
+            unary_reaction_case(hyper_edge, reaction_index, decay_rates)
+        elif hyper_edge.numSources == 2:
+            if ft.reduce(lambda a, b: a.graph.name == b.graph.name, hyper_edge.sources):
+                homo_reaction_case(hyper_edge, reaction_index)
+            else:
+                hetero_reaction_case(hyper_edge, reaction_index)
+        else:
+            raise ValueError("For reaction: {}; reactions with 3 or more reactants are not support"
+                             .format(_hyper_edge_to_string(hyper_edge)))
+    return result, decay_rates
