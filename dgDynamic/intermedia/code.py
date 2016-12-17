@@ -3,9 +3,6 @@ import functools as ft
 from collections import defaultdict
 from .transition import TransitionChannel
 from io import StringIO
-"""
-Module that provides generation of different forms of intermediate code
-"""
 
 
 def _hyper_edge_to_string(edge):

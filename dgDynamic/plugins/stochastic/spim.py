@@ -20,13 +20,16 @@ name = SupportedStochasticPlugins.SPiM
 
 class SpimStochastic(StochasticPlugin):
 
-    def __init__(self, simulator):
+    def __init__(self, simulator, timeout=None, absolute_float_tolerance=1e-9, relative_float_tolerance=0.0):
         self._spim_path = config['Simulation']['SPIM_PATH']
         if not self._spim_path:
             self._spim_path = os.path.join(os.path.dirname(__file__), "spim.ocaml")
         self._spim_path = os.path.abspath(self._spim_path)
         self._simulator = simulator
         self._ocamlrun_path = os.path.abspath(config['Simulation']['OCAML_RUN'])
+        self.timeout = timeout
+        self.relative_float_tolerance = relative_float_tolerance
+        self.absolute_float_tolerance = absolute_float_tolerance
 
     def generate_code_file(self, writable_stream, simulation_range, initial_conditions, rate_parameters,
                            drain_parameters=None):
@@ -55,7 +58,7 @@ class SpimStochastic(StochasticPlugin):
                                                                  initial_conditions=initial_conditions, ))
 
     def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None,
-                 timeout=None, rel_tol=1e-09, abs_tol=0.0) -> SimulationOutput:
+                 timeout=None, rel_tol=None, abs_tol=None) -> SimulationOutput:
 
         if rate_parameters is None or initial_conditions is None:
             raise ValueError("Missing parameters or initial values")
@@ -68,7 +71,9 @@ class SpimStochastic(StochasticPlugin):
                 old_time = 0.0
                 for line in reader:
                     new_time = float(line[0])
-                    if new_time > old_time or math.isclose(new_time, old_time, rel_tol=rel_tol, abs_tol=abs_tol):
+                    if new_time > old_time or math.isclose(new_time, old_time,
+                                                           rel_tol=self.relative_float_tolerance,
+                                                           abs_tol=self.absolute_float_tolerance):
                         independent.append(new_time)
                         dependent.append(array.array('d', map(float, line[1:])))
                         old_time = new_time
@@ -79,6 +84,9 @@ class SpimStochastic(StochasticPlugin):
         independent = array.array('d')
         dependent = list()
         errors = list()
+        self.timeout = timeout if timeout is not None else self.timeout
+        self.relative_float_tolerance = rel_tol if rel_tol is not None else self.relative_float_tolerance
+        self.absolute_float_tolerance = abs_tol if abs_tol is not None else self.absolute_float_tolerance
 
         with tempfile.TemporaryDirectory() as tmpdir:
 
@@ -97,7 +105,7 @@ class SpimStochastic(StochasticPlugin):
                 process = subprocess.Popen(run_parameters, stdin=subprocess.PIPE,
                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                            universal_newlines=True)
-                stdout, stderr = process.communicate(input="\n", timeout=timeout)
+                stdout, stderr = process.communicate(input="\n", timeout=self.timeout)
 
                 self.logger.info("SPiM stdout:\n{}".format(stdout))
             except subprocess.TimeoutExpired:
