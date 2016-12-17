@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from ..intermedia.code import generate_rate_laws, generate_equations
+from ..intermediate.intermediate_generators import generate_rate_laws, generate_equations
 from typing import Union
 from dgDynamic.choices import SupportedOdePlugins
 from .simulator import DynamicSimulator

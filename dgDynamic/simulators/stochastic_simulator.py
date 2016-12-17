@@ -1,5 +1,5 @@
 from dgDynamic.choices import SupportedStochasticPlugins
-from dgDynamic.intermedia.code import generate_channels
+from dgDynamic.intermediate.intermediate_generators import generate_channels
 from .simulator import DynamicSimulator
 from ..plugins.stochastic.spim import SpimStochastic
 
