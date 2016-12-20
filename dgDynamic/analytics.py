@@ -107,23 +107,27 @@ class DynamicAnalysisDevice:
     def minima_pairs(self, data_index):
         if isinstance(data_index, int):
             data = np.fromiter(self.output.column(data_index), float)
-            minima_x = signal.argrelmin(data, mode="wrap")[0]
-            minima_y = np.fromiter((data[i] for i in minima_x), float)
+            minima_indices = signal.argrelmin(data, mode="wrap")[0]
+            minima_x = np.fromiter((self.output.independent[i] for i in minima_indices), float)
+            minima_y = np.fromiter((data[i] for i in minima_indices), float)
             return minima_x, minima_y
         else:
-            minima_x = signal.argrelmin(data_index, mode="wrap")[0]
-            minima_y = np.fromiter((data_index[i] for i in minima_x), float)
+            minima_indices = signal.argrelmin(data_index, mode="wrap")[0]
+            minima_x = np.fromiter((self.output.independent[i] for i in minima_indices), float)
+            minima_y = np.fromiter((data_index[i] for i in minima_indices), float)
             return minima_x, minima_y
 
     def maxima_pairs(self, data_index):
         if isinstance(data_index, int):
             data = np.fromiter(self.output.column(data_index), float)
-            maxima_x = signal.argrelmax(data, mode="wrap")[0]
-            maxima_y = np.fromiter((data[i] for i in maxima_x), float)
+            maxima_indices = signal.argrelmax(data, mode="wrap")[0]
+            maxima_x = np.fromiter((self.output.independent[i] for i in maxima_indices), float)
+            maxima_y = np.fromiter((data[i] for i in maxima_indices), float)
             return maxima_x, maxima_y
         else:
-            maxima_x = signal.argrelmax(data_index, mode="wrap")[0]
-            maxima_y = np.fromiter((data_index[i] for i in maxima_x), float)
+            maxima_indices = signal.argrelmax(data_index, mode="wrap")[0]
+            maxima_x = np.fromiter((self.output.independent[i] for i in maxima_indices), float)
+            maxima_y = np.fromiter((data_index[i] for i in maxima_indices), float)
             return maxima_x, maxima_y
 
     @staticmethod
