@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.signal as signal
+import scipy.interpolate as interpol
 import matplotlib.pyplot as plt
+import scipy.optimize as opt
 from dgDynamic.output import SimulationOutput
 
 
@@ -81,6 +83,10 @@ class DynamicAnalysisDevice:
             return np.nan, np.nan
 
     @property
+    def simulation_range(self):
+        return self.output.requested_simulation_range
+
+    @property
     def fourier_frequencies(self):
         return np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
 
@@ -97,6 +103,42 @@ class DynamicAnalysisDevice:
 
     def amplitude_spectrum(self, index):
         return tuple(self.generate_amplitude_spectrum())[index]
+
+    def minima_pairs(self, data_index):
+        if isinstance(data_index, int):
+            data = np.fromiter(self.output.column(data_index), float)
+            minima_x = signal.argrelmin(data, mode="wrap")[0]
+            minima_y = np.fromiter((data[i] for i in minima_x), float)
+            return minima_x, minima_y
+        else:
+            minima_x = signal.argrelmin(data_index, mode="wrap")[0]
+            minima_y = np.fromiter((data_index[i] for i in minima_x), float)
+            return minima_x, minima_y
+
+    def maxima_pairs(self, data_index):
+        if isinstance(data_index, int):
+            data = np.fromiter(self.output.column(data_index), float)
+            maxima_x = signal.argrelmax(data, mode="wrap")[0]
+            maxima_y = np.fromiter((data[i] for i in maxima_x), float)
+            return maxima_x, maxima_y
+        else:
+            maxima_x = signal.argrelmax(data_index, mode="wrap")[0]
+            maxima_y = np.fromiter((data_index[i] for i in maxima_x), float)
+            return maxima_x, maxima_y
+
+    @staticmethod
+    def function_intersection(func1, func2, start_estimate=0.0):
+        return opt.fsolve(lambda x: func1(x) - func2(x), start_estimate)
+
+    @staticmethod
+    def spine_interpolation(x, y, dimensions=3):
+        return interpol.InterpolatedUnivariateSpline(x, y, k=dimensions)
+
+    def supre_infir_intersection(self, maxima_data, minima_data, spline_dimension=3):
+        maxima_interpolation = self.spine_interpolation(maxima_data[0], maxima_data[1], spline_dimension)
+        minima_interpolation = self.spine_interpolation(minima_data[0], minima_data[1], spline_dimension)
+        return maxima_interpolation, minima_interpolation, \
+            self.function_intersection(maxima_interpolation, minima_interpolation)
 
     def plot_spectra(self, spectra_data, frequencies, include_maxima=False, include_maximum=False,
                      is_power_spectra=False):
