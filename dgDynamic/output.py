@@ -127,9 +127,9 @@ class SimulationOutput(LogMixin):
         make_directory(config['Output Paths']['DATA_DIRECTORY'], pre_delete=False)
 
         if unfiltered:
-            dependent_dimension = len(self.dependent[0])
+            dependent_dimension = self.dependent_dimension
         else:
-            dependent_dimension = max(len(self.dependent[0]) - len(self._ignored), 0)
+            dependent_dimension = max(self.dependent_dimension - len(self._ignored), 0)
 
         self.logger.debug("Dimension of the dependent variable is {}".format(dependent_dimension))
 
