@@ -5,7 +5,7 @@ from .transition import TransitionChannel
 from io import StringIO
 
 
-def _hyper_edge_to_string(edge):
+def _hyper_edge_to_string(edge, newline_end=True):
     with StringIO() as out:
         for index, source_vertex in enumerate(edge.sources):
             out.write(source_vertex.graph.name)
@@ -17,7 +17,8 @@ def _hyper_edge_to_string(edge):
             out.write(target_vertex.graph.name)
             if index < edge.numTargets - 1:
                 out.write(" + ")
-        out.write("\n")
+        if newline_end:
+            out.write("\n")
         return out.getvalue()
 
 
@@ -29,7 +30,7 @@ def generate_rate_laws(hyper_edges, rate_parameters: dict=None, internal_symbols
     for edge in hyper_edges:
         sources = (sp.Symbol(translate_internal.get(vertex.graph.name, vertex.graph.name)) for vertex in edge.sources)
         reduced = ft.reduce(lambda a, b: a * b, sources)
-        yield sp.Symbol(translate_parameters.get(edge.id, "r{}".format(edge.id))) * reduced
+        yield _hyper_edge_to_string(edge, False), sp.Symbol(translate_parameters.get(edge.id, "r{}".format(edge.id))) * reduced
 
 
 def generate_equations(hyper_vertices, hyper_edges, ignored, rate_parameters: dict=None,
@@ -53,7 +54,8 @@ def generate_equations(hyper_vertices, hyper_edges, ignored, rate_parameters: di
         else:
             # Since we use sympy, we can use the left hand expresses as mathematical expressions
             equation_result = 0
-            rate_laws = generate_rate_laws(hyper_edges, rate_parameters, internal_symbol_dict)
+            rate_laws = (law_tuple[1] for law_tuple in generate_rate_laws(hyper_edges, rate_parameters,
+                                                                          internal_symbol_dict))
             for reaction_edge, lhs in zip(hyper_edges, rate_laws):
                 for source_vertex in reaction_edge.sources:
                     if vertex.id == source_vertex.id:

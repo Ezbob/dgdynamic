@@ -35,19 +35,19 @@ class ODESystem(DynamicSimulator):
             return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
 
     def generate_rate_laws(self):
-        yield from generate_rate_laws(self.graph.edges, self.parameters, self.internal_symbol_dict)
+        yield from (law_tuple[1] for law_tuple in generate_rate_laws(self.graph.edges, self.parameters, self.internal_symbol_dict))
 
     @property
     def rate_laws(self):
-        return tuple(generate_rate_laws(self.graph.edges))
+        return dict(generate_rate_laws(self.graph.edges))
 
     def generate_equations(self):
         yield from generate_equations(self.graph.vertices, self.graph.edges, self.ignored, self.parameters,
                                       self.internal_symbol_dict, self.internal_drain_dict)
 
     @property
-    def ode_equations(self):
-        return dict(generate_equations(self.graph.vertices, self.graph.edges, self.ignored, self.parameters))
+    def rate_equations(self):
+        return dict(generate_equations(self.graph.vertices, self.graph.edges, self.ignored,))
 
     def __repr__(self):
         return "<Abstract Ode Simulator>"
