@@ -28,6 +28,6 @@ def get_matlab_lambda(simulator: ODESystem, parameter_substitutions=None, drain_
     drain = get_drain_rate_dict(internal_drains=simulator.internal_drain_dict,
                                 user_drain_rates=drain_substitutions)
 
-    return substitute(simulator.generate_equations(),
+    return substitute(simulator.generate_rate_equations(),
                       substitution_map=join_parameter_maps(parameter_map, rate_map, drain),
                       extra_symbols=MatlabSymbols(), postprocessor=_postprocessor)

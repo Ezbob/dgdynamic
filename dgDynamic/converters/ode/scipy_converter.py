@@ -19,5 +19,5 @@ def get_scipy_lambda(simulator: ODESystem, parameter_substitutions, drain_substi
 
     drain = get_drain_rate_dict(simulator.internal_drain_dict, drain_substitutions)
 
-    return substitute(simulator.generate_equations(),
+    return substitute(simulator.generate_rate_equations(),
                       substitution_map=join_parameter_maps(parameter_map, rate_map, drain))

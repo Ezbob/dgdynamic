@@ -37,13 +37,13 @@ class ODESystem(DynamicSimulator):
     def generate_rate_laws(self):
         yield from (law_tuple[1] for law_tuple in generate_rate_laws(self.graph.edges, self.parameters, self.internal_symbol_dict))
 
+    def generate_rate_equations(self):
+        yield from generate_equations(self.graph.vertices, self.graph.edges, self.ignored, self.parameters,
+                                      self.internal_symbol_dict, self.internal_drain_dict)
+
     @property
     def rate_laws(self):
         return dict(generate_rate_laws(self.graph.edges))
-
-    def generate_equations(self):
-        yield from generate_equations(self.graph.vertices, self.graph.edges, self.ignored, self.parameters,
-                                      self.internal_symbol_dict, self.internal_drain_dict)
 
     @property
     def rate_equations(self):

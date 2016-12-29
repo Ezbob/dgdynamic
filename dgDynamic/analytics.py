@@ -138,7 +138,7 @@ class DynamicAnalysisDevice:
     def spine_interpolation(x, y, dimensions=3):
         return interpol.InterpolatedUnivariateSpline(x, y, k=dimensions)
 
-    def supre_infir_intersection(self, maxima_data, minima_data, spline_dimension=3):
+    def sup_inf_intersection(self, maxima_data, minima_data, spline_dimension=3):
         maxima_interpolation = self.spine_interpolation(maxima_data[0], maxima_data[1], spline_dimension)
         minima_interpolation = self.spine_interpolation(minima_data[0], minima_data[1], spline_dimension)
         return maxima_interpolation, minima_interpolation, \
