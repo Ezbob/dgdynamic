@@ -104,6 +104,12 @@ class DynamicAnalysisDevice:
     def amplitude_spectrum(self, index):
         return tuple(self.generate_amplitude_spectrum())[index]
 
+    @staticmethod
+    def converge_points(upper_bound, lower_bound, relative_tolerance=1.e-5,
+                        absolute_tolerance=1.e-8):
+        return tuple(np.array((maxi, mini,), dtype=float) for maxi, mini in zip(upper_bound, lower_bound)
+                     if np.isclose(maxi, mini, rtol=relative_tolerance, atol=absolute_tolerance))
+
     def minima_pairs(self, data_index):
         if isinstance(data_index, int):
             data = np.fromiter(self.output.column(data_index), float)

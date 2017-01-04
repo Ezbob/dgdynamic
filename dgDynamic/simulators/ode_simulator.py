@@ -35,7 +35,8 @@ class ODESystem(DynamicSimulator):
             return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
 
     def generate_rate_laws(self):
-        yield from (law_tuple[1] for law_tuple in generate_rate_laws(self.graph.edges, self.parameters, self.internal_symbol_dict))
+        yield from (law_tuple[1] for law_tuple in generate_rate_laws(self.graph.edges, self.parameters,
+                                                                     self.internal_symbol_dict))
 
     def generate_rate_equations(self):
         yield from generate_equations(self.graph.vertices, self.graph.edges, self.ignored, self.parameters,

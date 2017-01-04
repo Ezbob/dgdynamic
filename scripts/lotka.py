@@ -45,7 +45,8 @@ spim_simulation_range = (100, 1000)
 with stochastic('spim') as spim:
     spim.timeout = 2
     for i in range(5):
-        spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
+        out = spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
              rate_parameters=parameters, drain_parameters=drain_parameters).plot(figure_size=figure_size)
+
 
 show_plots()
