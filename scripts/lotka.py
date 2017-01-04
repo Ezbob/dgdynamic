@@ -44,18 +44,31 @@ matlab = ode('matlab')
 output, analytics = DynamicAnalysisDevice.from_simulation(scipy, integration_range, initial_conditions,
                                       parameters, drain_parameters)
 
+# Plotting the simulation output
 output.plot(figure_size=figure_size)
+
+# Get the domain values for the Fourier
 fourier_freqs = analytics.fourier_frequencies
+
+# Plot the amplitude spectra (all of them)
 analytics.plot_spectra(analytics.amplitude_spectra, fourier_freqs)
+
+# Plot the power spectra
 analytics.plot_spectra(analytics.power_spectra, fourier_freqs)
 
+# /-------  /-----\  -------\ #
+# *---- SPiM Simulation ----* #
+# \-------  \-----/  -------/ #
+
+# Set the new SPiM simulation, first number is maximum simulation,
+# second number is the number of data points needed
 spim_simulation_range = (100, 1000)
 
 with stochastic('spim') as spim:
     spim.timeout = 2
     for i in range(5):
         out = spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
-             rate_parameters=parameters, drain_parameters=drain_parameters).plot(figure_size=figure_size)
+                   rate_parameters=parameters, drain_parameters=drain_parameters).plot(figure_size=figure_size)
 
-
+# Show all the plots generated so far
 show_plots()
