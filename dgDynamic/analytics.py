@@ -37,7 +37,7 @@ class DynamicAnalysisDevice:
         return output, DynamicAnalysisDevice(output, plugin_solver=plugin, sample_rate=sample_rate,
                                              sample_spacing=sample_spacing)
 
-    def _scale_fourier(self, fourier):
+    def _scale_and_normalize_fourier(self, fourier):
         # http://stackoverflow.com/questions/15147287/numpy-wrong-amplitude-of-fftd-array
         return np.fromiter((f if index == 0 else f * 2 for index, f in enumerate(fourier)), dtype=float) \
                / self.sample_size
@@ -54,7 +54,7 @@ class DynamicAnalysisDevice:
 
     def generate_amplitude_spectrum(self, with_frequencies=False, *args, **kwargs):
         for fourier_trans in self.generate_fourier_transformations(*args, **kwargs):
-            amplitudes = self._scale_fourier(np.absolute(fourier_trans))
+            amplitudes = self._scale_and_normalize_fourier(np.absolute(fourier_trans))
             if with_frequencies:
                 yield amplitudes, np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
             else:
@@ -62,7 +62,7 @@ class DynamicAnalysisDevice:
 
     def generate_power_spectrum(self, with_frequencies=False, *args, **kwargs):
         for trans in self.generate_fourier_transformations(*args, **kwargs):
-            power_spectrum = self._scale_fourier(np.absolute(self._scale_fourier(trans)) ** 2)
+            power_spectrum = self._scale_and_normalize_fourier(np.absolute(trans)) ** 2
             if with_frequencies:
                 yield power_spectrum, self.fourier_frequencies
             else:

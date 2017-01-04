@@ -4,8 +4,7 @@ A Lotka model with (F)oxes and (R)abbits (prey-predator model).
     Foxes hunt and eat rabbits and multiples
     Foxes also dies of old age
 """
-from dgDynamic import dgDynamicSim, show_plots, HyperGraph
-from dgDynamic.choices import SupportedOdePlugins
+from dgDynamic import dgDynamicSim, show_plots, HyperGraph, DynamicAnalysisDevice
 
 rabbit_multiples = "R -> 2 R"
 foxes_hunts = "R + F -> F + F"
@@ -36,9 +35,19 @@ stochastic = dgDynamicSim(dg, simulator_choice='stochastic')
 name = "foxesRabbits"
 figure_size = (40, 20)
 
-for ode_plugin_name in SupportedOdePlugins:
-    output = ode(ode_plugin_name)(integration_range, initial_conditions, parameters, drain_parameters)\
-        .plot(figure_size=figure_size)
+scipy = ode('scipy')
+matlab = ode('matlab')
+
+# Run the simulation and give us the output and the analytic class
+# which gives access to computation of the Fourier transformation etc..
+# The output can be inspected and plotted like a normal output class
+output, analytics = DynamicAnalysisDevice.from_simulation(scipy, integration_range, initial_conditions,
+                                      parameters, drain_parameters)
+
+output.plot(figure_size=figure_size)
+fourier_freqs = analytics.fourier_frequencies
+analytics.plot_spectra(analytics.amplitude_spectra, fourier_freqs)
+analytics.plot_spectra(analytics.power_spectra, fourier_freqs)
 
 spim_simulation_range = (100, 1000)
 
