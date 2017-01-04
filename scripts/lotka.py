@@ -54,7 +54,7 @@ fourier_freqs = analytics.fourier_frequencies
 analytics.plot_spectra(analytics.amplitude_spectra, fourier_freqs)
 
 # Plot the power spectra
-analytics.plot_spectra(analytics.power_spectra, fourier_freqs)
+analytics.plot_spectra(analytics.power_spectra, fourier_freqs, is_power_spectra=True)
 
 # /-------  /-----\  -------\ #
 # *---- SPiM Simulation ----* #
@@ -66,9 +66,18 @@ spim_simulation_range = (100, 1000)
 
 with stochastic('spim') as spim:
     spim.timeout = 2
-    for i in range(5):
-        out = spim(simulation_range=spim_simulation_range, initial_conditions=initial_conditions,
-                   rate_parameters=parameters, drain_parameters=drain_parameters).plot(figure_size=figure_size)
+    for i in range(4):
+        output, analytics = DynamicAnalysisDevice.from_simulation(spim,
+                                                                  simulation_range=spim_simulation_range,
+                                                                  initial_conditions=initial_conditions,
+                                                                  rate_parameters=parameters,
+                                                                  drain_parameters=drain_parameters)
+        # The time domain plot comes before the frequency plot
+        output.plot(figure_size=figure_size)
+
+        analytics.plot_spectra(analytics.amplitude_spectra, analytics.fourier_frequencies,
+                               include_maxima=True, include_maximum=True)
+
 
 # Show all the plots generated so far
 show_plots()
