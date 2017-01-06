@@ -96,7 +96,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, simulation_range, ini
         return self
 
     def clear_workspace(self):
-        self.engine.clear()
+        self.engine.clear(nargout=0)
         return self
 
     def __del__(self):
