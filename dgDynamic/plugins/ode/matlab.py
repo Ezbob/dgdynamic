@@ -19,8 +19,8 @@ class MatlabOde(OdePlugin, LogMixin):
     """
     Wrapper for working with odes using the MATLAB python engine.
     """
-    def __init__(self, simulator, intergrator_mode=MatlabOdeSolvers.ode45):
-        super().__init__(simulator, intergrator_mode=intergrator_mode, delta_t=None)
+    def __init__(self, simulator, integrator_mode=MatlabOdeSolvers.ode45):
+        super().__init__(simulator, integrator_mode=integrator_mode, delta_t=None)
 
         self.logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
@@ -37,7 +37,7 @@ class MatlabOde(OdePlugin, LogMixin):
 
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Matlab ode function was not generated")
-            messages.print_solver_done(name, method_name=self.intergrator_mode.name, was_failure=True)
+            messages.print_solver_done(name, method_name=self.integrator_mode.name, was_failure=True)
             return SimulationOutput(name, simulation_range, self._simulator.symbols,
                                     errors=(SimulationError("Ode function could not be generated"),))
 
@@ -53,7 +53,7 @@ class MatlabOde(OdePlugin, LogMixin):
 
         self.add_to_workspace('tspan', matlab.double(simulation_range))
 
-        eval_str = "ode" + str(self.intergrator_mode.value) + "(" + ode_function + ", tspan, y0)"
+        eval_str = "ode" + str(self.integrator_mode.value) + "(" + ode_function + ", tspan, y0)"
         self.logger.debug("evaluating matlab \
 expression: {} with tspan: {} and y0: {}".format(eval_str, simulation_range, initial_conditions))
 
@@ -74,11 +74,11 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, simulation_range, ini
         y_result = tuple(convert_matrix(y_result))
 
         self.logger.info("Return output object")
-        messages.print_solver_done(name, method_name=self.intergrator_mode.name)
+        messages.print_solver_done(name, method_name=self.integrator_mode.name)
         return SimulationOutput(solved_by=name, user_sim_range=simulation_range,
                                 symbols=self._simulator.symbols,
                                 dependent=y_result, independent=t_result,
-                                ignore=self._simulator.ignored, solver_method=self.intergrator_mode)
+                                ignore=self._simulator.ignored, solver_method=self.integrator_mode)
 
     def close_engine(self):
         self.logger.debug("Closing MATLAB engine...")
