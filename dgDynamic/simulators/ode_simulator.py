@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from ..intermediate.intermediate_generators import generate_rate_laws, generate_equations
+from ..intermediate.intermediate_generators import generate_rate_laws, generate_rate_equations
 from typing import Union
 from dgDynamic.choices import SupportedOdePlugins
 from .simulator import DynamicSimulator
@@ -34,21 +34,13 @@ class ODESystem(DynamicSimulator):
         elif isinstance(plugin_name, SupportedOdePlugins):
             return self.get_plugin_from_enum(plugin_name, *args, **kwargs)
 
-    def generate_rate_laws(self):
-        yield from (law_tuple[1] for law_tuple in generate_rate_laws(self.graph.edges, self.parameters,
-                                                                     self.internal_symbol_dict))
-
-    def generate_rate_equations(self):
-        yield from generate_equations(self.graph.vertices, self.graph.edges, self.ignored, self.parameters,
-                                      self.internal_symbol_dict, self.internal_drain_dict)
-
     @property
     def rate_laws(self):
         return dict(generate_rate_laws(self.graph.edges))
 
     @property
     def rate_equations(self):
-        return dict(generate_equations(self.graph.vertices, self.graph.edges, self.ignored,))
+        return dict(generate_rate_equations(self.graph.vertices, self.graph.edges, self.ignored, ))
 
     def __repr__(self):
         return "<Abstract Ode Simulator>"

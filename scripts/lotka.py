@@ -1,5 +1,5 @@
 """
-A Lotka model with (F)oxes and (R)abbits (prey-predator model).
+A Lotka-Volterra model with (F)oxes and (R)abbits (prey-predator model).
     Rabbits eat grass and multiples
     Foxes hunt and eat rabbits and multiples
     Foxes also dies of old age

@@ -2,6 +2,8 @@ import abc
 from typing import Union, Tuple
 from ..converters.reaction_parser import abstract_mod_parser, hyper_edge_to_string
 from dgDynamic.utils.project_utils import LogMixin
+from ..intermediate.intermediate_generators import generate_rate_laws, generate_rate_equations
+from collections import OrderedDict
 
 
 class DynamicSimulator(abc.ABC, LogMixin):
@@ -11,6 +13,8 @@ class DynamicSimulator(abc.ABC, LogMixin):
         self.ignored = tuple()
         self.reaction_count = sum(1 for _ in self.graph.edges)
         self.species_count = sum(1 for _ in self.graph.vertices)
+        self.parameters = OrderedDict((edge.id, "$k{}".format(index + 1))
+                                      for index, edge in enumerate(self.graph.edges))
 
     @property
     def symbols(self):
@@ -53,6 +57,14 @@ class DynamicSimulator(abc.ABC, LogMixin):
         else:
             self.logger.warn("ignored species count exceeds the count of actual species")
         return self
+
+    def generate_rate_laws(self):
+        yield from (law_tuple[1] for law_tuple in generate_rate_laws(self.graph.edges, self.parameters,
+                                                                     self.internal_symbol_dict))
+
+    def generate_rate_equations(self):
+        yield from generate_rate_equations(self.graph.vertices, self.graph.edges, self.ignored, self.parameters,
+                                           self.internal_symbol_dict, self.internal_drain_dict)
 
     @abc.abstractmethod
     def get_plugin_from_enum(self, enum_variable, *args, **kwargs):

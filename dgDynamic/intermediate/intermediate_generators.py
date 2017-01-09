@@ -33,8 +33,8 @@ def generate_rate_laws(hyper_edges, rate_parameters: dict=None, internal_symbols
         yield _hyper_edge_to_string(edge, False), sp.Symbol(translate_parameters.get(edge.id, "r{}".format(edge.id))) * reduced
 
 
-def generate_equations(hyper_vertices, hyper_edges, ignored, rate_parameters: dict=None,
-                       internal_symbols: dict=None, drain_translation: dict=None):
+def generate_rate_equations(hyper_vertices, hyper_edges, ignored, rate_parameters: dict=None,
+                            internal_symbols: dict=None, drain_translation: dict=None):
     """
     This function will attempt to create the symbolic ODEs using the rate laws.
     """
