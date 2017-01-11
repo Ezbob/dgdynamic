@@ -26,4 +26,4 @@ class dgDynamicSim:
 
 
 def show_plots(*args, **kwargs):
-    SimulationOutput.show(*args, **kwargs)
+    SimulationOutput.show(block=True, *args, **kwargs)
