@@ -15,7 +15,8 @@ def get_scipy_lambda(simulator: ODESystem, parameter_substitutions, drain_substi
     parameter_map = get_edge_rate_dict(deviation_graph=simulator.graph, user_parameters=parameter_substitutions,
                                        internal_parameters_map=simulator.parameters)
 
-    rate_map = ((value.replace('$', ''), 'y[{}]'.format(index)) for index, value in enumerate(simulator.symbols_internal))
+    rate_map = ((value.replace('$', ''), 'y[{}]'.format(index))
+                for index, value in enumerate(simulator.symbols_internal))
 
     drain = get_drain_rate_dict(simulator.internal_drain_dict, drain_substitutions)
 
