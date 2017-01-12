@@ -7,6 +7,7 @@ def matplotlib_plot(input_data):
     Tries to plot the data using the MatPlotLib
     :return: self (chaining enabled)
     """
+    pyplt.ioff()
     pyplt.figure()
     x_data, y_data = input_data['independent'], input_data['dependent']
 
