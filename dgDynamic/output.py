@@ -19,7 +19,7 @@ class SimulationOutput(LogMixin):
         self.solver_used = solved_by
         self.solver_method_used = solver_method
         self.requested_simulation_range = user_sim_range
-        if independent is not None:
+        if independent is not None or len(independent) > 0:
             self.simulation_duration = abs(independent[-1] - independent[0])
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])

@@ -8,6 +8,7 @@ import contextlib as cl
 import time
 import dgDynamic.output as o
 import dgDynamic.utils.messages as messages
+import warnings
 
 name = SupportedStochasticPlugins.StochPy
 
@@ -57,7 +58,16 @@ class StochPyStochastic(StochasticPlugin):
 
             self.logger.info("Running simulation...")
             start_time = time.time()
-            stochpy_module.DoStochSim()
+            try:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('ignore')
+                    stochpy_module.DoStochSim()
+            except Exception as exception:
+                self.logger.error("Exception in stochpy simulation: {}".format(exception))
+                messages.print_solver_done(name, self.stochastic_method.name, was_failure=True)
+                return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
+                                          errors=(exception,))
+
             end_time = time.time()
             self.logger.info("Simulation ended. Execution time: {} secs".format(end_time - start_time))
             data = stochpy_module.data_stochsim.getSpecies()
