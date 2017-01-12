@@ -25,7 +25,15 @@ class StochPyStochastic(StochasticPlugin):
         rates = dict(converter_base.get_edge_rate_dict(self._simulator.graph, rate_parameters,
                                                        self._simulator.parameters))
         writable_stream.write(stochpy_converter.generate_reactions(rate_law_dict, translate_dict))
-        writable_stream.write("\n")
+
+        drain_values = dict(converter_base.get_drain_rate_dict(self._simulator.internal_drain_dict,
+                                                               drain_parameters))
+
+        writable_stream.write(stochpy_converter.generate_drains(drain_values,
+                                                                self._simulator.internal_drain_dict,
+                                                                self._simulator.internal_symbol_dict))
+
+        writable_stream.write('\n')
         writable_stream.write(stochpy_converter.generate_rates(rates))
         writable_stream.write("\n")
         initial_values = dict(zip((sym.replace('$', '') for sym in self._simulator.symbols_internal),

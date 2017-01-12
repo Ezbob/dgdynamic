@@ -120,3 +120,10 @@ def get_initial_values(initial_conditions, symbols) -> Union[set, tuple, list]:
             if key in translate_mapping:
                 results[translate_mapping[key]] = value
         return results
+
+
+def replacer(to_replace):
+    if isinstance(to_replace, (list, tuple)):
+        return tuple(item.replace('$', '') for item in to_replace)
+    else:
+        return to_replace.replace('$', '')
