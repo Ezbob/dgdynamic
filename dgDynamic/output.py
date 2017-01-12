@@ -19,7 +19,7 @@ class SimulationOutput(LogMixin):
         self.solver_used = solved_by
         self.solver_method_used = solver_method
         self.requested_simulation_range = user_sim_range
-        if independent is not None or len(independent) > 0:
+        if independent is not None and len(independent) >= 2:
             self.simulation_duration = abs(independent[-1] - independent[0])
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])
@@ -27,10 +27,22 @@ class SimulationOutput(LogMixin):
         self.symbols = tuple(symbols)
 
     def column(self, index):
+        """
+        Yields the index-th column of the dependent variable
+        :param index: a index integer
+        :return: generator with the index-th column of the dependent variable
+        """
         for i in range(len(self.dependent)):
             yield self.dependent[i][index]
 
     def column_pair(self, index):
+        """
+        Yields the index-th column of the dependent variable paired with the
+        independent variable, starting with the independent variable for each pair
+        :param index:
+        :return: a generator that generates tuple consisting of the independent
+        variable and the corresponding dependent variable
+        """
         for i, x in enumerate(self.independent):
             yield x, self.dependent[i][index]
 

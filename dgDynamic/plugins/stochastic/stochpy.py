@@ -8,6 +8,7 @@ import contextlib as cl
 import time
 import dgDynamic.output as o
 import dgDynamic.utils.messages as messages
+from dgDynamic.config.settings import logging_is_enabled
 import warnings
 
 name = SupportedStochasticPlugins.StochPy
@@ -45,7 +46,7 @@ class StochPyStochastic(StochasticPlugin):
     def simulate(self, simulation_range, initial_conditions,
                  rate_parameters, drain_parameters=None, *args, **kwargs):
 
-        def choose_method_and_run(stochpy_module):
+        def choose_method_and_run():
 
             if self.stochastic_method == StochPyStochasticSolvers.direct:
                 stochpy_module.Method('Direct')
@@ -62,8 +63,9 @@ class StochPyStochastic(StochasticPlugin):
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore')
                     stochpy_module.DoStochSim()
-            except Exception as exception:
-                self.logger.error("Exception in stochpy simulation: {}".format(exception))
+            except BaseException as exception:
+                if logging_is_enabled():
+                    self.logger.error("Exception in stochpy simulation: {}".format(exception))
                 messages.print_solver_done(name, self.stochastic_method.name, was_failure=True)
                 return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
                                           errors=(exception,))
@@ -89,7 +91,7 @@ class StochPyStochastic(StochasticPlugin):
                 import stochpy as sp
                 stochpy_module = sp.SSA(dir=tmp, model_file="model.psc")
 
-            output = choose_method_and_run(stochpy_module)
+            output = choose_method_and_run()
 
         messages.print_solver_done(name, method_name=self.stochastic_method.name)
         return output

@@ -1,5 +1,5 @@
 from dgDynamic.utils.exceptions import SimulationError
-from dgDynamic.config.settings import config
+from dgDynamic.config.settings import config, logging_is_enabled
 from .stochastic_plugin import StochasticPlugin
 from dgDynamic.output import SimulationOutput
 import dgDynamic.converters.stochastic.spim_converter as converters
@@ -96,7 +96,7 @@ class SpimStochastic(StochasticPlugin):
                 self.generate_code_file(script, simulation_range, initial_conditions,
                                         rate_parameters, drain_parameters)
 
-            if config.getboolean('Logging', 'ENABLE_LOGGING', fallback=False):
+            if logging_is_enabled():
                 with open(file_path_code) as debug_file:
                     self.logger.info("SPiM simulation file:\n{}".format(debug_file.read()))
 
@@ -120,7 +120,7 @@ class SpimStochastic(StochasticPlugin):
                                         errors=errors)
 
             if not os.path.isfile(csv_file_path):
-                if config.getboolean('Logging', 'ENABLE_LOGGING', fallback=False):
+                if logging_is_enabled():
                     self.logger.error("Missing SPiM output")
                 errors.append(SimulationError("Missing SPiM output"))
                 messages.print_solver_done(name, was_failure=True)
