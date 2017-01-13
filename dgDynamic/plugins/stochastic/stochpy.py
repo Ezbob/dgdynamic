@@ -10,6 +10,7 @@ import dgDynamic.output as o
 import dgDynamic.utils.messages as messages
 from dgDynamic.config.settings import logging_is_enabled
 import warnings
+import enum
 
 name = SupportedStochasticPlugins.StochPy
 
@@ -43,14 +44,25 @@ class StochPyStochastic(StochasticPlugin):
         writable_stream.write(stochpy_converter.generate_initial_conditions(initial_values))
         writable_stream.write("\n")
 
+    @property
+    def method(self):
+        if isinstance(self.stochastic_method, enum.Enum):
+            return self.stochastic_method
+        elif isinstance(self.stochastic_method, str):
+            for supported in StochPyStochasticSolvers:
+                name, value = supported.name.lower().strip(), supported.value.lower().strip()
+                user_method = self.stochastic_method.lower().strip()
+                if user_method == name or user_method == value:
+                    return supported
+
     def simulate(self, simulation_range, initial_conditions,
                  rate_parameters, drain_parameters=None, *args, **kwargs):
 
         def choose_method_and_run():
 
-            if self.stochastic_method == StochPyStochasticSolvers.direct:
+            if self.method == StochPyStochasticSolvers.direct:
                 stochpy_module.Method('Direct')
-            elif self.stochastic_method == StochPyStochasticSolvers.tauLeaping:
+            elif self.method == StochPyStochasticSolvers.tauLeaping:
                 stochpy_module.Method('TauLeaping')
 
             self.logger.info("simulation method name: {}".format(stochpy_module.sim_method_name))
@@ -66,7 +78,7 @@ class StochPyStochastic(StochasticPlugin):
             except BaseException as exception:
                 if logging_is_enabled():
                     self.logger.error("Exception in stochpy simulation: {}".format(exception))
-                messages.print_solver_done(name, self.stochastic_method.name, was_failure=True)
+                messages.print_solver_done(name, self.method.name, was_failure=True)
                 return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
                                           errors=(exception,))
 
@@ -93,5 +105,5 @@ class StochPyStochastic(StochasticPlugin):
 
             output = choose_method_and_run()
 
-        messages.print_solver_done(name, method_name=self.stochastic_method.name)
+        messages.print_solver_done(name, method_name=self.method.name)
         return output

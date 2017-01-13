@@ -13,7 +13,7 @@ ode = dgDynamicSim(dg)
 stochastic = dgDynamicSim(dg, simulator_choice="stochastic")
 
 # Set the species that you wish to remain unchanged in the integration process.
-# Since these species don't contribute they don't get saved or plotted
+# Since these species don't contribute they don't get plotted
 ode.unchanging_species('B')
 stochastic.unchanging_species('B')
 
