@@ -8,9 +8,11 @@ import os.path
 import matplotlib.pyplot as plt
 from dgDynamic.config.settings import config
 from dgDynamic.utils.plotter import matplotlib_plot
+from dgDynamic.utils.project_utils import spin_it
 
 
 class PluginBase(abc.ABC, LogMixin):
+
 
     @abc.abstractmethod
     def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters, *args, **kwargs):

@@ -2,6 +2,7 @@ from dgDynamic.choices import SupportedStochasticPlugins, StochPyStochasticSolve
 from .stochastic_plugin import StochasticPlugin
 import dgDynamic.converters.stochastic.stochpy_converter as stochpy_converter
 import dgDynamic.converters.convert_base as converter_base
+import dgDynamic.utils.project_utils as utils
 import tempfile
 import io
 import contextlib as cl
@@ -57,6 +58,7 @@ class StochPyStochastic(StochasticPlugin):
                 if user_method == name or user_method == value:
                     return supported
 
+    @utils.spin_it(message='Simulating... ')
     def simulate(self, simulation_range, initial_conditions,
                  rate_parameters, drain_parameters=None, *args, **kwargs):
 

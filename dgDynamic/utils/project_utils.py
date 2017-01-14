@@ -2,9 +2,10 @@ import logging
 import os
 import shutil
 import time
-from ..config.settings import config
-from typing import *
 from .logger import logging_handler
+import sys
+import itertools as it
+import threading
 
 
 def pop_or_default(kwargs, key, default=None):
@@ -12,6 +13,28 @@ def pop_or_default(kwargs, key, default=None):
         return kwargs.pop(key)
     except KeyError:
         return default
+
+
+def spin_it(message, frames=['|', '\\', '-', '/'], delay_scale=1):
+    def inner(function):
+        def do_function(*args, **kwargs):
+            t = threading.Thread(target=spinner, args=[frames, delay_scale])
+            print(message)
+            t.start()
+            return function(*args, **kwargs)
+        return do_function
+    return inner
+
+
+def spinner(frames, delay_scale=1):
+    def do_the_spinning(fs, delay):
+        cycle = it.cycle(frames)
+        while True:
+            sys.stdout.write(next(cycle))
+            sys.stdout.flush()
+            time.sleep((1 / len(frames)) * delay_scale)
+            sys.stdout.write("\b")
+    return threading.Thread(target=do_the_spinning, args=[frames, delay_scale])
 
 
 def log_it(function):

@@ -99,3 +99,4 @@ def generate_fixed_species(ignored_species, internal_symbol_map):
                 str_out.write('{} '.format(convert_base.replacer(internal_symbol_map[symbol])))
             str_out.write('\n')
             return str_out.getvalue()
+    return ''
