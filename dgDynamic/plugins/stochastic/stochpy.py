@@ -25,16 +25,18 @@ class StochPyStochastic(StochasticPlugin):
     def generate_psc_file(self, writable_stream, rate_law_dict, initial_conditions,
                           rate_parameters, drain_parameters=None, translate_dict=None):
 
+        internal_symbols = self._simulator.internal_symbol_dict
+        internal_drains = self._simulator.internal_drain_dict
         rates = dict(converter_base.get_edge_rate_dict(self._simulator.graph, rate_parameters,
                                                        self._simulator.parameters))
+
+        writable_stream.write(stochpy_converter.generate_fixed_species(self._simulator.ignored, internal_symbols))
+
         writable_stream.write(stochpy_converter.generate_reactions(rate_law_dict, translate_dict))
 
-        drain_values = dict(converter_base.get_drain_rate_dict(self._simulator.internal_drain_dict,
-                                                               drain_parameters))
+        drain_values = dict(converter_base.get_drain_rate_dict(internal_drains, drain_parameters))
 
-        writable_stream.write(stochpy_converter.generate_drains(drain_values,
-                                                                self._simulator.internal_drain_dict,
-                                                                self._simulator.internal_symbol_dict))
+        writable_stream.write(stochpy_converter.generate_drains(drain_values, internal_drains, internal_symbols))
 
         writable_stream.write('\n')
         writable_stream.write(stochpy_converter.generate_rates(rates))
@@ -74,17 +76,22 @@ class StochPyStochastic(StochasticPlugin):
             try:
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore')
-                    stochpy_module.DoStochSim()
+                    stdout = io.StringIO()
+                    with cl.redirect_stdout(stdout):
+                        stochpy_module.DoStochSim()
+                    self.logger.info(stdout.getvalue())
             except BaseException as exception:
                 if logging_is_enabled():
-                    self.logger.error("Exception in stochpy simulation: {}".format(exception))
+                    self.logger.error("Exception in stochpy simulation: {}".format(str(exception)))
                 messages.print_solver_done(name, self.method.name, was_failure=True)
                 return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
-                                          errors=(exception,))
-
+                                          solver_method=self.method, errors=(exception,))
+            finally:
+                stdout.close()
             end_time = time.time()
             self.logger.info("Simulation ended. Execution time: {} secs".format(end_time - start_time))
             data = stochpy_module.data_stochsim.getSpecies()
+            messages.print_solver_done(name, method_name=self.method.name)
             return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
                                       independent=data[:, :1], dependent=data[:, 1:])
 
@@ -105,5 +112,4 @@ class StochPyStochastic(StochasticPlugin):
 
             output = choose_method_and_run()
 
-        messages.print_solver_done(name, method_name=self.method.name)
         return output

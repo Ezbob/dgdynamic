@@ -89,3 +89,13 @@ def generate_drains(drain_value_map, internal_drain_dict, internal_symbol_dict):
             str_out.write('\n')
 
         return str_out.getvalue()
+
+
+def generate_fixed_species(ignored_species, internal_symbol_map):
+    if len(ignored_species) > 0:
+        with StringIO() as str_out:
+            str_out.write('FIX: ')
+            for symbol, _ in ignored_species:
+                str_out.write('{} '.format(convert_base.replacer(internal_symbol_map[symbol])))
+            str_out.write('\n')
+            return str_out.getvalue()
