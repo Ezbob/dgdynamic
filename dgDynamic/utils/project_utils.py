@@ -6,6 +6,8 @@ from .logger import logging_handler
 import sys
 import itertools as it
 import threading
+import contextlib
+import io
 
 
 def pop_or_default(kwargs, key, default=None):
@@ -21,9 +23,13 @@ def spin_it(message, frames=('|', '\\', '-', '/'), delay_scale=1):
             sys.stdout.write(message)
             spinner = Spinner(frames=frames, delay=delay_scale)
             spinner.start()
-            output = function(*args, **kwargs)
+            with io.StringIO() as strout:
+                with contextlib.redirect_stdout(strout):
+                    output = function(*args, **kwargs)
+                out = strout.getvalue()
             spinner.stop()
             sys.stdout.write('\n')
+            sys.stdout.write(out)
             return output
         return do_function
     return inner
@@ -41,10 +47,10 @@ class Spinner:
     def start(self):
         def do_it():
             while self.is_running:
-                self.stream.write("{}\n".format(next(self.frames)))
+                self.stream.write(next(self.frames))
                 self.stream.flush()
                 time.sleep(1 / self.number_of_frames * self.delay)
-                self.stream.write('\b\b')
+                self.stream.write('\b')
         self.thread = threading.Thread(target=do_it)
         self.thread.start()
 
