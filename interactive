@@ -1,8 +1,0 @@
-#!/bin/bash
-
-dgdyn_path=$(realpath $1)
-
-export PYTHONPATH="/usr/local/lib:"$dgdyn_path":"
-echo "Exported "$PYTHONPATH" to Python Path"
-ipython
-

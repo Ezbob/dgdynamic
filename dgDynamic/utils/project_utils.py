@@ -15,26 +15,42 @@ def pop_or_default(kwargs, key, default=None):
         return default
 
 
-def spin_it(message, frames=['|', '\\', '-', '/'], delay_scale=1):
+def spin_it(message, frames=('|', '\\', '-', '/'), delay_scale=1):
     def inner(function):
         def do_function(*args, **kwargs):
-            t = threading.Thread(target=spinner, args=[frames, delay_scale])
-            print(message)
-            t.start()
-            return function(*args, **kwargs)
+            sys.stdout.write(message)
+            spinner = Spinner(frames=frames, delay=delay_scale)
+            spinner.start()
+            output = function(*args, **kwargs)
+            spinner.stop()
+            sys.stdout.write('\n')
+            return output
         return do_function
     return inner
 
 
-def spinner(frames, delay_scale=1):
-    def do_the_spinning(fs, delay):
-        cycle = it.cycle(frames)
-        while True:
-            sys.stdout.write(next(cycle))
-            sys.stdout.flush()
-            time.sleep((1 / len(frames)) * delay_scale)
-            sys.stdout.write("\b")
-    return threading.Thread(target=do_the_spinning, args=[frames, delay_scale])
+class Spinner:
+    def __init__(self, frames=('|', '\\', '-', '/'), delay=1, stream=None):
+        self.frames = it.cycle(frames)
+        self.number_of_frames = len(frames)
+        self.delay = delay
+        self.stream = sys.stdout if stream is None else stream
+        self.is_running = True
+        self.thread = None
+
+    def start(self):
+        def do_it():
+            while self.is_running:
+                self.stream.write("{}\n".format(next(self.frames)))
+                self.stream.flush()
+                time.sleep(1 / self.number_of_frames * self.delay)
+                self.stream.write('\b\b')
+        self.thread = threading.Thread(target=do_it)
+        self.thread.start()
+
+    def stop(self):
+        self.is_running = False
+        self.thread.join()
 
 
 def log_it(function):

@@ -58,7 +58,7 @@ class StochPyStochastic(StochasticPlugin):
                 if user_method == name or user_method == value:
                     return supported
 
-    @utils.spin_it(message='Simulating... ')
+    @utils.spin_it(message='Simulating... ', delay_scale=0.8)
     def simulate(self, simulation_range, initial_conditions,
                  rate_parameters, drain_parameters=None, *args, **kwargs):
 
