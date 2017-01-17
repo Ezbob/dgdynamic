@@ -76,9 +76,9 @@ out = solver.simulate(integration_range, initial_conditions, parameters)
 
 out.plot(filename="matlab2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
 
-stochpy.method = 'tauLeaping'
-out = stochpy.simulate(integration_range, initial_conditions, parameters)
-
-out.plot(figure_size=(60, 30))
+# stochpy.method = 'tauLeaping'
+# out = stochpy.simulate(integration_range, initial_conditions, parameters)
+#
+# out.plot(figure_size=(60, 30))
 
 show_plots()

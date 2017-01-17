@@ -1,5 +1,6 @@
 """
 Here we numerically solve for the first-order autocatalytic cycles as described in the Ikegami et.al. paper
+See Section: "The linear case: self-origanisation of first-order autocatalysis"
 """
 
 import mod
