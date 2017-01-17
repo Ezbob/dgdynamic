@@ -1,9 +1,8 @@
-from dgDynamic.simulators.ode_simulator import ODESystem
-from .converter_ode import substitute, join_parameter_maps
-from ..convert_base import get_edge_rate_dict, get_drain_rate_dict
+from dgDynamic.base_converters.ode.converter_ode import substitute, join_parameter_maps
+from dgDynamic.base_converters.convert_base import get_edge_rate_dict, get_drain_rate_dict
 
 
-def get_scipy_lambda(simulator: ODESystem, parameter_substitutions, drain_substitutions):
+def get_scipy_lambda(simulator: 'ODESystem', parameter_substitutions, drain_substitutions):
     """
     Takes a simulator, the users parameters and drain rates and constructs a lambda expression
     corresponding to the differential equation used to be solved by SciPy

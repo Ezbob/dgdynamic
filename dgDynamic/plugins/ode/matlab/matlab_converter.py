@@ -1,6 +1,5 @@
-from dgDynamic.simulators.ode_simulator import ODESystem
-from .converter_ode import DefaultFunctionSymbols, substitute, join_parameter_maps
-from ..convert_base import get_edge_rate_dict, get_drain_rate_dict
+from dgDynamic.base_converters.ode.converter_ode import DefaultFunctionSymbols, substitute, join_parameter_maps
+from dgDynamic.base_converters.convert_base import get_edge_rate_dict, get_drain_rate_dict
 
 
 class MatlabSymbols(DefaultFunctionSymbols):
@@ -14,7 +13,7 @@ def _postprocessor(function_string: str):
     return function_string.replace('**', MatlabSymbols.pow)
 
 
-def get_matlab_lambda(simulator: ODESystem, parameter_substitutions=None, drain_substitutions=None):
+def get_matlab_lambda(simulator: 'ODESystem', parameter_substitutions=None, drain_substitutions=None):
     """
     Converts a sympy symbolic ODE system into a MatLab lambda function that can be integrated.
     """

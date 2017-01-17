@@ -1,17 +1,16 @@
-from dgDynamic.choices import SupportedStochasticPlugins, StochPyStochasticSolvers
-from .stochastic_plugin import StochasticPlugin
-import dgDynamic.converters.stochastic.stochpy_converter as stochpy_converter
-import dgDynamic.converters.convert_base as converter_base
-import dgDynamic.utils.project_utils as utils
-import tempfile
-import io
 import contextlib as cl
-import time
-import dgDynamic.output as o
-import dgDynamic.utils.messages as messages
-from dgDynamic.config.settings import logging_is_enabled
-import warnings
 import enum
+import io
+import tempfile
+import time
+import warnings
+import dgDynamic.base_converters.convert_base as converter_base
+import dgDynamic.output as o
+import dgDynamic.plugins.stochastic.stochpy.stochpy_converter as stochpy_converter
+import dgDynamic.utils.messages as messages
+from dgDynamic.choices import SupportedStochasticPlugins, StochPyStochasticSolvers
+from dgDynamic.config.settings import logging_is_enabled
+from dgDynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
 
 name = SupportedStochasticPlugins.StochPy
 

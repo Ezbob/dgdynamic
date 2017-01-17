@@ -1,6 +1,6 @@
 import abc
 from typing import Union, Tuple
-from ..converters.reaction_parser import abstract_mod_parser, hyper_edge_to_string
+from ..base_converters.reaction_parser import abstract_mod_parser, hyper_edge_to_string
 from dgDynamic.utils.project_utils import LogMixin
 from ..intermediate.intermediate_generators import generate_rate_laws, generate_rate_equations
 from collections import OrderedDict

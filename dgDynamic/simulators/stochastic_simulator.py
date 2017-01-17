@@ -1,8 +1,7 @@
 from dgDynamic.choices import SupportedStochasticPlugins
 from dgDynamic.intermediate.intermediate_generators import generate_channels
 from .simulator import DynamicSimulator
-from ..plugins.stochastic.spim import SpimStochastic
-from ..plugins.stochastic.stochpy import StochPyStochastic
+from ..plugins.plugin_table import PLUGINS_TAB
 
 
 class StochasticSystem(DynamicSimulator):
@@ -16,10 +15,9 @@ class StochasticSystem(DynamicSimulator):
         return result
 
     def get_plugin_from_enum(self, enum_variable, *args, **kwargs):
-        if enum_variable == SupportedStochasticPlugins.SPiM:
-            return SpimStochastic(self, *args, **kwargs)
-        elif enum_variable == SupportedStochasticPlugins.StochPy:
-            return StochPyStochastic(self, *args, **kwargs)
+        for enum_var, plugin_class in PLUGINS_TAB['stochastic'].items():
+            if enum_var == enum_variable:
+                return plugin_class(self, *args, **kwargs)
 
     def get_plugin(self, plugin_name, *args, **kwargs):
         if isinstance(plugin_name, str):

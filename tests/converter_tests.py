@@ -1,8 +1,9 @@
 import unittest
-from dgDynamic.structures import HyperGraph
-from dgDynamic.converters.ode.scipy_converter import get_scipy_lambda
-from dgDynamic.converters.ode.matlab_converter import get_matlab_lambda
+
+from dgDynamic.plugins.ode.matlab.matlab_converter import get_matlab_lambda
+from dgDynamic.plugins.ode.scipy.scipy_converter import get_scipy_lambda
 from dgDynamic.simulators.ode_simulator import ODESystem
+from dgDynamic.structures import HyperGraph
 
 
 class ConverterTestCase(unittest.TestCase):

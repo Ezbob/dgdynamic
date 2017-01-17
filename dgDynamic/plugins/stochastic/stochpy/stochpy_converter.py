@@ -1,7 +1,7 @@
 import re
 from io import StringIO
 from dgDynamic.config.settings import config
-import dgDynamic.converters.convert_base as convert_base
+import dgDynamic.base_converters.convert_base as convert_base
 
 
 def generate_reactions(rate_law_dict, translate_dict=None):

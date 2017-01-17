@@ -4,6 +4,7 @@ from typing import Union
 from dgDynamic.choices import SupportedOdePlugins
 from .simulator import DynamicSimulator
 from ..utils.exceptions import SimulationError
+from ..plugins.plugin_table import PLUGINS_TAB
 
 
 class ODESystem(DynamicSimulator):
@@ -18,12 +19,9 @@ class ODESystem(DynamicSimulator):
                                       for index, edge in enumerate(self.graph.edges))
 
     def get_plugin_from_enum(self, enum_variable, *args, **kwargs):
-        if enum_variable == SupportedOdePlugins.SciPy:
-            from dgDynamic.plugins.ode.scipy import ScipyOde
-            return ScipyOde(self, *args, **kwargs)
-        elif enum_variable == SupportedOdePlugins.MATLAB:
-            from dgDynamic.plugins.ode.matlab import MatlabOde
-            return MatlabOde(self, *args, **kwargs)
+        for enum_var, plugin_class in PLUGINS_TAB['ode'].items():
+            if enum_var == enum_variable:
+                return plugin_class(self, *args, **kwargs)
 
     def get_plugin(self, plugin_name: Union[str, SupportedOdePlugins], *args, **kwargs):
         if isinstance(plugin_name, str):

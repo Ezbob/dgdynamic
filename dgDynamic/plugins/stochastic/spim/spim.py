@@ -1,19 +1,18 @@
-from dgDynamic.utils.exceptions import SimulationError
-from dgDynamic.config.settings import config, logging_is_enabled
-from .stochastic_plugin import StochasticPlugin
-from dgDynamic.output import SimulationOutput
-import dgDynamic.converters.stochastic.spim_converter as converters
-from dgDynamic.choices import SupportedStochasticPlugins
-from collections import OrderedDict
-import dgDynamic.utils.messages as messages
-import os.path
-import os
 import array
 import csv
+import math
+import os
+import os.path
 import subprocess
 import tempfile
-import math
-
+import dgDynamic.plugins.stochastic.spim.spim_converter as converters
+import dgDynamic.utils.messages as messages
+from collections import OrderedDict
+from dgDynamic.choices import SupportedStochasticPlugins
+from dgDynamic.config.settings import config, logging_is_enabled
+from dgDynamic.output import SimulationOutput
+from dgDynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
+from dgDynamic.utils.exceptions import SimulationError
 
 name = SupportedStochasticPlugins.SPiM
 

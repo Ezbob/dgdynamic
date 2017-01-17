@@ -1,5 +1,5 @@
 from io import StringIO
-from ..convert_base import get_edge_rate_dict, get_drain_rate_dict
+from dgDynamic.base_converters.convert_base import get_edge_rate_dict, get_drain_rate_dict
 
 
 def generate_preamble(sample_range, draw_automata=False, symbols_dict=None, species_count=0, ignored=None,

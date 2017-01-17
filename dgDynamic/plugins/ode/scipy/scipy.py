@@ -1,14 +1,16 @@
 import sys
+
 import scipy.integrate
-from dgDynamic.utils.exceptions import SimulationError
-from dgDynamic.choices import ScipyOdeSolvers, SupportedOdePlugins
-from dgDynamic.converters.ode.scipy_converter import get_scipy_lambda
-from dgDynamic.converters.convert_base import get_initial_values
-from dgDynamic.plugins.ode.ode_plugin import OdePlugin
-from dgDynamic.utils.project_utils import LogMixin
-from dgDynamic.output import SimulationOutput
-from dgDynamic.config.settings import config
+
 import dgDynamic.utils.messages as messages
+from dgDynamic.choices import ScipyOdeSolvers, SupportedOdePlugins
+from dgDynamic.config.settings import config
+from dgDynamic.base_converters.convert_base import get_initial_values
+from dgDynamic.output import SimulationOutput
+from dgDynamic.plugins.ode.ode_plugin import OdePlugin
+from dgDynamic.plugins.ode.scipy.scipy_converter import get_scipy_lambda
+from dgDynamic.utils.exceptions import SimulationError
+from dgDynamic.utils.project_utils import LogMixin
 
 name = SupportedOdePlugins.SciPy
 
