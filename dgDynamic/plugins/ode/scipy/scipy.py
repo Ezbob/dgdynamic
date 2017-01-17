@@ -1,7 +1,5 @@
 import sys
-
 import scipy.integrate
-
 import dgDynamic.utils.messages as messages
 from dgDynamic.choices import ScipyOdeSolvers, SupportedOdePlugins
 from dgDynamic.config.settings import config

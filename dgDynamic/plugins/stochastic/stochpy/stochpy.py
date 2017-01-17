@@ -19,7 +19,8 @@ class StochPyStochastic(StochasticPlugin):
 
     def __init__(self, simulator, stochastic_method=StochPyStochasticSolvers.direct, timeout=None):
         super().__init__()
-        self.stochastic_method = stochastic_method
+        self._method = stochastic_method
+        self.timeout = timeout
         self._simulator = simulator
 
     def generate_psc_file(self, writable_stream, rate_law_dict, initial_conditions,
@@ -48,14 +49,18 @@ class StochPyStochastic(StochasticPlugin):
 
     @property
     def method(self):
-        if isinstance(self.stochastic_method, enum.Enum):
-            return self.stochastic_method
-        elif isinstance(self.stochastic_method, str):
+        if isinstance(self._method, enum.Enum):
+            return self._method
+        elif isinstance(self._method, str):
             for supported in StochPyStochasticSolvers:
                 name, value = supported.name.lower().strip(), supported.value.lower().strip()
-                user_method = self.stochastic_method.lower().strip()
+                user_method = self._method.lower().strip()
                 if user_method == name or user_method == value:
                     return supported
+
+    @method.setter
+    def method(self, value):
+        self._method = value
 
     def simulate(self, simulation_range, initial_conditions,
                  rate_parameters, drain_parameters=None, *args, **kwargs):

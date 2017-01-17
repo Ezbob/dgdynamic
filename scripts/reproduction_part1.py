@@ -68,11 +68,9 @@ ode = dgDynamicSim(dg).unchanging_species(*unchanging_species)
 
 solver = ode("scipy")
 
-solver.simulation_range = integration_range
-solver.parameters = parameters
-solver.initial_conditions = initial_conditions
-solver.ode_method = ScipyOdeSolvers.LSODA
+solver.integrator_mode = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.1
 
-solver.simulate().save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))
+output = solver.simulate(integration_range, initial_conditions, parameters,)
+output.save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))
 show_plots()

@@ -51,10 +51,10 @@ class SpimStochastic(StochasticPlugin):
         writable_stream.write('\n')
         writable_stream.write(converters.generate_automata_code(channel_dict=channels,
                                                                 symbols_dict=symbol_translate_dict,
-                                                                internal_drains=self._simulator.internal_drain_dict,))
+                                                                internal_drains=self._simulator.internal_drain_dict))
         writable_stream.write('\n\n')
         writable_stream.write(converters.generate_initial_values(symbols_dict=symbol_translate_dict,
-                                                                 initial_conditions=initial_conditions, ))
+                                                                 initial_conditions=initial_conditions))
 
     def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None,
                  timeout=None, rel_tol=None, abs_tol=None) -> SimulationOutput:

@@ -5,7 +5,7 @@ Numerically solving non-linear case as described in the Ikegami et.al. paper
 import mod
 import numpy
 
-from dgDynamic.mod_dynamics import dgDynamicSim
+from dgDynamic.mod_dynamics import dgDynamicSim, show_plots
 from dgDynamic.choices import MatlabOdeSolvers, ScipyOdeSolvers
 
 root_symbol = 'A'
@@ -57,23 +57,28 @@ for reaction in get_reactions():
 dg = mod.dgAbstract(reactions)
 
 ode = dgDynamicSim(dg)
+sto = dgDynamicSim(dg, 'stochastic')
 
 solver = ode.get_plugin("scipy")
+spim = sto('SPIM')
+stochpy = sto('stochpy')
 
-solver.set_integration_range(integration_range)
-solver.set_parameters(parameters)
-solver.set_initial_conditions(initial_conditions)
-solver.set_ode_solver(ScipyOdeSolvers.LSODA)
-
+solver.integrator_mode = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.08
 
-solver.simulate().plot(filename="scipy2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
+out = solver.simulate(integration_range, initial_conditions, parameters)
+out.plot(filename="scipy2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
 
 solver = ode.get_plugin('matlab')
 
-solver.set_integration_range(integration_range)\
-    .set_parameters(parameters)\
-    .set_initial_conditions(initial_conditions)
-solver.set_ode_solver(MatlabOdeSolvers.ode45)
+solver.integrator_mode = MatlabOdeSolvers.ode45
+out = solver.simulate(integration_range, initial_conditions, parameters)
 
-solver.simulate().plot(filename="matlab2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
+out.plot(filename="matlab2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
+
+stochpy.method = 'tauLeaping'
+out = stochpy.simulate(integration_range, initial_conditions, parameters)
+
+out.plot(figure_size=(60, 30))
+
+show_plots()

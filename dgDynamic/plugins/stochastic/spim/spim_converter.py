@@ -68,7 +68,8 @@ def generate_initial_values(symbols_dict, initial_conditions) -> str:
                     str_out.write("{} of {}()".format(initial_conditions[key], symbols_dict[key]))
                     str_out.write(" | ")
                 else:
-                    raise TypeError("Unsupported value type for key: {}".format(key))
+                    raise TypeError("Unsupported value type for key {}, expected <class 'int'> got {}"
+                                    .format(key, type(initial_conditions[key])))
         elif isinstance(initial_conditions, (tuple, list, set)):
             for index, rate_symbols in enumerate(zip(initial_conditions, symbols_dict.keys())):
                 rate_value = rate_symbols[0]

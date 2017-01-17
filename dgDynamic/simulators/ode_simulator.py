@@ -42,4 +42,3 @@ class ODESystem(DynamicSimulator):
 
     def __repr__(self):
         return "<Abstract Ode Simulator>"
-
