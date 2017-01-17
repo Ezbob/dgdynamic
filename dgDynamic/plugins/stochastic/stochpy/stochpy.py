@@ -76,10 +76,10 @@ class StochPyStochastic(StochasticPlugin):
             try:
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore')
-                    stdout = io.StringIO()
-                    with cl.redirect_stdout(stdout):
+                    stdout_str = io.StringIO()
+                    with cl.redirect_stdout(stdout_str):
                         stochpy_module.DoStochSim()
-                    self.logger.info(stdout.getvalue())
+                    self.logger.info(stdout_str.getvalue())
             except BaseException as exception:
                 if logging_is_enabled():
                     self.logger.error("Exception in stochpy simulation: {}".format(str(exception)))
@@ -87,7 +87,7 @@ class StochPyStochastic(StochasticPlugin):
                 return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
                                           solver_method=self.method, errors=(exception,))
             finally:
-                stdout.close()
+                stdout_str.close()
             end_time = time.time()
             self.logger.info("Simulation ended. Execution time: {} secs".format(end_time - start_time))
             data = stochpy_module.data_stochsim.getSpecies()
