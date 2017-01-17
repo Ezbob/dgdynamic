@@ -1,15 +1,5 @@
-import os.path
-import sys
-
-# Setting the Python Path so we can use dgDynamic
-dynamic_module_path = os.path.abspath("../../")
-sys.path.append(dynamic_module_path)
-mod_path = os.path.abspath("/usr/local/lib/")
-sys.path.append(mod_path)
-
 from dgDynamic import dgDynamicSim, show_plots
 from dgDynamic.structures import HyperGraph
-
 
 include("grammar.py")
 
