@@ -63,22 +63,22 @@ solver = ode.get_plugin("scipy")
 spim = sto('SPIM')
 stochpy = sto('stochpy')
 
-solver.integrator_mode = ScipyOdeSolvers.LSODA
-solver.delta_t = 0.08
-
-out = solver.simulate(integration_range, initial_conditions, parameters)
-out.plot(filename="scipy2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
-
-solver = ode.get_plugin('matlab')
-
-solver.integrator_mode = MatlabOdeSolvers.ode45
-out = solver.simulate(integration_range, initial_conditions, parameters)
-
-out.plot(filename="matlab2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
-
-# stochpy.method = 'tauLeaping'
-# out = stochpy.simulate(integration_range, initial_conditions, parameters)
+# solver.integrator_mode = ScipyOdeSolvers.LSODA
+# solver.delta_t = 0.08
 #
-# out.plot(figure_size=(60, 30))
+# out = solver.simulate(integration_range, initial_conditions, parameters)
+# out.plot(filename="scipy2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
+#
+# solver = ode.get_plugin('matlab')
+#
+# solver.integrator_mode = MatlabOdeSolvers.ode45
+# out = solver.simulate(integration_range, initial_conditions, parameters)
+#
+# out.plot(filename="matlab2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
+
+stochpy.method = 'tauLeaping'
+out = stochpy.simulate(integration_range, initial_conditions, parameters)
+
+out.plot(figure_size=(60, 30))
 
 show_plots()

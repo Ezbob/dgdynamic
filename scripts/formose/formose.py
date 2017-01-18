@@ -73,6 +73,5 @@ for i in range(5):
         filename="spim_plot{}.png".format(i), figure_size=(40, 20),
         title="SPIM {}. Formose open cycle solution simulation".format(i + 1))
 
-
 show_plots()
 

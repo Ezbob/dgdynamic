@@ -125,3 +125,21 @@ def generate_channels(hyper_edges):
             raise ValueError("For reaction: {}; reactions with 3 or more reactants are not support"
                              .format(_hyper_edge_to_string(hyper_edge)))
     return result, decay_rates
+
+
+def generate_propensities(hyper_edges, rate_parameters: dict=None, internal_symbols: dict=None):
+
+    translate_internal = internal_symbols if internal_symbols is not None else dict()
+    translate_parameters = rate_parameters if rate_parameters is not None else dict()
+
+    for edge in hyper_edges:
+        if edge.numSources == 2 and ft.reduce(lambda a, b: a.graph.name == b.graph.name, edge.sources):
+            vertex = tuple(edge.sources)[0]
+            sources = sp.Symbol(translate_internal.get(vertex.graph.name, vertex.graph.name))
+            reduced = (1 / 2) * sources * (sources - 1)
+        elif edge.numSources > 2:
+            raise ValueError("Propensities with subtract molecule count large than 2 are not supported")
+        else:
+            sources = (sp.Symbol(translate_internal.get(vertex.graph.name, vertex.graph.name)) for vertex in edge.sources)
+            reduced = ft.reduce(lambda a, b: a * b, sources)
+        yield _hyper_edge_to_string(edge, False), sp.Symbol(translate_parameters.get(edge.id, "r{}".format(edge.id))) * reduced

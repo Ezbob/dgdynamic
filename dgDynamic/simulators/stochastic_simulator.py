@@ -1,5 +1,5 @@
 from dgDynamic.choices import SupportedStochasticPlugins
-from dgDynamic.intermediate.intermediate_generators import generate_channels
+from dgDynamic.intermediate.intermediate_generators import generate_channels, generate_propensities
 from .simulator import DynamicSimulator
 from ..plugins.plugin_table import PLUGINS_TAB
 
@@ -13,6 +13,10 @@ class StochasticSystem(DynamicSimulator):
     def generate_channels(self):
         result, self.decay_rates = generate_channels(self.graph.edges)
         return result
+
+    def generate_propensities(self):
+        yield from (law_tuple[1] for law_tuple in generate_propensities(self.graph.edges, self.parameters,
+                                                                        self.internal_symbol_dict))
 
     def get_plugin_from_enum(self, enum_variable, *args, **kwargs):
         for enum_var, plugin_class in PLUGINS_TAB['stochastic'].items():

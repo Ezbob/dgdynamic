@@ -17,7 +17,6 @@ def generate_reactions(rate_law_dict, translate_dict=None):
             raise ValueError("Not a reaction string")
         digit_matcher = re.compile("\d+")
         new_reaction = separator.join((left, right))
-        # TODO fix something here
         for match in digit_matcher.finditer(new_reaction):
             new_reaction = new_reaction.replace(str(match), '{' + str(match) + '}')
         if translate_dict is not None:

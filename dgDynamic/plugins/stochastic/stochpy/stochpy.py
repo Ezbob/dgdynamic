@@ -6,6 +6,7 @@ import time
 import warnings
 import dgDynamic.base_converters.convert_base as converter_base
 import dgDynamic.output as o
+from collections import defaultdict
 import dgDynamic.plugins.stochastic.stochpy.stochpy_converter as stochpy_converter
 import dgDynamic.utils.messages as messages
 from dgDynamic.choices import SupportedStochasticPlugins, StochPyStochasticSolvers
@@ -28,8 +29,14 @@ class StochPyStochastic(StochasticPlugin):
 
         internal_symbols = self._simulator.internal_symbol_dict
         internal_drains = self._simulator.internal_drain_dict
+
         rates = dict(converter_base.get_edge_rate_dict(self._simulator.graph, rate_parameters,
                                                        self._simulator.parameters))
+        for sym in self._simulator.parameters.values():
+            # adding in any missing parameter values
+            new_sym = sym.replace('$', '')
+            if new_sym not in rates:
+                rates[new_sym] = 0
 
         writable_stream.write(stochpy_converter.generate_fixed_species(self._simulator.ignored, internal_symbols))
 
@@ -105,7 +112,7 @@ class StochPyStochastic(StochasticPlugin):
             model_file_path = "{}/model.psc".format(tmp)
             with open(model_file_path, mode="w+") as file_stream:
                 rate_law_dict = dict(zip(self._simulator.abstract_edges,
-                                         self._simulator.generate_rate_laws()))
+                                         self._simulator.generate_propensities()))
                 self.generate_psc_file(file_stream, rate_law_dict, initial_conditions, rate_parameters,
                                        drain_parameters, self._simulator.internal_symbol_dict)
                 file_stream.seek(0)
