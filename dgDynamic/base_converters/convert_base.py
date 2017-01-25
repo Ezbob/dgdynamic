@@ -75,38 +75,60 @@ def get_edge_rate_dict(deviation_graph: th.MødDeviationGraph,
 
 @log_it
 def get_drain_rate_dict(internal_drains: dict, user_drain_rates: dict):
-
+    """
+    Sanitize the user drain input with this function
+    :param internal_drains: from the simulator maps species symbol to drain symbols that needs to replaced
+    :param user_drain_rates: user information, what the user inputs
+    :return:
+    """
+    number_of_values = len(tuple(internal_drains.values())[0])
     if not user_drain_rates:
+        # UPDATE: there are now four values instead of two
         for drain_symbols in internal_drains.values():
-            in_symbol, out_symbol = drain_symbols
-            yield in_symbol.replace('$', ''), 0
-            yield out_symbol.replace('$', ''), 0
+            in_offset, in_factor, out_offset, out_factor = drain_symbols
+            yield in_offset.replace('$', ''), 0.0
+            yield in_factor.replace('$', ''), 0.0
+            yield out_offset.replace('$', ''), 0.0
+            yield out_factor.replace('$', ''), 0.0
     else:
-        def add_to_result(key, in_value, out_value):
-            if isinstance(in_value, (int, float)) and isinstance(out_value, (int, float)):
-                if key in internal_drains:
-                    in_sym, out_sym = internal_drains[key]
-                    yield in_sym.replace('$', ''), in_value
-                    yield out_sym.replace('$', ''), out_value
-                else:
-                    raise TypeError("Vertex key not found in deviation graph: {}".format(key))
+        def add_to_result(key, values):
+            # using collections instead
+            for value in values:
+                if not isinstance(value, (int, float)):
+                    raise TypeError("Expected {} or {} got {} for key {}".format(int, float, type(value), key))
+
+            if key in internal_drains:
+                assert len(internal_drains[key]) == len(values)
+                for symbol, value in zip(internal_drains[key], values):
+                    yield symbol.replace('$', ''), value
             else:
-                raise TypeError("Type error for values mapped to key {}; expected float or int value".format(key))
+                raise TypeError("Vertex key not found in deviation graph: {}".format(key))
 
         for external_vertex, drain_symbols in internal_drains.items():
-            rate = user_drain_rates[external_vertex] if external_vertex in user_drain_rates else 0.0
-            if isinstance(rate, (float, int)):
-                yield from add_to_result(external_vertex, rate, rate)
-            elif isinstance(rate, (tuple, set, list)):
-                if len(rate) < 2:
-                    raise ValueError('Not enough diffusion rates given for key: {}'.format(external_vertex))
-                in_val, out_val = rate[:2]
-                yield from add_to_result(external_vertex, in_val, out_val)
-            elif isinstance(rate, dict):
-                if 'in' in rate and 'out' in rate:
-                    yield from add_to_result(external_vertex, rate['in'], rate['out'])
-                else:
-                    raise ValueError('Missing "in" and "out" keys for vertex key {}'.format(external_vertex))
+            rate_entry = user_drain_rates[external_vertex] if external_vertex in user_drain_rates else 0.0
+            if isinstance(rate_entry, (float, int)):
+                # we get a single number from the user, this is a shorthand for setting all
+                yield from add_to_result(external_vertex, (rate_entry,) * number_of_values)
+            elif isinstance(rate_entry, (tuple, set, list)):
+                # we get a collection of numbers from the user
+                yield from add_to_result(external_vertex, rate_entry)
+            elif isinstance(rate_entry, dict):
+                # we get a dictionary with members 'in' and 'out'
+                if not ('in' in rate_entry or 'out' in rate_entry):
+                    raise ValueError('Missing "in" or "out" keys for vertex key {}'.format(external_vertex))
+                # put in default values
+                values = [0.0] * number_of_values
+                if 'in' in rate_entry:
+                    assert isinstance(rate_entry['in'], dict)
+                    values[0] = rate_entry['in']['constant'] if 'constant' in rate_entry['in'] else 0.0
+                    values[1] = rate_entry['in']['factor'] if 'factor' in rate_entry['in'] else 0.0
+
+                if 'out' in rate_entry:
+                    assert isinstance(rate_entry['out'], dict)
+                    values[2] = rate_entry['out']['constant'] if 'constant' in rate_entry['out'] else 0
+                    values[3] = rate_entry['out']['factor'] if 'factor' in rate_entry['out'] else 0
+
+                yield from add_to_result(external_vertex, values)
 
 
 @log_it

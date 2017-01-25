@@ -42,9 +42,10 @@ def generate_rate_equations(hyper_vertices, hyper_edges, ignored, rate_parameter
     internal_symbol_dict = internal_symbols if internal_symbols is not None else dict()
 
     def drain():
-        in_sym, out_sym = drain_translation[vertex.graph.name]
+        in_off, in_fac, out_off, out_fac = drain_translation[vertex.graph.name]
         vertex_sym = sp.Symbol(internal_symbol_dict.get(vertex.graph.name, vertex.graph.name))
-        return sp.Symbol(in_sym) * vertex_sym, sp.Symbol(out_sym) * vertex_sym
+        return sp.Symbol(in_fac) * vertex_sym + sp.Symbol(in_off), \
+               sp.Symbol(out_fac) * vertex_sym + sp.Symbol(out_off)
 
     ignore_dict = dict(ignored)
     for vertex in hyper_vertices:

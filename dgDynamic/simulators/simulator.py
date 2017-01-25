@@ -26,7 +26,8 @@ class DynamicSimulator(abc.ABC, LogMixin):
 
     @property
     def drain_symbols(self):
-        yield from (("$DIN{}".format(index), "$DOUT{}".format(index))
+        yield from (("$INOFF{}".format(index), "$INFAC{}".format(index),
+                     "$OUTOFF{}".format(index), "$OUTFAC{}".format(index))
                     for index, vertex in enumerate(self.graph.vertices))
 
     @property
