@@ -68,7 +68,7 @@ def generate_initial_values(symbols_dict, initial_conditions) -> str:
                     str_out.write("{} of {}()".format(initial_conditions[key], symbols_dict[key]))
                     str_out.write(" | ")
                 else:
-                    raise TypeError("Unsupported value type for key {}, expected <class 'int'> got {}"
+                    raise TypeError("Unsupported initial value type for key {}, expected <class 'int'> got {}"
                                     .format(key, type(initial_conditions[key])))
         elif isinstance(initial_conditions, (tuple, list, set)):
             for index, rate_symbols in enumerate(zip(initial_conditions, symbols_dict.keys())):
@@ -78,7 +78,7 @@ def generate_initial_values(symbols_dict, initial_conditions) -> str:
                     str_out.write("{} of {}()".format(rate_value, symbols_dict[symbol_key]))
                     str_out.write(" | ")
                 else:
-                    raise TypeError("Unsupported value type for element: {}".format(index))
+                    raise TypeError("Unsupported initial value type for element: {}".format(index))
 
         str_out.write("1 of GOD() )\n")
         return str_out.getvalue()

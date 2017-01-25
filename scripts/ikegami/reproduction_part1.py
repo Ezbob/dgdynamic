@@ -10,7 +10,7 @@ from dgDynamic.mod_dynamics import dgDynamicSim, HyperGraph, show_plots
 from dgDynamic.choices import ScipyOdeSolvers
 
 root_symbol = 'A'
-species_limit = 60
+species_limit = 10
 max_concentration = 1.0
 dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)

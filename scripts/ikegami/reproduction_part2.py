@@ -63,22 +63,31 @@ solver = ode.get_plugin("scipy")
 spim = sto('SPIM')
 stochpy = sto('stochpy')
 
-# solver.integrator_mode = ScipyOdeSolvers.LSODA
-# solver.delta_t = 0.08
-#
-# out = solver.simulate(integration_range, initial_conditions, parameters)
-# out.plot(filename="scipy2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
-#
-# solver = ode.get_plugin('matlab')
-#
-# solver.integrator_mode = MatlabOdeSolvers.ode45
-# out = solver.simulate(integration_range, initial_conditions, parameters)
-#
-# out.plot(filename="matlab2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
+solver.integrator_mode = ScipyOdeSolvers.LSODA
+solver.delta_t = 0.08
 
-stochpy.method = 'tauLeaping'
-out = stochpy.simulate(integration_range, initial_conditions, parameters)
+out = solver.simulate(integration_range, initial_conditions, parameters)
+out.plot(filename="scipy2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
 
-out.plot(figure_size=(60, 30))
+solver = ode.get_plugin('matlab')
+
+solver.integrator_mode = MatlabOdeSolvers.ode45
+out = solver.simulate(integration_range, initial_conditions, parameters)
+
+out.plot(filename="matlab2.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
+
+initial_conditions = {symbol: 1 for symbol in get_symbols()}
+
+initial_conditions['A1'] = 100
+
+spim_sim_range = (10, 10000)
+
+out = spim.simulate(spim_sim_range, initial_conditions, parameters)
+out.plot(filename="spim.svg", axis_limits=((0, spim_sim_range[0]), (0, 14)), figure_size=(60, 30))
+
+#stochpy.method = 'tauLeaping'
+#out = stochpy.simulate(integration_range, initial_conditions, parameters)
+
+#out.plot(figure_size=(60, 30))
 
 show_plots()
