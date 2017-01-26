@@ -30,6 +30,7 @@ class StochPyStochastic(StochasticPlugin):
         internal_symbols = self._simulator.internal_symbol_dict
         internal_drains = self._simulator.internal_drain_dict
 
+        ignoreds = tuple(item[0] for item in self._simulator.ignored)
         rates = dict(converter_base.get_edge_rate_dict(self._simulator.graph, rate_parameters,
                                                        self._simulator.parameters))
         for sym in self._simulator.parameters.values():
@@ -44,7 +45,7 @@ class StochPyStochastic(StochasticPlugin):
 
         drain_values = dict(converter_base.get_drain_rate_dict(internal_drains, drain_parameters))
 
-        writable_stream.write(stochpy_converter.generate_drains(drain_values, internal_drains, internal_symbols))
+        writable_stream.write(stochpy_converter.generate_drains(drain_values, internal_drains, internal_symbols, ignoreds))
 
         writable_stream.write('\n')
         writable_stream.write(stochpy_converter.generate_rates(rates))

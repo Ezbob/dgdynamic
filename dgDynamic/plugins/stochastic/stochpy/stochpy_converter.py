@@ -51,44 +51,36 @@ def generate_initial_conditions(initial_values_map):
         return str_out.getvalue()
 
 
-def generate_drains(drain_value_map, internal_drain_dict, internal_symbol_dict):
+def generate_drains(drain_value_map, internal_drain_dict, internal_symbol_dict, ignored):
 
     outgoing_drains = dict()
     ingoing_drains = dict()
 
     for original_symbol, drains in internal_drain_dict.items():
         internal_symbol = convert_base.replacer(internal_symbol_dict[original_symbol])
-        ingoing_drains[convert_base.replacer(drains[0])] = internal_symbol
-        outgoing_drains[convert_base.replacer(drains[1])] = internal_symbol
+        r = convert_base.replacer
+        ingoing_drains[internal_symbol] = drain_value_map[r(drains[0])], drain_value_map[r(drains[1])]
+        outgoing_drains[internal_symbol] = drain_value_map[r(drains[2])], drain_value_map[r(drains[3])]
 
     with StringIO() as str_out:
-        value_assignments = tuple()
-        reactions = tuple()
-        reaction_id = 0
-        for drain_symbol, drain_value in drain_value_map.items():
-            if drain_value > 0.0:
-                value_assignments += ("{} = {}".format(drain_symbol, drain_value),)
-                if drain_symbol in outgoing_drains:
-                    species_symbol = outgoing_drains[drain_symbol]
-                    reactions += ("D{}:\n\t{} > $pool\n\t{}*{}".format(reaction_id, species_symbol,
-                                                                    drain_symbol, species_symbol),)
-                elif drain_symbol in ingoing_drains:
-                    species_symbol = ingoing_drains[drain_symbol]
-                    reactions += ("D{}:\n\t$pool > {}\n\t{}*{}".format(reaction_id, species_symbol,
-                                                                    drain_symbol, species_symbol),)
-                reaction_id += 1
+        for external_symbol, internal_symbol in internal_symbol_dict.items():
+            internal_symbol = internal_symbol.replace('$', '')
+            reaction_number = 0
+            outgoing_offset, outgoing_factor = outgoing_drains[internal_symbol]
 
-        for reaction in reactions:
-            str_out.write(reaction)
-            str_out.write('\n')
+            if int(outgoing_offset) != 0 or outgoing_factor != 0.0:
+                str_out.write('D{0}:\n\t{1} > $pool\n\t{2} * {1} + {3}\n'
+                              .format(reaction_number, internal_symbol, outgoing_factor, int(outgoing_offset)))
+                reaction_number += 1
 
-        str_out.write('\n')
+            ingoing_offset, ingoing_factor = ingoing_drains[internal_symbol]
+            if int(ingoing_offset) != 0 or ingoing_factor != 0.0:
+                str_out.write('D{0}:\n\t$pool > {1}\n\t{2} * {1} + {3}\n'
+                              .format(reaction_number, internal_symbol, ingoing_factor, int(ingoing_offset)))
+                reaction_number += 1
 
-        for item in value_assignments:
-            str_out.write(item)
-            str_out.write('\n')
-
-        return str_out.getvalue()
+        result = str_out.getvalue()
+        return result
 
 
 def generate_fixed_species(ignored_species, internal_symbol_map):
