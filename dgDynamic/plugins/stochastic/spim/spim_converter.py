@@ -127,9 +127,9 @@ def generate_automata_code(channel_dict, symbols_dict, internal_drains=None):
                         generate_channel(str_result, channel)
                         if len(current_channels) - 1 > channel_index:
                             str_result.write(' or ')
-                str_result.write(" or delay@{}; ()".format(internal_drains[symbol[0]][1].replace('$', '')))
+                str_result.write(' or delay@{}; ()'.format(internal_drains[symbol[0]][3].replace('$', '')))
             else:
-                str_result.write("delay@{}; ()".format(internal_drains[symbol[0]][1].replace('$', '')))
+                str_result.write('delay@{}; ()'.format(internal_drains[symbol[0]][3].replace('$', '')))
 
             str_result.write('\nand ')
 
@@ -140,7 +140,7 @@ def generate_automata_code(channel_dict, symbols_dict, internal_drains=None):
 
         for index, symbols in enumerate(internal_drains.items()):
             external_symbol, drain_symbols = symbols
-            str_result.write(" delay@{}; {}() ".format(drain_symbols[0].replace('$', ''),
+            str_result.write(" delay@{}; {}() ".format(drain_symbols[1].replace('$', ''),
                                                        symbols_dict[external_symbol]))
 
             if index < len(internal_drains) - 1:

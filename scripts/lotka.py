@@ -8,7 +8,6 @@ from dgDynamic import dgDynamicSim, show_plots, HyperGraph, DynamicAnalysisDevic
 
 rabbit_multiples = "R -> 2 R"
 foxes_hunts = "R + F -> F + F"
-# foxes_dies = "F -> D" # Now modeled as a drain parameter
 
 dg = HyperGraph.from_abstract(rabbit_multiples, foxes_hunts,)
 
@@ -23,7 +22,11 @@ parameters = {
 }
 
 drain_parameters = {
-    'F': {'in': 0, 'out': 0.5}
+    'F': {
+        'out': {
+            'factor': 0.5
+        }
+    }
 }
 
 integration_range = (0, 100)
