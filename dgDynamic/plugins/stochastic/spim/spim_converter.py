@@ -64,12 +64,13 @@ def generate_initial_values(symbols_dict, initial_conditions) -> str:
         str_out.write("run ( ")
         if isinstance(initial_conditions, dict):
             for index, key in enumerate(initial_conditions.keys()):
-                if isinstance(initial_conditions[key], int):
-                    str_out.write("{} of {}()".format(initial_conditions[key], symbols_dict[key]))
-                    str_out.write(" | ")
-                else:
+                if not isinstance(initial_conditions[key], int):
                     raise TypeError("Unsupported initial value type for key {}, expected <class 'int'> got {}"
                                     .format(key, type(initial_conditions[key])))
+                if key in symbols_dict:
+                    str_out.write("{} of {}()".format(initial_conditions[key], symbols_dict[key]))
+                    str_out.write(" | ")
+
         elif isinstance(initial_conditions, (tuple, list, set)):
             for index, rate_symbols in enumerate(zip(initial_conditions, symbols_dict.keys())):
                 rate_value = rate_symbols[0]

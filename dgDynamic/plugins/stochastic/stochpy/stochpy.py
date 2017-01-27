@@ -15,7 +15,7 @@ from dgDynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
 
 name = SupportedStochasticPlugins.StochPy
 
-
+# TODO make mechanism for timeout since stochpy simulation can destroy your machine
 class StochPyStochastic(StochasticPlugin):
 
     def __init__(self, simulator, stochastic_method=StochPyStochasticSolvers.direct, timeout=None):
