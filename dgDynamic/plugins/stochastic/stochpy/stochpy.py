@@ -3,15 +3,17 @@ import enum
 import io
 import tempfile
 import time
+import os
 import warnings
 import dgDynamic.base_converters.convert_base as converter_base
 import dgDynamic.output as o
-from collections import defaultdict
 import dgDynamic.plugins.stochastic.stochpy.stochpy_converter as stochpy_converter
 import dgDynamic.utils.messages as messages
 from dgDynamic.choices import SupportedStochasticPlugins, StochPyStochasticSolvers
 from dgDynamic.config.settings import logging_is_enabled
 from dgDynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
+import multiprocessing as mp
+import queue
 
 name = SupportedStochasticPlugins.StochPy
 
@@ -22,6 +24,7 @@ class StochPyStochastic(StochasticPlugin):
         super().__init__()
         self._method = stochastic_method
         self.timeout = timeout
+        self.startup_interval = 1
         self._simulator = simulator
 
     def generate_psc_file(self, writable_stream, rate_law_dict, initial_conditions,
@@ -73,41 +76,90 @@ class StochPyStochastic(StochasticPlugin):
     def simulate(self, simulation_range, initial_conditions,
                  rate_parameters, drain_parameters=None, *args, **kwargs):
 
-        def choose_method_and_run():
+        def choose_method_and_run(tmp_dir, model_name):
 
-            if self.method == StochPyStochasticSolvers.direct:
-                stochpy_module.Method('Direct')
-            elif self.method == StochPyStochasticSolvers.tauLeaping:
-                stochpy_module.Method('TauLeaping')
+            self.logger.info("simulation method name: {}".format(self.method.name))
+            self.logger.info("simulation end time: {}".format(simulation_range[1]))
 
-            self.logger.info("simulation method name: {}".format(stochpy_module.sim_method_name))
-            stochpy_module.Endtime(simulation_range[1])
-            self.logger.info("simulation end time: {}".format(stochpy_module.sim_end))
+            def do_it(queue):
+                settings = queue.get()  # get the actual config for this instance
+                queue.get()  # consume our start up token
 
+                with cl.redirect_stdout(None):
+                    import stochpy
+                    module = stochpy.SSA(model_file=settings['model'],
+                                         dir=settings['directory'],
+                                         IsInteractive=False,
+                                         IsQuiet=True)
+
+                if settings['method'] == StochPyStochasticSolvers.direct:
+                    module.Method('Direct')
+                elif settings['method'] == StochPyStochasticSolvers.tauLeaping:
+                    module.Method('TauLeaping')
+
+                module.Endtime(settings['end_time'])
+                try:
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings('ignore')
+                        stdout_str = io.StringIO()
+                        with cl.redirect_stdout(stdout_str):
+                            module.DoStochSim()
+                except BaseException as exception:
+                    messages.print_solver_done(name, self.method.name, was_failure=True)
+                    queue.put({
+                        "success": False,
+                        "output": exception
+                    })
+                    return
+                finally:
+                    stdout_str.close()
+                queue.put({
+                    "success": True,
+                    "output": module.data_stochsim.getSpecies()
+                })
+
+            q = mp.Queue()
+            q.put({
+                "method": self.method,
+                "end_time": simulation_range[1],
+                "directory": tmp_dir,
+                "model": model_name
+            })
+            q.put(0)
+
+            process = mp.Process(target=do_it, args=(q,))
             self.logger.info("Running simulation...")
             start_time = time.time()
-            try:
-                with warnings.catch_warnings():
-                    warnings.filterwarnings('ignore')
-                    stdout_str = io.StringIO()
-                    with cl.redirect_stdout(stdout_str):
-                        stochpy_module.DoStochSim()
-                    self.logger.info(stdout_str.getvalue())
-            except BaseException as exception:
-                if logging_is_enabled():
-                    self.logger.error("Exception in stochpy simulation: {}".format(str(exception)))
-                messages.print_solver_done(name, self.method.name, was_failure=True)
-                return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
-                                          solver_method=self.method, errors=(exception,))
-            finally:
-                stdout_str.close()
-            end_time = time.time()
-            self.logger.info("Simulation ended. Execution time: {} secs".format(end_time - start_time))
-            data = stochpy_module.data_stochsim.getSpecies()
-            messages.print_solver_done(name, method_name=self.method.name)
-            return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
-                                      independent=data[:, :1], dependent=data[:, 1:])
+            process.start()
 
+            while q.qsize() == 2:  # because the subprocess needs time to consume the input we wait
+                process.join(timeout=self.startup_interval)
+
+            self.logger.info("Started subprocess")
+            try:
+                self.logger.info("Timeout: {}".format(self.timeout))
+                out = q.get(timeout=self.timeout, block=True)
+                end_time = time.time()
+                self.logger.info("Simulation ended. Execution time: {} secs".format(end_time - start_time))
+                self.logger.info("Got back: {}".format(repr(out)))
+                if out['success']:
+                    messages.print_solver_done(name, method_name=self.method.name)
+                    return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
+                                              independent=out['output'][:, :1], dependent=out['output'][:, 1:])
+                else:
+                    messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
+                    return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
+                                              solver_method=self.method, errors=(out['output'],))
+            except queue.Empty:
+                messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
+                return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
+                                          solver_method=self.method, errors=(
+                                            Exception('Internal process error'),))
+            finally:
+                if process.is_alive():  # if process is still alive(that is computing) then terminate it
+                    self.logger.info("Terminating process")
+                    process.terminate()
+                    process.join()
         with tempfile.TemporaryDirectory() as tmp:
             stdout_str = io.StringIO()
             model_file_path = "{}/model.psc".format(tmp)
@@ -119,10 +171,6 @@ class StochPyStochastic(StochasticPlugin):
                 file_stream.seek(0)
                 self.logger.info("StochPy simulation file:\n{}".format("".join(file_stream.readlines())))
 
-            with cl.redirect_stdout(stdout_str):
-                import stochpy as sp
-                stochpy_module = sp.SSA(dir=tmp, model_file="model.psc")
-
-            output = choose_method_and_run()
+                output = choose_method_and_run(tmp, "model.psc")
 
         return output

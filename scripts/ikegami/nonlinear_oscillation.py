@@ -59,11 +59,12 @@ for reaction in get_reactions():
 drain_params = {}
 
 for symbol in get_symbols():
-    drain_params[symbol] = {
-        'out': {
-            'factor': 0.01
+    if symbol != 'A1':
+        drain_params[symbol] = {
+            'out': {
+                'factor': 0.01
+            }
         }
-    }
 
 drain_params['A1'] = {
     'in': {
