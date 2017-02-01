@@ -105,7 +105,6 @@ class StochPyStochastic(StochasticPlugin):
                         with cl.redirect_stdout(stdout_str):
                             module.DoStochSim()
                 except BaseException as exception:
-                    messages.print_solver_done(name, self.method.name, was_failure=True)
                     queue.put({
                         "success": False,
                         "output": exception
