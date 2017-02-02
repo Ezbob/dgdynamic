@@ -86,8 +86,8 @@ out.plot(filename="spim_nonlinear.svg", axis_limits=((0, spim_sim_range[0]), (0,
 
 stochpy.method = 'direct'
 stochpy.timeout = 100
-out = stochpy.simulate(integration_range, initial_conditions, parameters)
 
+out = stochpy.simulate(integration_range, initial_conditions, parameters)
 out.plot(figure_size=(60, 30))
 
 show_plots()

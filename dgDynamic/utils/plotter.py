@@ -55,18 +55,20 @@ def matplotlib_plot(input_data):
         else:
             labels = symbols
 
+        ignored = input_data['ignored']
+
         for index, line_labels in enumerate(zip(lines, labels)):
-            ignored = input_data['ignored']
+            line, label = line_labels
             if index in ignored:
-                line_labels[0].remove()
+                line.remove()
             else:
-                line_labels[0].set_label(line_labels[1])
+                line.set_label(label)
             if 20 < index <= 30:
-                line_labels[0].set_linestyle('dashed')
+                line.set_linestyle('dashed')
             elif 30 < index <= 40:
-                line_labels[0].set_linestyle('dashdot')
+                line.set_linestyle('dashdot')
             elif 40 < index <= 50:
-                line_labels[0].set_linestyle('dotted')
+                line.set_linestyle('dotted')
 
         # shrinking the box so there is space for the left box
         box = plt.get_position()

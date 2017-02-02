@@ -66,8 +66,7 @@ def generate_rate_equations(hyper_vertices, hyper_edges, ignored, rate_parameter
 
             if drain_translation is not None:
                 in_drain, out_drain = drain()
-                equation_result += in_drain
-                equation_result -= out_drain
+                equation_result += (in_drain - out_drain)
 
             yield vertex.graph.name, equation_result
 

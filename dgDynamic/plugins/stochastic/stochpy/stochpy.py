@@ -114,7 +114,7 @@ class StochPyStochastic(StochasticPlugin):
                     stdout_str.close()
                 queue.put({
                     "success": True,
-                    "output": module.data_stochsim.getSpecies()
+                    "output": module.data_stochsim.getSpecies(lbls=True)
                 })
 
             q = mp.Queue()
@@ -142,9 +142,15 @@ class StochPyStochastic(StochasticPlugin):
                 self.logger.info("Simulation ended. Execution time: {} secs".format(end_time - start_time))
                 self.logger.info("Got back: {}".format(repr(out)))
                 if out['success']:
+                    data, labels = out['output']
+                    # now we have to compute an inverse mapping from internal symbols to external since stochpy does
+                    # not maintain the order of the dependent data columns
+                    inverse_symbol_translator = {val.replace('$', ''): key
+                                                 for key, val in self._simulator.internal_symbol_dict.items()}
+                    new_symbol_order = (inverse_symbol_translator[symbol] for symbol in labels[1:])
                     messages.print_solver_done(name, method_name=self.method.name)
-                    return o.SimulationOutput(name, simulation_range, self._simulator.symbols,
-                                              independent=out['output'][:, :1], dependent=out['output'][:, 1:])
+                    return o.SimulationOutput(name, simulation_range, new_symbol_order,
+                                              independent=data[:, :1], dependent=data[:, 1:])
                 else:
                     messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
                     return o.SimulationOutput(name, simulation_range, self._simulator.symbols,

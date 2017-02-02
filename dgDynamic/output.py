@@ -7,6 +7,7 @@ import csv
 import matplotlib.pyplot as plt
 import os.path
 import enum
+import collections
 
 
 class SimulationOutput(LogMixin):
@@ -24,7 +25,7 @@ class SimulationOutput(LogMixin):
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])
         self._file_writer_thread = None
-        self.symbols = tuple(symbols)
+        self.symbols = tuple(symbols) if isinstance(symbols, collections.Generator) else symbols
 
     def column(self, index):
         """

@@ -18,7 +18,7 @@ theta = numpy.nextafter(max_concentration, 0)
 integration_range = (0, 300)
 
 # Exclude every A_3i species
-banned_set = tuple(3 * i for i in range(species_limit))
+banned_set = tuple(3 * i for i in range(1, species_limit))
 
 k_s = 1.0
 k_d = 1200
