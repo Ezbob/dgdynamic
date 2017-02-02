@@ -3,21 +3,19 @@ import enum
 import io
 import tempfile
 import time
-import os
 import warnings
 import dgDynamic.base_converters.convert_base as converter_base
 import dgDynamic.output as o
 import dgDynamic.plugins.stochastic.stochpy.stochpy_converter as stochpy_converter
 import dgDynamic.utils.messages as messages
 from dgDynamic.choices import SupportedStochasticPlugins, StochPyStochasticSolvers
-from dgDynamic.config.settings import logging_is_enabled
 from dgDynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
 import multiprocessing as mp
 import queue
 
 name = SupportedStochasticPlugins.StochPy
 
-# TODO make mechanism for timeout since stochpy simulation can destroy your machine
+
 class StochPyStochastic(StochasticPlugin):
 
     def __init__(self, simulator, stochastic_method=StochPyStochasticSolvers.direct, timeout=None):
