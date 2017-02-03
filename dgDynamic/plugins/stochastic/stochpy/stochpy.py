@@ -79,16 +79,19 @@ class StochPyStochastic(StochasticPlugin):
             self.logger.info("simulation method name: {}".format(self.method.name))
             self.logger.info("simulation end time: {}".format(simulation_range[1]))
 
+            with cl.redirect_stdout(None):
+                import stochpy
+
             def do_it(queue):
+                import os
+                import random
+
+                random.seed(os.urandom(32))
                 settings = queue.get()  # get the actual config for this instance
                 queue.get()  # consume our start up token
 
-                with cl.redirect_stdout(None):
-                    import stochpy
-                    module = stochpy.SSA(model_file=settings['model'],
-                                         dir=settings['directory'],
-                                         IsInteractive=False,
-                                         IsQuiet=True)
+                module = stochpy.SSA(model_file=settings['model'],
+                                     dir=settings['directory'], )
 
                 if settings['method'] == StochPyStochasticSolvers.direct:
                     module.Method('Direct')
@@ -96,6 +99,7 @@ class StochPyStochastic(StochasticPlugin):
                     module.Method('TauLeaping')
 
                 module.Endtime(settings['end_time'])
+
                 try:
                     with warnings.catch_warnings():
                         warnings.filterwarnings('ignore')
@@ -107,6 +111,7 @@ class StochPyStochastic(StochasticPlugin):
                         "success": False,
                         "output": exception
                     })
+                    module.Reload()
                     return
                 finally:
                     stdout_str.close()
@@ -114,6 +119,7 @@ class StochPyStochastic(StochasticPlugin):
                     "success": True,
                     "output": module.data_stochsim.getSpecies(lbls=True)
                 })
+                module.Reload()
 
             q = mp.Queue()
             q.put({
@@ -125,6 +131,7 @@ class StochPyStochastic(StochasticPlugin):
             q.put(0)
 
             process = mp.Process(target=do_it, args=(q,))
+            #do_it(q)
             self.logger.info("Running simulation...")
             start_time = time.time()
             process.start()
@@ -164,7 +171,6 @@ class StochPyStochastic(StochasticPlugin):
                     process.terminate()
                     process.join()
         with tempfile.TemporaryDirectory() as tmp:
-            stdout_str = io.StringIO()
             model_file_path = "{}/model.psc".format(tmp)
             with open(model_file_path, mode="w+") as file_stream:
                 rate_law_dict = dict(zip(self._simulator.abstract_edges,

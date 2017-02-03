@@ -45,9 +45,18 @@ initial_conditions = {
     'Glycolaldehyde': 1,
 }
 
-drain_parameters = {symbol: {'in': 0.0, 'out': 0.015} for symbol in ode.symbols}
+drain_parameters = {symbol: {
+    'out': {
+        'factor': 0.015
+    }
+} for symbol in ode.symbols}
 
-drain_parameters['Formaldehyde'] = {'in': 0.03, 'out': 0.015}
+drain_parameters['Formaldehyde'] = {'in': {
+    'factor': 0.03
+    }, 'out': {
+    'factor': 0.015
+    }
+}
 
 sim_range = (0, 300)
 
@@ -60,6 +69,12 @@ scipy(sim_range, initial_conditions, parameters, drain_parameters).plot(
     filename="open_scipy_plot.png",
     figure_size=(40, 20), title="SciPy VODE Formose open cycle solution simulation"
 )
+
+for i in range(5):
+    stochastic('stochpy')(sim_range, initial_conditions, parameters, timeout=120).plot(
+        filename="stochpy_plot{}.png".format(i), figure_size=(40, 20),
+        title="StochPy {}. Formose open cycle solution simulation".format(i)
+    )
 
 sim_range = (300, 2500)
 

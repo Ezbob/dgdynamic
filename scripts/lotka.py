@@ -69,7 +69,7 @@ spim_simulation_range = (100, 1000)
 
 with stochastic('spim') as spim:
     spim.timeout = 2
-    for i in range(4):
+    for _ in range(4):
         output, analytics = DynamicAnalysisDevice.from_simulation(spim,
                                                                   simulation_range=spim_simulation_range,
                                                                   initial_conditions=initial_conditions,
@@ -81,6 +81,11 @@ with stochastic('spim') as spim:
         analytics.plot_spectra(analytics.amplitude_spectra, analytics.fourier_frequencies,
                                include_maxima=True, include_maximum=True)
 
+
+for _ in range(4):
+    stochpy = stochastic('stochpy')
+    stochpy.timeout = 10
+    stochpy(integration_range, initial_conditions, parameters, drain_parameters).plot()
 
 # Show all the plots generated so far
 show_plots()

@@ -119,12 +119,13 @@ def get_drain_rate_dict(internal_drains: dict, user_drain_rates: dict):
                 # put in default values
                 values = [0.0] * number_of_values
                 if 'in' in rate_entry:
-                    assert isinstance(rate_entry['in'], dict)
+                    assert isinstance(rate_entry['in'], dict), "'in' entry must be a dictionary containing a factor or a constant entry"
+
                     values[0] = rate_entry['in']['constant'] if 'constant' in rate_entry['in'] else 0.0
                     values[1] = rate_entry['in']['factor'] if 'factor' in rate_entry['in'] else 0.0
 
                 if 'out' in rate_entry:
-                    assert isinstance(rate_entry['out'], dict)
+                    assert isinstance(rate_entry['out'], dict), "'out' entry must be a dictionary containing a factor or a constant entry"
                     values[2] = rate_entry['out']['constant'] if 'constant' in rate_entry['out'] else 0
                     values[3] = rate_entry['out']['factor'] if 'factor' in rate_entry['out'] else 0
 
