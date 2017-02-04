@@ -40,6 +40,20 @@ class DynamicSimulator(abc.ABC, LogMixin):
     def internal_drain_dict(self):
         return dict(zip(self.symbols, self.drain_symbols))
 
+    @staticmethod
+    def edge_stoichiometrics(hyper_edge):
+        source_stoiciometrics, target_stoichiometrics = dict(), dict()
+        sources, targets = tuple(hyper_edge.sources), tuple(hyper_edge.targets)
+        for v in sources:
+            if v.graph.name in source_stoiciometrics:
+                continue
+            source_stoiciometrics[v.graph.name] = sources.count(v)
+        for v in targets:
+            if v.graph.name in target_stoichiometrics:
+                continue
+            target_stoichiometrics[v.graph.name] = targets.count(v)
+        return source_stoiciometrics, target_stoichiometrics
+
     @property
     def abstract_edges(self):
         yield from (hyper_edge_to_string(edge) for edge in self.graph.edges)
