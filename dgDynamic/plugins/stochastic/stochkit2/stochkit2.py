@@ -97,7 +97,8 @@ class StochKit2Stochastic(StochasticPlugin):
             self.logger.info("Execution arguments are {!r}".format(" ".join(execution_args)))
 
             try:
-                subprocess.run(" ".join(execution_args), check=True, shell=True, timeout=self.timeout)
+                subprocess.run(" ".join(execution_args), check=True, shell=True,
+                               timeout=self.timeout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             except subprocess.TimeoutExpired as exception:
                 messages.print_solver_done(name, self.method.name, was_failure=True)
                 # TODO check if partial output is available
