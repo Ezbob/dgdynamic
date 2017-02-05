@@ -61,7 +61,7 @@ class StochKit2Stochastic(StochasticPlugin):
     def trajectories(self, value):
         self._trajectories = abs(int(value))
 
-    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters, *args, **kwargs):
+    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
         end_time, sample_number = int(simulation_range[0]), int(simulation_range[1])
         model_filename = "model.xml"
         output_dirname = "model_output"
