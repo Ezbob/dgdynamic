@@ -20,13 +20,12 @@ name = SupportedStochasticPlugins.SPiM
 class SpimStochastic(StochasticPlugin):
 
     def __init__(self, simulator, timeout=None, absolute_float_tolerance=1e-9, relative_float_tolerance=0.0):
+        super().__init__(simulator, timeout)
         self._spim_path = config['Simulation']['SPIM_PATH']
         if not self._spim_path:
             self._spim_path = os.path.join(os.path.dirname(__file__), "spim.ocaml")
         self._spim_path = os.path.abspath(self._spim_path)
-        self._simulator = simulator
         self._ocamlrun_path = os.path.abspath(config['Simulation']['OCAML_RUN'])
-        self.timeout = timeout
         self.relative_float_tolerance = relative_float_tolerance
         self.absolute_float_tolerance = absolute_float_tolerance
 

@@ -19,9 +19,8 @@ name = SupportedStochasticPlugins.StochPy
 class StochPyStochastic(StochasticPlugin):
 
     def __init__(self, simulator, stochastic_method=StochPyStochasticSolvers.direct, timeout=None):
-        super().__init__()
+        super().__init__(simulator, timeout)
         self._method = stochastic_method
-        self.timeout = timeout
         self.startup_interval = 1
         self._simulator = simulator
 

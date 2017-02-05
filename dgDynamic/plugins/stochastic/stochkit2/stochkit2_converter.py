@@ -90,13 +90,13 @@ def generate_model(simulator, initial_conditions, rate_parameters, drain_paramet
                 in_propensity = "{:.{}f}*{}+{:.{}f}".format(in_factor_val, precision,
                                                             translate_dict[vertex.graph.name],
                                                             in_offset_val, precision)
-                yield in_propensity, ((translate_dict[vertex.graph.name].replace('$', ''), 1),), tuple()
+                yield in_propensity, tuple(), ((translate_dict[vertex.graph.name].replace('$', ''), 1),)
 
             if out_offset_val > 0 or out_factor_val > 0:
                 out_propensity = "{:.{}f}*{}+{:.{}f}".format(out_factor_val, precision,
                                                              translate_dict[vertex.graph.name],
                                                              out_offset_val, precision)
-                yield out_propensity, tuple(), ((translate_dict[vertex.graph.name].replace('$', ''), 1),)
+                yield out_propensity, ((translate_dict[vertex.graph.name].replace('$', ''), 1),), tuple()
 
     def build_rate_equations():
         rate_dict = dict(base.get_edge_rate_dict(simulator.graph, rate_parameters))
