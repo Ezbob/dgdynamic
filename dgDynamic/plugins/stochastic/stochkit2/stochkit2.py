@@ -5,6 +5,9 @@ from dgDynamic.output import SimulationOutput
 import enum
 import subprocess
 import re
+import array
+import io
+import contextlib
 import tempfile
 import dgDynamic.utils.messages as messages
 import dgDynamic.config.settings as settings
@@ -44,7 +47,8 @@ class StochKit2Stochastic(StochasticPlugin):
 
     @property
     def flag_options(self):
-        return ['--no-stats', '--keep-trajectories', '--label', '-f']
+        flags = ['--no-stats', '--keep-trajectories', '--label', '-f']
+        return flags
 
     @method.setter
     def method(self, value):
@@ -56,15 +60,15 @@ class StochKit2Stochastic(StochasticPlugin):
         output_dirname = "model_output"
 
         def read_output(filepath):
-            independent = list()
-            dependent = list()
+            independent = array.array('d')
+            dependent = tuple()
             with open(filepath, mode="r") as rfile:
                 white_space = re.compile(r"\s+")
                 header = white_space.split(next(rfile).strip())
                 for line in rfile:
-                    splitted = map(float, white_space.split(line.strip()))
-                    independent.append(splitted[:1])
-                    dependent.append(splitted[1:])
+                    splitted = array.array('d', map(float, white_space.split(line.strip())))
+                    independent.append(splitted[:1][0])
+                    dependent += (splitted[1:],)
             return header, independent, dependent
 
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -84,29 +88,33 @@ class StochKit2Stochastic(StochasticPlugin):
 
             program_path = path.join(self.stochkit2_path, program_name)
             self.logger.info("Using stochkit2 driver at {}".format(program_name))
-            execution_args = [program_path, '-r 1', '-t {}'.format(end_time,),
+            execution_args = [program_path, '-m {}'.format(model_path),
+                              '-r 1', '-t {}'.format(end_time,),
                               '-i {}'.format(sample_number),
-                              '-m {}'.format(model_path),
-                              #'--epsilon {}'.format(self.tau_leaping_epsilon),
-                              #'--threshold {}'.format(self.switch_threshold),
+                              '--epsilon {}'.format(self.tau_leaping_epsilon),
+                              '--threshold {}'.format(self.switch_threshold),
                               *self.flag_options]
             self.logger.info("Execution arguments are {!r}".format(" ".join(execution_args)))
 
-            print(" ".join(execution_args))
             try:
-                subprocess.run(execution_args, check=True)
+                subprocess.run(" ".join(execution_args), check=True, shell=True, timeout=self.timeout)
             except subprocess.TimeoutExpired as exception:
                 messages.print_solver_done(name, self.method.name, was_failure=True)
                 # TODO check if partial output is available
-                return SimulationOutput(name, simulation_range, self._simulator.symbols,
+                return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
                                         solver_method=self.method, errors=(exception,))
             except subprocess.CalledProcessError as exception:
                 messages.print_solver_done(name, self.method.name, was_failure=True)
-                return SimulationOutput(name, simulation_range, self._simulator.symbols,
+                return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
                                         solver_method=self.method, errors=(exception,))
 
             output_trajectories = path.join(tmp_dir, output_dirname, 'trajectories')
-            print(read_output(path.join(output_trajectories, 'trajectory0.txt')))
+
+            messages.print_solver_done(name, method_name=self.method.name)
+            header, independent, dependent = read_output(path.join(output_trajectories, 'trajectory0.txt'))
+
+            return SimulationOutput(name, (0, simulation_range[0]), header, independent=independent,
+                                    dependent=dependent, solver_method=self.method)
 
 
 
