@@ -1,7 +1,7 @@
 from dgDynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
 from dgDynamic.choices import SupportedStochasticPlugins, StochKit2StochasticSolvers
 from .stochkit2_converter import generate_model
-from dgDynamic.output import SimulationOutput
+from dgDynamic.output import SimulationOutput, SimulationOutputSet
 import enum
 import subprocess
 import re
@@ -79,6 +79,15 @@ class StochKit2Stochastic(StochasticPlugin):
                     dependent += (splitted[1:],)
             return tuple(label_translator[sym] for sym in header[1:]), independent, dependent
 
+        def collect_multiple_output():
+            for i in range(self.trajectories):
+                header, independent, dependent = read_output(path.join(output_trajectories,
+                                                                       'trajectory{}.txt'.format(i)))
+
+                yield SimulationOutput(name, (0, simulation_range[0]), header,
+                                       independent=independent, dependent=dependent,
+                                       solver_method=self.method)
+
         self.logger.info("started on StochKit2 simulation")
 
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -132,12 +141,5 @@ class StochKit2Stochastic(StochasticPlugin):
                                         dependent=dependent, solver_method=self.method)
             else:
                 self.logger.info("Collecting output from {} trajectories".format(self.trajectories))
-                trajectories = tuple()
-                for i in range(self.trajectories):
-                    header, independent, dependent = read_output(path.join(output_trajectories,
-                                                                           'trajectory{}.txt'.format(i)))
 
-                    trajectories += (SimulationOutput(name, (0, simulation_range[0]), header,
-                                                      independent=independent, dependent=dependent,
-                                                      solver_method=self.method),)
-                return trajectories
+                return SimulationOutputSet(collect_multiple_output())

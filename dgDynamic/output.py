@@ -206,3 +206,47 @@ class SimulationOutput(LogMixin):
     def __str__(self):
         return "independent variable: {}\ndependent variable: {}".format(self.independent,
                                                                          self.dependent)
+
+
+class SimulationOutputSet(LogMixin):
+    def __init__(self, output):
+        self.output_set = tuple(output)
+
+    def plot(self, *args, **kwargs):
+        for output in self.output_set:
+            output.plot(*args, **kwargs)
+
+    def save(self, filename, *args, **kwargs):
+        if isinstance(filename, collections.Iterable):
+            for filename, output in zip(filename, self.output_set):
+                output.save(filename, *args, **kwargs)
+        elif isinstance(filename, str):
+            for output in self.output_set:
+                output.save(filename, *args, **kwargs)
+        else:
+            raise TypeError("Expected an iterable collection of file names or a single file name; got {}"
+                            .format(type(filename)))
+
+    @property
+    def failure_indices(self):
+        return tuple(i for i, o in enumerate(self.output_set) if o.has_errors)
+
+    @property
+    def filter_out_failures(self):
+        return SimulationOutputSet(filter(lambda obj: not obj.has_errors, self.output_set))
+
+    @property
+    def filter_out_successes(self):
+        return SimulationOutputSet(filter(lambda obj: obj.has_errors, self.output_set))
+
+    def __iter__(self):
+        return self.output_set.__iter__()
+
+    def __getitem__(self, key):
+        return self.output_set.__getitem__(key)
+
+    def __len__(self):
+        return self.output_set.__len__()
+
+    def __repr__(self):
+        return "<SimulationOutputSet with {} runs>".format(self.__len__())
