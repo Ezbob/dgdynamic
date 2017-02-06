@@ -228,15 +228,19 @@ class SimulationOutputSet(LogMixin):
                             .format(type(filename)))
 
     @property
+    def columns(self, index):
+        return tuple(obj.column(index) for obj in self.output_set)
+
+    @property
     def failure_indices(self):
         return tuple(i for i, o in enumerate(self.output_set) if o.has_errors)
 
     @property
-    def filter_out_failures(self):
+    def failures(self):
         return SimulationOutputSet(filter(lambda obj: not obj.has_errors, self.output_set))
 
     @property
-    def filter_out_successes(self):
+    def successes(self):
         return SimulationOutputSet(filter(lambda obj: obj.has_errors, self.output_set))
 
     def __iter__(self):
