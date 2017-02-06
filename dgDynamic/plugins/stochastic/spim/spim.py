@@ -2,6 +2,7 @@ import array
 import csv
 import math
 import os
+import signal
 import os.path
 import subprocess
 import tempfile

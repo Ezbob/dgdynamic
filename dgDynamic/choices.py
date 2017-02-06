@@ -20,13 +20,7 @@ class SupportedOdePlugins(enum.Enum):
 
 class SupportedStochasticPlugins(enum.Enum):
     SPiM = "spim"
-    StochPy = "stochpy"
     StochKit2 = "stochkit2"
-
-
-class StochPyStochasticSolvers(enum.Enum):
-    direct = "Direct"
-    tauLeaping = "TauLeap"
 
 
 class StochKit2StochasticSolvers(enum.Enum):

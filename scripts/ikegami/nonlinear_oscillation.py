@@ -82,7 +82,7 @@ sto = dgDynamicSim(dg, 'stochastic')
 
 solver = ode.get_plugin("scipy")
 spim = sto('SPIM')
-stochpy = sto('stochpy')
+stochkit2 = sto('stochkit2')
 
 solver.integrator_mode = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.08

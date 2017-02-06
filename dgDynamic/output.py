@@ -212,19 +212,23 @@ class SimulationOutputSet(LogMixin):
     def __init__(self, output):
         self.output_set = tuple(output)
 
-    def plot(self, *args, **kwargs):
-        for output in self.output_set:
-            output.plot(*args, **kwargs)
-
-    def save(self, filename, *args, **kwargs):
+    def plot(self, filename=None, **kwargs):
         if isinstance(filename, collections.Iterable):
             for filename, output in zip(filename, self.output_set):
-                output.save(filename, *args, **kwargs)
-        elif isinstance(filename, str):
+                output.plot(filename=filename, **kwargs)
+        elif filename is None:
             for output in self.output_set:
-                output.save(filename, *args, **kwargs)
+                output.plot(filename=filename, **kwargs)
         else:
-            raise TypeError("Expected an iterable collection of file names or a single file name; got {}"
+            raise TypeError("Expected an iterable collection of file names; got {}"
+                            .format(type(filename)))
+
+    def save(self, filename, **kwargs):
+        if isinstance(filename, collections.Iterable):
+            for filename, output in zip(filename, self.output_set):
+                output.save(filename=filename, **kwargs)
+        else:
+            raise TypeError("Expected an iterable collection of file names; got {}"
                             .format(type(filename)))
 
     @property

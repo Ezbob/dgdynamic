@@ -48,6 +48,11 @@ with stochastic("spim") as spim:
     for i in range(3):
         spim(simulation_range, initial_conditions, parameters,).plot(figure_size=figure_size)
 
+with stochastic("stochkit2") as stochkit2:
+    simulation_range = (200, 1000)
+    stochkit2.trajectories = 3
+    stochkit2.simulate(simulation_range, initial_conditions, parameters,).plot(figure_size=figure_size)
+
 with ode.get_plugin("scipy") as scipy:
     # Let's generate some sample delta_ts
     for dt in numpy.linspace(0.1, 1, num=5):

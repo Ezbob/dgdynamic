@@ -70,13 +70,7 @@ scipy(sim_range, initial_conditions, parameters, drain_parameters).plot(
     figure_size=(40, 20), title="SciPy VODE Formose open cycle solution simulation"
 )
 
-for i in range(5):
-    stochastic('stochpy')(sim_range, initial_conditions, parameters, timeout=120).plot(
-        filename="stochpy_plot{}.png".format(i), figure_size=(40, 20),
-        title="StochPy {}. Formose open cycle solution simulation".format(i)
-    )
-
-sim_range = (300, 2500)
+sim_range = (300, 2000)
 
 for i in range(5):
     stochastic("spim")(sim_range, initial_conditions, parameters, timeout=120).plot(
@@ -87,6 +81,14 @@ for i in range(5):
     stochastic("spim")(sim_range, initial_conditions, parameters, drain_parameters, timeout=120).plot(
         filename="spim_plot{}.png".format(i), figure_size=(40, 20),
         title="SPIM {}. Formose open cycle solution simulation".format(i + 1))
+
+with stochastic("stochkit2") as stochkit2:
+    stochkit2.trajectories = 5
+    stochkit2.method = "tauLeaping"
+    output_set = stochkit2.simulate(sim_range, initial_conditions, parameters, drain_parameters, timeout=120 * 5)
+    for index, output in enumerate(output_set):
+        output.plot(filename="stochkit2_plot{}.png".format(index), figure_size=(40, 20),
+                    title="StochKit2 {}. Formose open cycle solution simulation".format(index + 1))
 
 show_plots()
 

@@ -61,7 +61,7 @@ sto = dgDynamicSim(dg, 'stochastic')
 
 solver = ode("scipy")
 spim = sto('SPIM')
-stochpy = sto('stochpy')
+stochkit2 = sto('stochkit2')
 
 solver.integrator_mode = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.08
@@ -84,10 +84,10 @@ spim_sim_range = (600, 10000)
 out = spim.simulate(spim_sim_range, initial_conditions, parameters)
 out.plot(filename="spim_nonlinear.svg", axis_limits=((0, spim_sim_range[0]), (0, 14)), figure_size=(60, 30))
 
-stochpy.method = 'direct'
-stochpy.timeout = 100
+stochkit2.method = 'direct'
+stochkit2.timeout = 100
 
-out = stochpy.simulate(integration_range, initial_conditions, parameters)
-out.plot(figure_size=(60, 30))
+out = stochkit2.simulate(spim_sim_range, initial_conditions, parameters)
+out.plot(filename="stochkit2_nonlinear.svg", axis_limits=((0, spim_sim_range[0]), (0, 14)), figure_size=(60, 30))
 
 show_plots()
