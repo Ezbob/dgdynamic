@@ -5,6 +5,8 @@ from dgDynamic.output import SimulationOutput, SimulationOutputSet
 import enum
 import subprocess
 import re
+import os
+import signal
 import array
 import tempfile
 import dgDynamic.utils.messages as messages
@@ -65,6 +67,9 @@ class StochKit2Stochastic(StochasticPlugin):
         end_time, sample_number = int(simulation_range[0]), int(simulation_range[1])
         model_filename = "model.xml"
         output_dirname = "model_output"
+        self.logger.info("Starting on StochKit2 simulation with {} trajectories, "
+                         "{} method, end time: {}, and {} sample points".format(self.trajectories, self.method,
+                                                                                end_time, sample_number))
 
         def read_output(filepath):
             independent = array.array('d')
@@ -119,16 +124,17 @@ class StochKit2Stochastic(StochasticPlugin):
                               *self.flag_options]
             self.logger.info("Execution arguments are {!r}".format(" ".join(execution_args)))
 
-            with subprocess.Popen(" ".join(execution_args), shell=True,
-                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
+            with subprocess.Popen(" ".join(execution_args), shell=True, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, preexec_fn=os.setsid) as process:
                 try:
                     output, unused_err = process.communicate(timeout=self.timeout)
                     self.logger.info(output)
                 except subprocess.TimeoutExpired as exception:
+                    os.killpg(os.getpgid(process.pid), signal.SIGINT)
                     messages.print_solver_done(name, self.method.name, was_failure=True)
                     # TODO check if partial output is available
                     return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
-                                    solver_method=self.method, errors=(exception,))
+                                            solver_method=self.method, errors=(exception,))
                 if process.returncode != 0:
                     exception = util_exceptions.SimulationError("Error in simulation: {}".format(process.stdout))
                     messages.print_solver_done(name, self.method.name, was_failure=True)

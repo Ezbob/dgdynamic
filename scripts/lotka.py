@@ -96,7 +96,7 @@ stochkit2.trajectories = 4
 
 # the simulate method (which is indirectly accessed here) gives a set of output.
 # This set can still be plotted or saved
-stochkit2(integration_range, initial_conditions, parameters, drain_parameters).plot()
+stochkit2(spim_simulation_range, initial_conditions, parameters, drain_parameters).plot()
 
 # Show all the plots generated so far
 show_plots()
