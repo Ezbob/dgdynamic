@@ -20,7 +20,7 @@ this_dir = path.abspath(path.dirname(__file__))
 
 class StochKit2Stochastic(StochasticPlugin):
 
-    def __init__(self, simulator, stochastic_method=StochKit2StochasticSolvers.direct, timeout=None, trajectories=1):
+    def __init__(self, simulator, stochastic_method=StochKit2StochasticSolvers.SSA, timeout=None, trajectories=1):
         super().__init__(simulator, timeout)
         self._method = stochastic_method
         self.tau_leaping_epsilon = 0.03
@@ -84,30 +84,30 @@ class StochKit2Stochastic(StochasticPlugin):
                     dependent += (splitted[1:],)
             return tuple(label_translator[sym] for sym in header[1:]), independent, dependent
 
-        def collect_multiple_output():
-            for i in range(self.trajectories):
+        def collect_multiple_output(trajectories_paths, errors=()):
+            for tpath in trajectories_paths:
                 try:
-                    header, independent, dependent = read_output(path.join(output_trajectories,
-                                                                           'trajectory{}.txt'.format(i)))
+                    header, independent, dependent = read_output(tpath)
 
                     yield SimulationOutput(name, (0, simulation_range[0]), header,
                                            independent=independent, dependent=dependent,
-                                           solver_method=self.method)
+                                           solver_method=self.method, errors=errors)
                 except FileNotFoundError as e:
-                    yield SimulationOutput(name, output_range, self._simulator.symbols,
-                                           solver_method=self.method, errors=(e,))
+                    yield SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
+                                           solver_method=self.method, errors=(e,) + errors)
 
         self.logger.info("started on StochKit2 simulation")
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             model_path = path.join(tmp_dir, model_filename)
+            model_home_dir = path.join(tmp_dir, output_dirname)
             model = self.model(initial_conditions, rate_parameters, drain_parameters)
 
             self.logger.info("Stochkit2 model:\n{}".format(model))
             with open(model_path, mode="w") as model_file:
                 model_file.write(model)
 
-            if self.method == StochKit2StochasticSolvers.direct:
+            if self.method == StochKit2StochasticSolvers.SSA:
                 program_name = "ssa"
             elif self.method == StochKit2StochasticSolvers.tauLeaping:
                 program_name = "tau_leaping"
@@ -130,44 +130,52 @@ class StochKit2Stochastic(StochasticPlugin):
                     output, unused_err = process.communicate(timeout=self.timeout)
                     self.logger.info(output)
                 except subprocess.TimeoutExpired as exception:
+                    # Time out path
                     os.killpg(os.getpgid(process.pid), signal.SIGINT)
                     messages.print_solver_done(name, self.method.name, was_failure=True)
-                    # TODO check if partial output is available
-                    return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
-                                            solver_method=self.method, errors=(exception,))
+                    try:
+                        partial_trajectories = os.listdir(path.join(model_home_dir, 'trajectories'))
+                    except FileNotFoundError:
+                        # Error in listing trajectory files
+                        return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
+                                                solver_method=self.method, errors=(exception,
+                                                                                   util_exceptions.
+                                                                                   SimulationError(
+                                                                                       "No partial trajectories")))
+
+                    if len(partial_trajectories) == 0:
+                        # There was no trajectory files
+                        return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
+                                                solver_method=self.method, errors=(exception,))
+                    else:
+                        # Collected from all partial trajectory files
+                        return SimulationOutputSet(collect_multiple_output(partial_trajectories,
+                                                                           errors=(exception,)))
+
                 if process.returncode != 0:
+                    # Error in process execution
                     exception = util_exceptions.SimulationError("Error in simulation: {}".format(process.stdout))
                     messages.print_solver_done(name, self.method.name, was_failure=True)
                     return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
                                             solver_method=self.method, errors=(exception,))
-            output_trajectories = path.join(tmp_dir, output_dirname, 'trajectories')
+            output_trajectories_path = path.join(model_home_dir, 'trajectories')
+            trajectory_paths = tuple(os.path.join(output_trajectories_path, t)
+                                     for t in os.listdir(output_trajectories_path))
 
-            output_range = (0, simulation_range[0])
-
-            if self.trajectories == 1:
-                self.logger.info("Collecting output from single trajectory")
-                try:
-                    header, independent, dependent = read_output(path.join(output_trajectories,
-                                                                       'trajectory{}.txt'.format(0)))
-
-                    messages.print_solver_done(name, method_name=self.method.name)
-                    return SimulationOutput(name, output_range, header, independent=independent,
-                                            dependent=dependent, solver_method=self.method)
-                except FileNotFoundError as e:
-                    with open(path.join(tmp_dir, output_dirname, 'log.txt')) as log:
-                        self.logger.warn(log.readlines())
-                    messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
-                    return SimulationOutput(name, output_range, self._simulator.symbols,
-                                            solver_method=self.method, errors=(e,))
+            if len(trajectory_paths) != self.trajectories:
+                # Partial trajectories
+                with open(path.join(model_home_dir, 'log.txt')) as log:
+                    log_message = log.readlines()
+                    self.logger.warn(log_message)
+                    if len(trajectory_paths) == 0:
+                        return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
+                                                solver_method=self.method, errors=(util_exceptions
+                                                                                   .SimulationError("Simulation ended "
+                                                                                                    "with no output")))
+                    else:
+                        return SimulationOutputSet(collect_multiple_output(trajectory_paths, errors=(util_exceptions
+                                                                                                     .SimulationError(
+                                                                                                      log_message),),))
             else:
-                self.logger.info("Collecting output from {} trajectories".format(self.trajectories))
-
-                collected_output = SimulationOutputSet(collect_multiple_output())
-                has_errors = len(collected_output.failure_indices) > 0
-                if has_errors:
-                    with open(path.join(tmp_dir, output_dirname, 'log.txt')) as log:
-                        self.logger.warn(log.readlines())
-
-                messages.print_solver_done(name, method_name=self.method.name,
-                                           was_failure=has_errors)
-                return collected_output
+                # We got all the trajectories!
+                return SimulationOutputSet(collect_multiple_output(trajectory_paths))

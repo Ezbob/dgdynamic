@@ -11,6 +11,8 @@ out
 plots
 data
 logs
-dgDynamic/plugins/stochastic/stochkit2/StochKit/
+*.o
+*.jam.*
+*.gch
 **__pycache__/
 

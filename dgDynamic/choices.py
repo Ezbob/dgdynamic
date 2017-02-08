@@ -24,7 +24,7 @@ class SupportedStochasticPlugins(enum.Enum):
 
 
 class StochKit2StochasticSolvers(enum.Enum):
-    direct = "direct"
+    SSA = "ssa"
     tauLeaping = "TauLeap"
 
 

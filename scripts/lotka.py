@@ -88,11 +88,14 @@ with stochastic('spim') as spim:
 # get the plugin
 stochkit2 = stochastic('stochkit2')
 
+# Using can use tauleaping or SSA
+stochkit2.method = "tauLeaping"
+
 # the timeout field is a timeout for all trajectories
 stochkit2.timeout = 20 * 4
 
 # instead of a for-loop set the number of trajectories as field
-stochkit2.trajectories = 4
+stochkit2.trajectories = 5
 
 # the simulate method (which is indirectly accessed here) gives a set of output.
 # This set can still be plotted or saved
