@@ -84,7 +84,7 @@ spim_sim_range = (600, 10000)
 out = spim.simulate(spim_sim_range, initial_conditions, parameters)
 out.plot(filename="spim_nonlinear.svg", axis_limits=((0, spim_sim_range[0]), (0, 14)), figure_size=(60, 30))
 
-stochkit2.method = 'direct'
+stochkit2.method = 'tauLeaping'
 stochkit2.timeout = 100
 
 out = stochkit2.simulate(spim_sim_range, initial_conditions, parameters)
