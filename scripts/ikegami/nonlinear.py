@@ -77,16 +77,16 @@ out = solver.simulate(integration_range, initial_conditions, parameters)
 out.plot(filename="matlab_nonlinear.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
 
 initial_conditions = {symbol: 1 for symbol in get_symbols()}
-initial_conditions['A1'] = 100000  # int(100 / 1e-5) * 100
+initial_conditions['A1'] = 10000000  # int(100 / 1e-5) * 100
 
-spim_sim_range = (1000, 400)
+spim_sim_range = (5000, 300)
 
-out = spim.simulate(spim_sim_range, initial_conditions, parameters)
-out.plot(filename="spim_nonlinear.svg", axis_limits=((0, spim_sim_range[0]), (0, 10000)), figure_size=(60, 30))
+# out = spim.simulate(spim_sim_range, initial_conditions, parameters)
+# out.plot(filename="spim_nonlinear.svg", figure_size=(60, 30))
 
 stochkit2.method = 'tauLeaping'
 
 out = stochkit2.simulate(spim_sim_range, initial_conditions, parameters)
-out.plot(filename="stochkit2_nonlinear.svg", axis_limits=((0, spim_sim_range[0]), (0, 10000)), figure_size=(60, 30))
+out.plot(filename="stochkit2_nonlinear.svg", figure_size=(60, 30))
 
 show_plots()
