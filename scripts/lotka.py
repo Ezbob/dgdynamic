@@ -11,6 +11,8 @@ foxes_hunts = "R + F -> F + F"
 
 dg = HyperGraph.from_abstract(rabbit_multiples, foxes_hunts,)
 
+dg.print()
+
 initial_conditions = {
     'F': 250,
     'R': 250

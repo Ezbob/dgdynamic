@@ -1,6 +1,7 @@
 import io
 import dgDynamic.base_converters.convert_base as base
 from dgDynamic.config.settings import config
+from dgDynamic.utils.exceptions import ModelError
 
 INDENT_SPACES = 4
 
@@ -80,6 +81,7 @@ def generate_model(simulator, initial_conditions, rate_parameters, drain_paramet
     translate_dict = {sym: internal.replace('$', '') for sym, internal in simulator.internal_symbol_dict.items()}
 
     def build_drain_equation():
+        # Drains are by it's nature a elementary reaction with LHS stoiciometric 1
         for vertex in simulator.graph.vertices:
             in_offset, in_factor, out_offset, out_factor = simulator.internal_drain_dict[vertex.graph.name]
             in_offset_val, in_factor_val, out_offset_val, out_factor_val = drain_values[in_offset.replace('$', '')], \
@@ -99,11 +101,20 @@ def generate_model(simulator, initial_conditions, rate_parameters, drain_paramet
                 yield out_propensity, ((translate_dict[vertex.graph.name].replace('$', ''), 1),), tuple()
 
     def build_rate_equations():
+
+        def check_and_build_stoichiometry(stoichio_dict, trans_dict):
+            # Reactions with order > 3 (on the LHS) are not supported
+            for label, stoichio in stoichio_dict.items():
+                if stoichio > 3:
+                    raise ModelError("Species {!r} has stoichiometry {}. Reactions with order > 3 are not supported by "
+                                     "StochKit2."
+                                     .format(label, stoichio))
+                yield trans_dict[label], stoichio
+
         rate_dict = dict(base.get_edge_rate_dict(simulator.graph, rate_parameters))
         for edge in simulator.graph.edges:
             source_stoichio, target_stoichio = simulator.edge_stoichiometrics(edge)
-            translated_source_stoichio = tuple((translate_dict[label], stoichio)
-                                               for label, stoichio in source_stoichio.items())
+            translated_source_stoichio = tuple(check_and_build_stoichiometry(source_stoichio, translate_dict))
             translated_target_stoichio = tuple((translate_dict[label], stoichio)
                                                for label, stoichio in target_stoichio.items())
             yield rate_dict[edge.id], translated_source_stoichio, translated_target_stoichio

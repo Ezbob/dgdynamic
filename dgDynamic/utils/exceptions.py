@@ -10,3 +10,7 @@ class ReactionParseError(Exception):
 
 class SimulationError(Exception):
     pass
+
+
+class ModelError(Exception):
+    pass
