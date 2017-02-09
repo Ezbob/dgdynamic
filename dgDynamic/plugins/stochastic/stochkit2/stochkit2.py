@@ -137,6 +137,7 @@ class StochKit2Stochastic(StochasticPlugin):
                         partial_trajectories = os.listdir(path.join(model_home_dir, 'trajectories'))
                     except FileNotFoundError:
                         # Error in listing trajectory files
+                        messages.print_solver_done(name, self.method.name, True)
                         return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
                                                 solver_method=self.method, errors=(exception,
                                                                                    util_exceptions.
@@ -145,10 +146,12 @@ class StochKit2Stochastic(StochasticPlugin):
 
                     if len(partial_trajectories) == 0:
                         # There was no trajectory files
+                        messages.print_solver_done(name, self.method.name, True)
                         return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
                                                 solver_method=self.method, errors=(exception,))
                     else:
                         # Collected from all partial trajectory files
+                        messages.print_solver_done(name, self.method.name, True)
                         return SimulationOutputSet(collect_multiple_output(partial_trajectories,
                                                                            errors=(exception,)))
 
@@ -168,14 +171,17 @@ class StochKit2Stochastic(StochasticPlugin):
                     log_message = log.readlines()
                     self.logger.warn(log_message)
                     if len(trajectory_paths) == 0:
+                        messages.print_solver_done(name, self.method.name, True)
                         return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
                                                 solver_method=self.method, errors=(util_exceptions
                                                                                    .SimulationError("Simulation ended "
                                                                                                     "with no output")))
                     else:
+                        messages.print_solver_done(name, self.method.name, True)
                         return SimulationOutputSet(collect_multiple_output(trajectory_paths, errors=(util_exceptions
                                                                                                      .SimulationError(
                                                                                                       log_message),),))
             else:
                 # We got all the trajectories!
+                messages.print_solver_done(name, self.method.name)
                 return SimulationOutputSet(collect_multiple_output(trajectory_paths))
