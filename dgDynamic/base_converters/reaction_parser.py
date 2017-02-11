@@ -70,7 +70,7 @@ def abstract_mod_parser(deviation_graph: MødDeviationGraph, reaction: str) -> n
         raise ReactionParseError("Unknown reaction format for reaction: {}".format(reaction))
 
 
-def hyper_edge_to_string(edge: MødHyperEdge) -> str:
+def hyper_edge_to_string(edge: MødHyperEdge, add_newline=True) -> str:
     with StringIO() as out:
         for index, source_vertex in enumerate(edge.sources):
             out.write(source_vertex.graph.name)
@@ -82,5 +82,6 @@ def hyper_edge_to_string(edge: MødHyperEdge) -> str:
             out.write(target_vertex.graph.name)
             if index < edge.numTargets - 1:
                 out.write(" + ")
-        out.write("\n")
+        if add_newline:
+            out.write("\n")
         return out.getvalue()

@@ -1,5 +1,6 @@
 import matplotlib.pyplot as pyplt
 import math
+import numpy
 
 
 def matplotlib_plot(input_data):
@@ -63,11 +64,12 @@ def matplotlib_plot(input_data):
                 line.remove()
             else:
                 line.set_label(label)
-            if 20 < index <= 30:
+                #line.set_linewidth(index * 0.2)
+            if 6 < index <= 11:
                 line.set_linestyle('dashed')
-            elif 30 < index <= 40:
+            elif 11 < index <= 16:
                 line.set_linestyle('dashdot')
-            elif 40 < index <= 50:
+            elif 16 < index <= 21:
                 line.set_linestyle('dotted')
 
         # shrinking the box so there is space for the left box

@@ -1,5 +1,5 @@
 import abc
-from typing import Union, Tuple
+from typing import Tuple
 from ..base_converters.reaction_parser import abstract_mod_parser, hyper_edge_to_string
 from dgDynamic.utils.project_utils import LogMixin
 from ..intermediate.intermediate_generators import generate_rate_laws, generate_rate_equations
@@ -52,10 +52,6 @@ class DynamicSimulator(abc.ABC, LogMixin):
                 continue
             target_stoichiometrics[v.graph.name] = targets.count(v)
         return source_stoiciometrics, target_stoichiometrics
-
-    @property
-    def abstract_edges(self):
-        yield from (hyper_edge_to_string(edge) for edge in self.graph.edges)
 
     def parse_abstract_reaction(self, reaction: str) -> Tuple:
         return abstract_mod_parser(self, reaction)

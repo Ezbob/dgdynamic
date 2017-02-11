@@ -1,4 +1,5 @@
 from dgDynamic.utils.project_utils import LogMixin
+from dgDynamic.base_converters.reaction_parser import hyper_edge_to_string
 import mod
 
 
@@ -27,3 +28,13 @@ class HyperGraph(LogMixin):
             whole_network = "\n".join(abstract_reactions)
             dg = mod.dgAbstract(whole_network)
             return HyperGraph(dg)
+
+    @staticmethod
+    def abstract(hyper_graph):
+        yield from (hyper_edge_to_string(edge, add_newline=False) for edge in hyper_graph.edges)
+
+    @staticmethod
+    def union(hyper_graph_a, hyper_graph_b):
+        new_abstract = tuple(HyperGraph.abstract(hyper_graph_a)) + tuple(HyperGraph.abstract(hyper_graph_b))
+        print("\n".join(new_abstract))
+        return mod.dgAbstract("\n".join(new_abstract))

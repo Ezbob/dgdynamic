@@ -3,9 +3,6 @@ import random
 import numpy as np
 import enum
 
-rate_std_deviation = np.nextafter(1, 0)
-rate_mean = 0
-
 
 class ImportantSpecies(enum.Enum):
     HCN = "HCN"
@@ -14,8 +11,7 @@ class ImportantSpecies(enum.Enum):
     Oxoaspartate = "Oxoaspartate"
 
 
-reactions = [
-    # Starting with the first autocatalytic cycle (on the green side)
+cycle1_reactions = [
     "2 {} -> C1S1".format(ImportantSpecies.HCN.name),
     "C1S1 -> C1S2",
     "C1S2 + {} -> C1S3".format(ImportantSpecies.Glyoxylate.name),
@@ -23,7 +19,9 @@ reactions = [
     "C1S4 -> C1S5",
     "C1S5 -> C1S6 + {}".format(ImportantSpecies.Glyoxylate.name),
     "C1S6 -> {}".format(ImportantSpecies.Glyoxylate.name),
-    # Next autocatalytic cycle (on the orange side)
+]
+
+cycle2_reactions = [
     "C2S10 + {} -> C2S1".format(ImportantSpecies.Glyoxylate.name),
     "C2S1 -> C2S2",
     "C2S2 -> C2S3",
@@ -37,6 +35,18 @@ reactions = [
     "C2S8 -> C2S9",
     "C2S9 -> C2S10"
 ]
+
+extras = [
+    '{} -> {}'.format(ImportantSpecies.Oxaloglycolate.name, ImportantSpecies.HCN.name)
+]
+
+cycle1_hyper = HyperGraph.from_abstract(*cycle1_reactions)
+cycle2_hyper = HyperGraph.from_abstract(*cycle2_reactions)
+
+cycle1_hyper.print()
+cycle2_hyper.print()
+
+reactions = cycle1_reactions + cycle2_reactions  #+ extras
 
 
 def generate_rates(number_of_reactions, decomposed_rates=()):
@@ -56,31 +66,85 @@ def generate_rates(number_of_reactions, decomposed_rates=()):
             results[i] = random.random()
     return results
 
-r = generate_rates(len(reactions))
+for i in range(4):
+    all_rates = generate_rates(len(reactions))
+    parameters = {key: val for key, val in zip(reactions, all_rates)}
 
-print(r)
-parameters = {key: val for key, val in zip(reactions, r)}
+    initial_conditions = {
+        ImportantSpecies.HCN.name: 2,
+        #"C2S10": 1
+        ImportantSpecies.Glyoxylate.name: 1,
+        ImportantSpecies.Oxaloglycolate.name: 1,
+        #ImportantSpecies.Oxoaspartate.name: 1
+    }
 
-initial_conditions = {
-    ImportantSpecies.HCN.name: 10,
-    ImportantSpecies.Glyoxylate.name: 2
-}
+    drain_params = {
+        # 'C1S3': {
+        #     'in': {
+        #         'constant': 0.0001
+        #     }
+        # },
+        # 'C2S6': {
+        #     'out': {
+        #         'factor': 0.1
+        #     }
+        # },
+        # 'C2S10': {
+        #    'out': {
+        #        'factor': 0.001
+        #    }
+        # },
+        ImportantSpecies.HCN.name: {
+            'in': {
+                'constant': 0.1
+            },
+            'out': {
+                'factor': 0.1
+            }
+        },
+        ImportantSpecies.Glyoxylate.name: {
+            #'in': {
+            #    'constant': 1e-6
+            #}
+            'out': {
+                'factor': 0.002
+            }
+        },
+        # ImportantSpecies.Oxaloglycolate.name: {
+        #
+        #     'out': {
+        #         'factor': 0.00001
+        #     },
+        #     'in': {
+        #         'constant': 0.01
+        #     }
+        # }
+    }
 
-print("Parameters are: ")
-for react, param in parameters.items():
-    print("{} : {}".format(react, param))
+    #parameters["C2S3 -> {} + {}".format(ImportantSpecies.Oxaloglycolate.name, ImportantSpecies.Oxoaspartate.name)] = 0.0001
 
-dg = HyperGraph.from_abstract(*reactions)
+    print("Parameters are: ")
+    for react, param in parameters.items():
+        print("{} : {}".format(react, param))
 
-dg.print()
+    dg = HyperGraph.from_abstract(*reactions)
 
-stochastic = dgDynamicSim(dg, "stochastic")
+    dg.print()
 
-with stochastic('stochkit2') as stochkit2:
-    stochkit2.trajectories = 10
-    sim_range = (200, 100)
-    out = stochkit2.simulate(sim_range, initial_conditions, parameters)
+    #stochastic = dgDynamicSim(dg, "stochastic")
+    ode = dgDynamicSim(dg)
 
-    out.plot()
+    # with stochastic('stochkit2') as stochkit2:
+    #     stochkit2.trajectories = 10
+    #     sim_range = (200, 100)
+    #     out = stochkit2.simulate(sim_range, initial_conditions, parameters, drain_params)
+    #
+    #     out.plot()
 
-show_plots()
+    with ode('scipy') as scipy:
+        int_range = (0, 5000)
+        #for i in range(10):
+        scipy(int_range, initial_conditions, parameters, drain_params).plot(figure_size=(40, 20),
+                                                                            axis_limits=((0, 1000), (0, 1.2))).show()
+
+#show_plots()
