@@ -107,6 +107,9 @@ for i in range(1):
         ImportantSpecies.Glyoxylate.name: {
             'in': {
                 'constant': 0.0002
+            },
+            'out': {
+                'factor': 0.0001
             }
         },
         ImportantSpecies.Oxaloglycolate.name: {
@@ -117,8 +120,10 @@ for i in range(1):
     }
 
     print("Parameters are: {")
+    print("Your parameters just got hacked!")
     for react, param in parameters.items():
-        print("{!r} : {},".format(react, param))
+        print("{!r}: {},".format(react, param))
+
     print("}")
 
     dg.print()
@@ -138,9 +143,9 @@ for i in range(1):
         scipy(int_range, initial_conditions, parameters, drain_params).plot(figure_size=(40, 20),)
 
     with stochastic('stochkit2') as stochkit2:
-        sim_range = (60000, 3000) #hackd
+        sim_range = (60000, 3000)
         stochkit2.method = "tauLeaping"
-        stochkit2.trajectories = 9
+        stochkit2.trajectories = 19
         stochkit2(sim_range, initial_conditions, parameters, drain_params).plot(figure_size=(40, 20))
 
 show_plots()

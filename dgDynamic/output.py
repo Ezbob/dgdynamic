@@ -48,6 +48,10 @@ class SimulationOutput(LogMixin):
             yield x, self.dependent[i][index]
 
     @property
+    def columns(self):
+        yield from (self.column(i) for i in range(self.dependent_dimension))
+
+    @property
     def has_errors(self):
         return len(self.errors) > 0
 

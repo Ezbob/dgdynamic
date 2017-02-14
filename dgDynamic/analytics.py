@@ -3,7 +3,8 @@ import scipy.signal as signal
 import scipy.interpolate as interpol
 import matplotlib.pyplot as plt
 import scipy.optimize as opt
-from dgDynamic.output import SimulationOutput
+from dgDynamic.output import SimulationOutput, SimulationOutputSet
+import statistics
 
 
 class DynamicAnalysisDevice:
@@ -21,6 +22,18 @@ class DynamicAnalysisDevice:
     @staticmethod
     def from_simulation(plugin, simulation_range, initial_conditions, rate_parameters,
                         drain_parameters=None, using_filtered_output=True, *args, **kwargs):
+        """
+        Do a simulation using a plugin and spit out the output and a initialized object of this class
+        :param plugin:
+        :param simulation_range:
+        :param initial_conditions:
+        :param rate_parameters:
+        :param drain_parameters:
+        :param using_filtered_output:
+        :param args:
+        :param kwargs:
+        :return:
+        """
         if using_filtered_output:
             output = plugin(simulation_range, initial_conditions, rate_parameters,
                             drain_parameters, *args, **kwargs).filtered_output
@@ -34,8 +47,15 @@ class DynamicAnalysisDevice:
             sample_spacing = plugin.delta_t
             sample_rate = output.requested_simulation_range[1] * sample_spacing
 
-        return output, DynamicAnalysisDevice(output, plugin_solver=plugin, sample_rate=sample_rate,
-                                             sample_spacing=sample_spacing)
+        if isinstance(output, SimulationOutput):
+            return output, DynamicAnalysisDevice(output, plugin_solver=plugin, sample_rate=sample_rate,
+                                                 sample_spacing=sample_spacing)
+        elif isinstance(output, SimulationOutputSet):
+            return output, DynamicAnalysisDeviceSet(
+                DynamicAnalysisDevice(out, plugin_solver=plugin, sample_rate=sample_rate,
+                                      sample_spacing=sample_spacing) for out in output)
+        else:
+            raise TypeError("Unknown output type")
 
     def _scale_and_normalize_fourier(self, fourier):
         # http://stackoverflow.com/questions/15147287/numpy-wrong-amplitude-of-fftd-array
@@ -81,6 +101,15 @@ class DynamicAnalysisDevice:
             return maxima[arg_maximum], maxima_freqs[arg_maximum]
         except ValueError:
             return np.nan, np.nan
+
+    @property
+    def means(self):
+        return tuple(statistics.mean(self.output.column(i))
+                     for i in range(self.output.dependent_dimension))
+
+    @property
+    def variances(self):
+        return tuple(statistics.variance(self.output.column(i)) for i in range(self.output.dependent_dimension))
 
     @property
     def simulation_range(self):
@@ -170,3 +199,27 @@ class DynamicAnalysisDevice:
                 plt.plot(maximum_frequency, maximum_value, 'ro', marker='+', color='black')
 
         plt.legend()
+
+
+class DynamicAnalysisDeviceSet:
+
+    def __init__(self, analytic_device_set):
+        self.dads = analytic_device_set if analytic_device_set is not None else tuple()
+
+    def for_all(self, invoke_name, *args, **kwargs):
+        """Try to invoke some attribute of the all of the analytic devices and get the results back in a tuple"""
+        if not hasattr(self.dads[0], invoke_name):
+            raise AttributeError("No such attribute: {}".format(invoke_name))
+        return tuple(dad.__getattribute__(invoke_name)(*args, **kwargs) for dad in self.dads)
+
+    def __repr__(self, *args, **kwargs):
+        return self.dads.__repr__(*args, **kwargs)
+
+    def __len__(self, *args, **kwargs):
+        return self.dads.__len__(*args, **kwargs)
+
+    def __getitem__(self, item):
+        return self.dads.__getitem__(item)
+
+    def __iter__(self):
+        return self.dads.__iter__()
