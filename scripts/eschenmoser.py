@@ -1,6 +1,6 @@
 from dgDynamic import dgDynamicSim, HyperGraph, show_plots
+from dgDynamic.choices import ScipyOdeSolvers
 import random
-import numpy as np
 import enum
 
 
@@ -66,85 +66,72 @@ def generate_rates(number_of_reactions, decomposed_rates=()):
             results[i] = random.random()
     return results
 
-for i in range(4):
+for i in range(1):
+    dg = HyperGraph.from_abstract(*reactions)
     all_rates = generate_rates(len(reactions))
-    parameters = {key: val for key, val in zip(reactions, all_rates)}
+    parameters = {"Glyoxylate + C2S6 -> C2S7": 0.41593185562060364,
+                  "C1S5 -> C1S6 + Glyoxylate": 0.03228617071642825,
+                  "C2S2 -> C2S3": 0.7062744944670036,
+                  "Oxaloglycolate <=> C2S4": 0.3567249083111612,
+                  "C2S9 -> C2S10": 0.5568526471228114,
+                  "C1S2 + Glyoxylate -> C1S3": 0.37969675068691977,
+                  "C2S8 -> C2S9": 0.06244753992161167,
+                  "2 HCN -> C1S1": 0.5920694109504293,
+                  "C1S6 -> Glyoxylate": 0.6491898632004972,
+                  "C2S4 <=> C2S5": 0.06373362319324183,
+                  "C2S7 -> C2S8": 0.4887526649075856,
+                  "C1S1 -> C1S2": 0.08334846163431975,
+                  "C2S5 <=> C2S6": 0.263462182307307,
+                  "Oxoaspartate -> C2S6": 0.4772774274488466,
+                  "C1S4 -> C1S5": 0.030805076501288498,
+                  "C2S10 + Glyoxylate -> C2S1": 0.49164100046643444,
+                  "C2S1 -> C2S2": 0.007517466846686305,
+                  "C2S3 -> Oxaloglycolate + Oxoaspartate": 0.7696745757637155,
+                  "C1S3 -> C1S4": 0.17453627387117587}
 
     initial_conditions = {
         ImportantSpecies.HCN.name: 2,
-        #"C2S10": 1
-        ImportantSpecies.Glyoxylate.name: 1,
+        ImportantSpecies.Glyoxylate.name: 2,
         ImportantSpecies.Oxaloglycolate.name: 1,
-        #ImportantSpecies.Oxoaspartate.name: 1
     }
 
     drain_params = {
-        # 'C1S3': {
-        #     'in': {
-        #         'constant': 0.0001
-        #     }
-        # },
-        # 'C2S6': {
-        #     'out': {
-        #         'factor': 0.1
-        #     }
-        # },
-        # 'C2S10': {
-        #    'out': {
-        #        'factor': 0.001
-        #    }
-        # },
         ImportantSpecies.HCN.name: {
             'in': {
                 'constant': 0.1
             },
             'out': {
-                'factor': 0.1
+                'factor': 0.0001
             }
         },
         ImportantSpecies.Glyoxylate.name: {
-            #'in': {
-            #    'constant': 1e-6
-            #}
+            'in': {
+                'constant': 0.0002
+            }
+        },
+        ImportantSpecies.Oxaloglycolate.name: {
             'out': {
                 'factor': 0.002
             }
-        },
-        # ImportantSpecies.Oxaloglycolate.name: {
-        #
-        #     'out': {
-        #         'factor': 0.00001
-        #     },
-        #     'in': {
-        #         'constant': 0.01
-        #     }
-        # }
+        }
     }
 
-    #parameters["C2S3 -> {} + {}".format(ImportantSpecies.Oxaloglycolate.name, ImportantSpecies.Oxoaspartate.name)] = 0.0001
-
-    print("Parameters are: ")
+    print("Parameters are: {")
     for react, param in parameters.items():
-        print("{} : {}".format(react, param))
-
-    dg = HyperGraph.from_abstract(*reactions)
+        print("{!r} : {},".format(react, param))
+    print("}")
 
     dg.print()
 
-    #stochastic = dgDynamicSim(dg, "stochastic")
     ode = dgDynamicSim(dg)
 
-    # with stochastic('stochkit2') as stochkit2:
-    #     stochkit2.trajectories = 10
-    #     sim_range = (200, 100)
-    #     out = stochkit2.simulate(sim_range, initial_conditions, parameters, drain_params)
-    #
-    #     out.plot()
+    for sym in ode.symbols:
+        if sym not in drain_params:
+            drain_params[sym] = {'out': {
+                'factor': 0.0001
+            }}
 
     with ode('scipy') as scipy:
-        int_range = (0, 5000)
-        #for i in range(10):
-        scipy(int_range, initial_conditions, parameters, drain_params).plot(figure_size=(40, 20),
-                                                                            axis_limits=((0, 1000), (0, 1.2))).show()
-
-#show_plots()
+        int_range = (0, 50000)
+        scipy.integrator_mode = ScipyOdeSolvers.LSODA
+        scipy(int_range, initial_conditions, parameters, drain_params).plot(figure_size=(40, 20),).show()
