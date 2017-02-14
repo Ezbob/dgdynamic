@@ -236,6 +236,10 @@ class SimulationOutputSet(LogMixin):
                             .format(type(filename)))
 
     @property
+    def filtered_output(self):
+        return SimulationOutputSet((out.filtered_output for out in self.output_set))
+
+    @property
     def columns(self, index):
         return tuple(obj.column(index) for obj in self.output_set)
 
