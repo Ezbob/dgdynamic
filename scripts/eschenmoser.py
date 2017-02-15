@@ -140,12 +140,13 @@ for i in range(1):
     with ode('scipy') as scipy:
         int_range = (0, 60000)
         scipy.integrator_mode = ScipyOdeSolvers.LSODA
-        scipy(int_range, initial_conditions, parameters, drain_params).plot(figure_size=(40, 20),)
+        scipy(int_range, initial_conditions, parameters, drain_params).plot(figure_size=(40, 20))
 
     with stochastic('stochkit2') as stochkit2:
         sim_range = (60000, 3000)
         stochkit2.method = "tauLeaping"
         stochkit2.trajectories = 19
-        stochkit2(sim_range, initial_conditions, parameters, drain_params).plot(figure_size=(40, 20))
+        out = stochkit2(sim_range, initial_conditions, parameters, drain_params).plot(figure_size=(40, 20))
+        print(out.data_matrix)
 
 show_plots()

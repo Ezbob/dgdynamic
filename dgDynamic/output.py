@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import os.path
 import enum
 import collections
+import array
 
 
 class SimulationOutput(LogMixin):
@@ -226,6 +227,7 @@ class SimulationOutputSet(LogMixin):
         else:
             raise TypeError("Expected an iterable collection of file names; got {}"
                             .format(type(filename)))
+        return self
 
     def save(self, filename, **kwargs):
         if isinstance(filename, collections.Iterable):
@@ -234,14 +236,15 @@ class SimulationOutputSet(LogMixin):
         else:
             raise TypeError("Expected an iterable collection of file names; got {}"
                             .format(type(filename)))
+        return self
 
     @property
     def filtered_output(self):
         return SimulationOutputSet((out.filtered_output for out in self.output_set))
 
     @property
-    def columns(self, index):
-        return tuple(obj.column(index) for obj in self.output_set)
+    def data_matrix(self):
+        return self.output_set[0].output.dependent, tuple(array.array('d', obj.columns) for obj in self.output_set)
 
     @property
     def failure_indices(self):
