@@ -244,7 +244,7 @@ class SimulationOutputSet(LogMixin):
 
     @property
     def data_matrix(self):
-        return self.output_set[0].output.dependent, tuple(array.array('d', obj.columns) for obj in self.output_set)
+        return tuple((array.array('d', column) for column in out.columns) for out in self.output_set)
 
     @property
     def failure_indices(self):

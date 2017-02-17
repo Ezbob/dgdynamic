@@ -168,23 +168,31 @@ class DynamicAnalysisDevice:
         return maxima_interpolation, minima_interpolation, \
             self.function_intersection(maxima_interpolation, minima_interpolation)
 
+    def plot_spectrum(self, spectrum_data, frequencies, label=None, include_maxima=False, include_maximum=False,
+                      is_power_spectra=False, new_figure=True):
+        if new_figure:
+            plt.figure()
+        plt.grid()
+        if is_power_spectra:
+            plt.ylabel("power")
+        else:
+            plt.ylabel("amplitude")
+        plt.xlabel("frequencies")
+        plt.plot(frequencies, spectrum_data, marker='o', label=label)
+
+        if include_maxima:
+            maxima_values, maxima_frequency = self.nonzero_maxima(spectrum_data, frequencies)
+            plt.plot(maxima_frequency, maxima_values, 'ro', marker="^", markersize=10, color='white')
+        if include_maximum:
+            maximum_value, maximum_frequency = self.nonzero_maximum(spectrum_data, frequencies)
+            plt.plot(maximum_frequency, maximum_value, 'ro', marker='*', markersize=12, color='white')
+        plt.legend()
+
     def plot_spectra(self, spectra_data, frequencies, include_maxima=False, include_maximum=False,
                      is_power_spectra=False):
         plt.figure()
         plt.grid()
         for data, label in zip(spectra_data, self.output.symbols):
-            if is_power_spectra:
-                plt.ylabel("power")
-            else:
-                plt.ylabel("amplitude")
-            plt.xlabel("frequencies")
-            plt.plot(frequencies, data, marker='o', label=label)
-
-            if include_maxima:
-                maxima_values, maxima_frequency = self.nonzero_maxima(data, frequencies)
-                plt.plot(maxima_frequency, maxima_values, 'ro', color='white')
-            if include_maximum:
-                maximum_value, maximum_frequency = self.nonzero_maximum(data, frequencies)
-                plt.plot(maximum_frequency, maximum_value, 'ro', marker='+', color='black')
-
+            self.plot_spectrum(data, frequencies, label=label, include_maximum=include_maximum,
+                               include_maxima=include_maxima, is_power_spectra=is_power_spectra, new_figure=False)
         plt.legend()

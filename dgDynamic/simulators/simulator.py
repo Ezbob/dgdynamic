@@ -32,12 +32,12 @@ class DynamicSimulator(abc.ABC, LogMixin):
 
     @property
     def internal_symbol_dict(self):
-        return dict(zip(self.symbols, self.symbols_internal))
+        return OrderedDict(zip(self.symbols, self.symbols_internal))
 
     #  TODO: this internal drain dict does not reflect the internal symbols
     @property
     def internal_drain_dict(self):
-        return dict(zip(self.symbols, self.drain_symbols))
+        return OrderedDict(zip(self.symbols, self.drain_symbols))
 
     @staticmethod
     def edge_stoichiometrics(hyper_edge):

@@ -6,8 +6,7 @@ import dgDynamic.utils.typehints as th
 
 
 @log_it
-def get_edge_rate_dict(deviation_graph: th.MødDeviationGraph,
-                       user_parameters: Union[tuple, set, dict, list],
+def get_edge_rate_dict(deviation_graph: th.MødDeviationGraph, user_parameters: dict,
                        internal_parameters_map: Optional[dict]=None):
     """
     Get a dictionary with edge.ids as keys and their associated rates as values
@@ -27,50 +26,50 @@ def get_edge_rate_dict(deviation_graph: th.MødDeviationGraph,
         else:
             raise TypeError("Type error for key {}; expected float or int".format(key))
 
-    if isinstance(user_parameters, dict):
-        for edges_representation, rate in user_parameters.items():
-            hyper_edges = abstract_mod_parser(deviation_graph=deviation_graph, reaction=edges_representation).mod_edges
-            if isinstance(rate, (int, float)):
-                # rhs is a number and lhs is tuple of MØD edges
+    if not isinstance(user_parameters, dict):
+        raise TypeError("Invalid data type for rate parameter specification. Expected {} got {}."
+                        .format(dict, type(user_parameters)))
+
+    for edges_representation, rate in user_parameters.items():
+        hyper_edges = abstract_mod_parser(deviation_graph=deviation_graph, reaction=edges_representation).mod_edges
+        if isinstance(rate, (int, float)):
+            # rhs is a number and lhs is tuple of MØD edges
+            for edge in hyper_edges:
+                yield from add_to_result(edge.id, rate)
+        elif isinstance(rate, (tuple, list, set)):
+            # rhs is a iterable
+            if len(rate) != len(hyper_edges):
+                raise ValueError("Expected {} rates, got {} for parameter {}"
+                                 .format(len(edges_representation), len(rate), edges_representation))
+
+            for edge, rate_val in zip(hyper_edges, rate):
+                yield from add_to_result(edge.id, rate_val)
+
+        elif isinstance(rate, dict):
+            # right hand side is a dictionary of the form { '->': ..., '<-': ... } or { '<=>': ... }
+            if '<=>' in rate:
                 for edge in hyper_edges:
-                    yield from add_to_result(edge.id, rate)
-            elif isinstance(rate, (tuple, list, set)):
-                # rhs is a iterable
-                if len(rate) != len(hyper_edges):
+                    yield from add_to_result(edge.id, rate['<=>'])
+            elif '->' in rate and '<-' in rate:
+                if len(hyper_edges) != len(rate):
                     raise ValueError("Expected {} rates, got {} for parameter {}"
-                                     .format(len(edges_representation), len(rate), edges_representation))
+                                     .format(len(hyper_edges), len(rate), edges_representation))
 
-                for edge, rate_val in zip(hyper_edges, rate):
-                    yield from add_to_result(edge.id, rate_val)
-
-            elif isinstance(rate, dict):
-                # right hand side is a dictionary of the form { '->': ..., '<-': ... } or { '<=>': ... }
-                if '<=>' in rate:
-                    for edge in hyper_edges:
-                        yield from add_to_result(edge.id, rate['<=>'])
-                elif '->' in rate and '<-' in rate:
-                    if len(hyper_edges) != len(rate):
-                        raise ValueError("Expected {} rates, got {} for parameter {}"
-                                         .format(len(hyper_edges), len(rate), edges_representation))
-
-                    for index, edge in enumerate(hyper_edges):
-                        if index == 0:
-                            yield from add_to_result(edge.id, rate['->'])
-                        elif index == 1:
-                            yield from add_to_result(edge.id, rate['<-'])
-                elif '->' in rate and len(hyper_edges) == 1:
-                    for edge in hyper_edges:
+                for index, edge in enumerate(hyper_edges):
+                    if index == 0:
                         yield from add_to_result(edge.id, rate['->'])
-                else:
-                    raise InitialValueError("Not enough initial conditions given for parameter: {}"
-                                            .format(edges_representation))
+                    elif index == 1:
+                        yield from add_to_result(edge.id, rate['<-'])
+            elif '->' in rate and len(hyper_edges) == 1:
+                for edge in hyper_edges:
+                    yield from add_to_result(edge.id, rate['->'])
             else:
-                raise InitialValueError("Unsupported type {} of initial condition for parameter: {} "
-                                        .format(type(rate), edges_representation))
-    elif isinstance(user_parameters, (tuple, list, set)):
-        # user parameters is just a iterable
-        for index_rate, rate in enumerate(user_parameters):
-            yield from add_to_result(index_rate, rate)
+                raise InitialValueError("Not enough initial conditions given for parameter: {}"
+                                        .format(edges_representation))
+        else:
+            raise InitialValueError("Unsupported type {} of initial condition for parameter: {} "
+                                    .format(type(rate), edges_representation))
+
 
 
 @log_it
