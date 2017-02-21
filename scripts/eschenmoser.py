@@ -108,7 +108,7 @@ for i in range(1):
         },
         ImportantSpecies.Glyoxylate.name: {
             'in': {
-                'constant': 0.0002
+                'constant': 0.002
             },
             'out': {
                 'factor': 0.0001
@@ -150,10 +150,12 @@ for i in range(1):
             stochkit2.method = "tauLeaping"
             out = stochkit2(sim_range, initial_conditions, parm, drain_params).plot(figure_size=(40, 20))
 
+            out.save("emoser")
+
             anna = DynamicAnalysisDevice(out[0])
             freqs = anna.fourier_frequencies
-            anna.plot_spectra(anna.amplitude_spectra, freqs, include_maxima=True, include_maximum=True)
-            for symbol, spectrum in zip(stochastic.symbols, anna.amplitude_spectra):
+            anna.plot_spectra(anna.power_spectra, freqs, include_maxima=True, include_maximum=True, is_power_spectra=True)
+            for symbol, spectrum in zip(stochastic.symbols, anna.power_spectra):
                 maximum, maximum_freq = anna.nonzero_maximum(spectrum, freqs)
                 print(symbol, maximum, maximum_freq)
 

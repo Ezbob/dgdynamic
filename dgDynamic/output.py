@@ -118,20 +118,20 @@ class SimulationOutput(LogMixin):
                                 symbols=self.symbols, errors=self.errors,
                                 user_sim_range=self.requested_simulation_range)
 
-    def save(self, filename=None, float_precision=15, prefix=None, unfiltered=False, stream=None):
+    def save(self, filename, prefix=None, unfiltered=False, labels=None, stream=None):
         """
         Saves the independent and dependent variables as a Tab Separated Variables(TSV) file in the directory specified
         by the DATA_DIRECTORY variable in the configuration file. The name of the TSV file is constructed from a
         concatenation of the ODE solver name followed by a underscore, the 'name' parameter and finally the file
         extension.
-        :param prefix: name prefix for the data file
+        :param prefix: name prefix for the data file. Default is the plugin name followed by an underscore.
         :param unfiltered: whether to mark 'unchanging species' in the output data set
         :param filename: a name for the data file
         :param stream: use another stream than a file stream
-        :param float_precision: precision when printing out the floating point numbers
+        :param labels: use custom header labels for species. Default is the symbols specified by the model.
         :return:
         """
-        filename = "data" if filename is None else filename
+        float_precision = config.getint('Simulation', 'FIXED_POINT_PRECISION', fallback=18)
 
         if len(self.dependent) == 0 or len(self.independent) == 0:
             self.logger.warn("No or mismatched data")
@@ -151,13 +151,17 @@ class SimulationOutput(LogMixin):
 
         self.logger.debug("Dimension of the dependent variable is {}".format(dependent_dimension))
 
+        header_labels = self.symbols if labels is None else labels
+        assert isinstance(header_labels, (list, set, tuple))
+
         def header():
-            yield "t"
-            for index in range(0, dependent_dimension):
+            assert len(header_labels) == dependent_dimension
+            yield "time"
+            for index, label in enumerate(header_labels):
                 if unfiltered and index in self._ignored:
-                    yield "_y{}".format(index)
+                    yield "_{}".format(label)
                 else:
-                    yield "y{}".format(index)
+                    yield label
 
         def format_float(variable):
             return "{:.{}f}".format(variable, float_precision)

@@ -49,6 +49,9 @@ matlab = ode('matlab')
 output, analytics = DynamicAnalysisDevice.from_simulation(scipy, integration_range, initial_conditions,
                                       parameters, drain_parameters)
 
+# Save the simulation data
+output.save("lotka")
+
 # Plotting the simulation output
 output.plot(figure_size=figure_size)
 

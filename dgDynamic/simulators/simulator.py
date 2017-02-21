@@ -1,6 +1,6 @@
 import abc
 from typing import Tuple
-from ..base_converters.reaction_parser import abstract_mod_parser, hyper_edge_to_string
+from ..base_converters.reaction_parser import abstract_mod_parser
 from dgDynamic.utils.project_utils import LogMixin
 from ..intermediate.intermediate_generators import generate_rate_laws, generate_rate_equations
 from collections import OrderedDict
@@ -34,7 +34,6 @@ class DynamicSimulator(abc.ABC, LogMixin):
     def internal_symbol_dict(self):
         return OrderedDict(zip(self.symbols, self.symbols_internal))
 
-    #  TODO: this internal drain dict does not reflect the internal symbols
     @property
     def internal_drain_dict(self):
         return OrderedDict(zip(self.symbols, self.drain_symbols))
@@ -61,7 +60,6 @@ class DynamicSimulator(abc.ABC, LogMixin):
 
     def unchanging_species(self, *species):
         if len(self.ignored) < self.species_count:
-            # (item, self.symbols.index(item)) for item in species if item in self.symbols
             for item in species:
                 for symbol_index, symbol in enumerate(self.symbols):
                     if item == symbol:
