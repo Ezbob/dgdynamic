@@ -9,14 +9,15 @@ import os.path
 import enum
 import collections
 import array
+import numpy
 
 
 class SimulationOutput(LogMixin):
 
     def __init__(self, solved_by, user_sim_range, symbols, dependent=(), independent=(), ignore=(),
                  solver_method=None, errors=(),):
-        self.dependent = dependent
-        self.independent = independent
+        self.dependent = numpy.asanyarray(dependent, dtype=float)
+        self.independent = numpy.asanyarray(independent, dtype=float)
         self.errors = errors
         self.solver_used = solved_by
         self.solver_method_used = solver_method
@@ -28,37 +29,13 @@ class SimulationOutput(LogMixin):
         self._file_writer_thread = None
         self.symbols = tuple(symbols) if isinstance(symbols, collections.Generator) else symbols
 
-    def column(self, index):
-        """
-        Yields the index-th column of the dependent variable
-        :param index: a index integer
-        :return: generator with the index-th column of the dependent variable
-        """
-        for i in range(len(self.dependent)):
-            yield self.dependent[i][index]
-
-    def column_pair(self, index):
-        """
-        Yields the index-th column of the dependent variable paired with the
-        independent variable, starting with the independent variable for each pair
-        :param index:
-        :return: a generator that generates tuple consisting of the independent
-        variable and the corresponding dependent variable
-        """
-        for i, x in enumerate(self.independent):
-            yield x, self.dependent[i][index]
-
-    @property
-    def columns(self):
-        yield from (self.column(i) for i in range(self.dependent_dimension))
-
     @property
     def has_errors(self):
         return len(self.errors) > 0
 
     @property
     def is_empty(self):
-        return len(self.independent) == 0 and len(self.dependent) == 0
+        return len(self.independent) + len(self.dependent) == 0
 
     @property
     def dependent_dimension(self):
@@ -193,17 +170,8 @@ class SimulationOutput(LogMixin):
 
         return self
 
-    def __getitem__(self, indices):
-        if isinstance(indices, int):
-            return self.independent[indices], self.dependent[indices]
-        elif hasattr(indices, "__getitem__") and hasattr(indices, "__len__"):
-            if len(indices) == 2:
-                return self.independent[indices[0]], self.dependent[indices[0]][indices[1]]
-            elif len(indices) > 2:
-                raise SyntaxError('Too many indices given')
-            elif len(indices) < 2:
-                raise SyntaxError('Too few indices given')
-        raise SyntaxError('Invalid index')
+    def __getitem__(self, index):
+        return self.independent[index], self.dependent[index]
 
     def __iter__(self):
         for i in range(len(self.independent)):
