@@ -152,11 +152,16 @@ for i in range(1):
 
             out.save("emoser")
 
-            anna = DynamicAnalysisDevice(out[0])
-            freqs = anna.fourier_frequencies
-            anna.plot_spectra(anna.power_spectra, freqs, include_maxima=True, include_maximum=True, is_power_spectra=True)
-            for symbol, spectrum in zip(stochastic.symbols, anna.power_spectra):
-                maximum, maximum_freq = anna.nonzero_maximum(spectrum, freqs)
+            analytics = DynamicAnalysisDevice(out[0])
+            freqs = analytics.fourier_frequencies
+            lower_i, upper_i = analytics.period_bounds(freqs, sim_range[0], 1000)  # from 1000 to 60000
+            limited_amp = analytics.amplitude_spectra[lower_i: upper_i]
+            limited_freqs = freqs[lower_i: upper_i]
+            print(limited_amp, limited_freqs, lower_i, upper_i)
+            #analytics.plot_spectra(include_maxima=True, include_maximum=True)
+
+            for symbol, spectrum in zip(stochastic.symbols, analytics.power_spectra):
+                maximum, maximum_freq = analytics.nonzero_maximum(spectrum, freqs)
                 print(symbol, maximum, maximum_freq)
 
 show_plots()

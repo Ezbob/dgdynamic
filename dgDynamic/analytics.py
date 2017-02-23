@@ -100,6 +100,10 @@ class DynamicAnalysisDevice:
         except ValueError:
             return np.nan, np.nan
 
+    @staticmethod
+    def period_bounds(freqs, min_period, max_period):
+        return np.where(freqs == 1 / max_period)[0][0], np.where(freqs == 1 / min_period)[0][0]
+
     @property
     def simulation_range(self):
         return self.output.requested_simulation_range

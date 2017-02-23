@@ -64,7 +64,6 @@ def matplotlib_plot(input_data):
                 line.remove()
             else:
                 line.set_label(label)
-                #line.set_linewidth(index * 0.2)
             if 6 < index <= 11:
                 line.set_linestyle('dashed')
             elif 11 < index <= 16:
