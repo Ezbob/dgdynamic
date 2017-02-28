@@ -1,12 +1,12 @@
 from dgDynamic import dgDynamicSim, HyperGraph, show_plots
 import matplotlib.pyplot as plt
-from dgDynamic.choices import ScipyOdeSolvers
 import numpy as np
 from dgDynamic.analytics import DynamicAnalysisDevice
 import random
 import enum
+import csv
 
-runs = 2
+runs = 1000
 
 
 class ImportantSpecies(enum.Enum):
@@ -180,10 +180,10 @@ for index, parm in enumerate(parameter_matrix):
     c1_minimal_values.append(cycle1_minimal_rate)
     c2_minimal_values.append(cycle2_minimal_rate)
 
-    print("Cycle 1 reaction {} with minimal rate: {}"
-          .format(cycle1_params.index(cycle1_minimal_rate), cycle1_minimal_rate))
-    print("Cycle 2 reaction {} with minimal rate: {}"
-          .format(cycle2_params.index(cycle2_minimal_rate), cycle2_minimal_rate))
+    print("Cycle 1 reaction {!r} with minimal rate: {}"
+          .format(cycle1_reactions[cycle1_params.index(cycle1_minimal_rate)], cycle1_minimal_rate))
+    print("Cycle 2 reaction {!r} with minimal rate: {}"
+          .format(cycle2_reactions[cycle2_params.index(cycle2_minimal_rate)], cycle2_minimal_rate))
     with stochastic('stochkit2') as stochkit2:
         sim_range = (60000, 3000)
         stochkit2.method = "tauLeaping"
@@ -202,5 +202,11 @@ for index, parm in enumerate(parameter_matrix):
 
 
 plot_minimal_rate_params(c1_minimal_values, c2_minimal_values, fourier_measurements)
+
+with open("fourier_measurements_{}.tsv".format(runs), mode="w") as tsvfile:
+    tsv_writer = csv.writer(tsvfile, delimiter="\t")
+    tsv_writer.writerow(['cycle1_mins', 'cycle2_mins', 'fourier_score'])
+    for row in zip(c1_minimal_values, c2_minimal_values, fourier_measurements):
+        tsv_writer.writerow(row)
 
 show_plots()
