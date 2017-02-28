@@ -1,6 +1,5 @@
 import matplotlib.pyplot as pyplt
 import math
-import numpy
 
 
 def matplotlib_plot(input_data):
@@ -93,4 +92,3 @@ def matplotlib_plot(input_data):
     filename = get_input('filename')
     if filename and isinstance(filename, str):
         pyplt.savefig(filename, bbox_inches='tight')
-

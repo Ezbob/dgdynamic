@@ -104,6 +104,19 @@ class DynamicAnalysisDevice:
     def period_bounds(freqs, min_period, max_period):
         return np.where(freqs == 1 / max_period)[0][0], np.where(freqs == 1 / min_period)[0][0]
 
+    def bounded_fourier_oscillation(self, spectra_data, species_index, min_period, max_period, frequencies=None):
+        freqs = self.fourier_frequencies if frequencies is None else frequencies
+        lower_i, upper_i = self.period_bounds(freqs, min_period, max_period)
+        data = spectra_data[species_index]
+        return np.max(data[lower_i: upper_i])
+
+    def fourier_oscillation_measure(self, min_period, max_period):
+        ampl_spectra = self.amplitude_spectra
+        freqs = self.fourier_frequencies
+        oscillation_scores = (self.bounded_fourier_oscillation(ampl_spectra, i, min_period, max_period, freqs)
+                              for i in range(self.output.dependent.shape[1]))
+        return sum(oscillation_scores)
+
     @property
     def simulation_range(self):
         return self.output.requested_simulation_range
@@ -114,11 +127,11 @@ class DynamicAnalysisDevice:
 
     @property
     def amplitude_spectra(self):
-        return tuple(self.generate_amplitude_spectrum())
+        return np.asanyarray(tuple(self.generate_amplitude_spectrum()), dtype=float)
 
     @property
     def power_spectra(self):
-        return tuple(self.generate_power_spectrum())
+        return np.asanyarray(tuple(self.generate_power_spectrum()), dtype=float)
 
     def power_spectrum(self, index):
         return tuple(self.generate_power_spectrum())[index]
