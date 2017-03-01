@@ -191,8 +191,8 @@ for index, parm in enumerate(parameter_matrix):
         out = stochkit2(sim_range, initial_conditions, parm, drain_params)
 
         # Since we use numpy for our dependent and independent variables sets we can easily compute the variance
-        variance_measurements.append(np.sum(out[0].dependent[:, i].var() for i in range(out[0].dependent.shape[1])))
-        print("sum variance measurement: {}".format(np.sum(ys.var() for ys in out[0].dependent)))
+        variance_measurements.append(np.sum(out[0].dependent.var(axis=0)))
+        print("sum variance measurement: {}".format(np.sum(out[0].dependent.var(axis=0))))
 
         analytics = DynamicAnalysisDevice(out[0])
         period_bounds = (600, sim_range[0] / 2)  # looking from 600 to 30000
@@ -204,16 +204,16 @@ for index, parm in enumerate(parameter_matrix):
 
 plot_minimal_rate_params(c1_minimal_values, c2_minimal_values, fourier_measurements)
 
-with open("fourier_measurements_{}.tsv".format(runs), mode="w") as tsvfile:
-    tsv_writer = csv.writer(tsvfile, delimiter="\t")
-    tsv_writer.writerow(['cycle1_mins', 'cycle2_mins', 'fourier_score'])
-    for row in zip(c1_minimal_values, c2_minimal_values, fourier_measurements):
-        tsv_writer.writerow(row)
 
-with open("variances_measuresments_{}.tsv".format(runs), mode="w") as tsvfile:
+def fp(float_value, fixed_precision=18):
+    """Fixed point string format conversion"""
+    return "{:.{}f}".format(float_value, fixed_precision)
+
+with open("eschenmoser_measurements_{}.tsv".format(runs), mode="w") as tsvfile:
     tsv_writer = csv.writer(tsvfile, delimiter="\t")
-    tsv_writer.writerow(["cycle1_mins", "cycle2_mins", "variance_score"])
-    for row in zip(c1_minimal_values, c2_minimal_values, variance_measurements):
+    tsv_writer.writerow(['variance_sum', 'fourier_score'] + ['{!r}'.format(r) for r in reactions])
+    for var_measure, fourier_measure, param_map in zip(variance_measurements, fourier_measurements, parameter_matrix):
+        row = [fp(var_measure), fp(fourier_measure)] + [fp(param_map[r]) for r in reactions]
         tsv_writer.writerow(row)
 
 show_plots()
