@@ -6,7 +6,7 @@ import random
 import enum
 import csv
 
-runs = 1000
+runs = 2
 
 
 class ImportantSpecies(enum.Enum):
@@ -211,9 +211,11 @@ def fp(float_value, fixed_precision=18):
 
 with open("eschenmoser_measurements_{}.tsv".format(runs), mode="w") as tsvfile:
     tsv_writer = csv.writer(tsvfile, delimiter="\t")
-    tsv_writer.writerow(['variance_sum', 'fourier_score'] + ['{!r}'.format(r) for r in reactions])
+    tsv_writer.writerow(['variance_sum', 'fourier_score', 'lower_period_bound', 'upper_period_bound'] +
+                        ['{!r}'.format(r) for r in reactions])
     for var_measure, fourier_measure, param_map in zip(variance_measurements, fourier_measurements, parameter_matrix):
-        row = [fp(var_measure), fp(fourier_measure)] + [fp(param_map[r]) for r in reactions]
+        row = [fp(var_measure), fp(fourier_measure), fp(period_bounds[0]), fp(period_bounds[1])] + \
+              [fp(param_map[r]) for r in reactions]
         tsv_writer.writerow(row)
 
 show_plots()
