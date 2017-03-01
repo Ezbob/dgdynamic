@@ -168,6 +168,7 @@ for sym in ode.symbols:
 c1_minimal_values = []
 c2_minimal_values = []
 fourier_measurements = []
+variance_measurements = []
 
 for index, parm in enumerate(parameter_matrix):
     print("--- Run {} ---".format(index + 1))
@@ -189,14 +190,14 @@ for index, parm in enumerate(parameter_matrix):
         stochkit2.method = "tauLeaping"
         out = stochkit2(sim_range, initial_conditions, parm, drain_params)
 
-        #out.plot(figure_size=(40, 20))
+        # Since we use numpy for our dependent and independent variables sets we can easily compute the variance
+        variance_measurements.append(np.sum(out[0].dependent[:, i].var() for i in range(out[0].dependent.shape[1])))
+        print("sum variance measurement: {}".format(np.sum(ys.var() for ys in out[0].dependent)))
+
         analytics = DynamicAnalysisDevice(out[0])
-
         period_bounds = (600, sim_range[0] / 2)  # looking from 600 to 30000
-
-        analytics.windowing_function = np.hamming
-
         fourier_measurement = analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
+
         print("fourier oscillation measurement: {}".format(fourier_measurement))
         fourier_measurements.append(fourier_measurement)
 
@@ -207,6 +208,12 @@ with open("fourier_measurements_{}.tsv".format(runs), mode="w") as tsvfile:
     tsv_writer = csv.writer(tsvfile, delimiter="\t")
     tsv_writer.writerow(['cycle1_mins', 'cycle2_mins', 'fourier_score'])
     for row in zip(c1_minimal_values, c2_minimal_values, fourier_measurements):
+        tsv_writer.writerow(row)
+
+with open("variances_measuresments_{}.tsv".format(runs), mode="w") as tsvfile:
+    tsv_writer = csv.writer(tsvfile, delimiter="\t")
+    tsv_writer.writerow(["cycle1_mins", "cycle2_mins", "variance_score"])
+    for row in zip(c1_minimal_values, c2_minimal_values, variance_measurements):
         tsv_writer.writerow(row)
 
 show_plots()
