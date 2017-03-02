@@ -1,13 +1,13 @@
 #!/bin/bash
 
+CUR_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 N_THREADS=4
-LOG="dump.log"
-ERR="err.log"
+LOG=$CUR_DIR"/dump.log"
+ERR=$CUR_DIR"/err.log"
 
 mkdir src >> $LOG 2>> $ERR
 mkdir python353 >> $LOG 2>> $ERR
 
-CUR_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 SRC_DIR=$CUR_DIR/src
 PY_DIR=$CUR_DIR/python353
 

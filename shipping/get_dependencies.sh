@@ -2,8 +2,8 @@
 
 CUR_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
-LOG="depdency.log"
-ERR="dep_err.log"
+LOG=$CUR_DIR"/depdency.log"
+ERR=$CUR_DIR"/dep_err.log"
 
 echo "DEP START" > $LOG
 
