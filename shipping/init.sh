@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CUR_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
+#CUR_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
 echo "Wellcome to the Deviation Graph Dynamic Simulation Library, or:"
 echo "       __          __     __"
@@ -12,41 +12,36 @@ echo "     /____/                 "
 
 echo "By Anders Busch, 2017. Check the LICENSE file for licensing information."
 
-echo "Setting up virtual environment in "$CUR_DIR"..."
+echo "Setting up virtual environment in "$(pwd)"..."
 
 N_THREADS=4
-LOG=$CUR_DIR"/dump.log"
-ERR=$CUR_DIR"/err.log"
+LOG="dump.log"
+ERR="err.log"
 
-SRC_DIR=$CUR_DIR/src
-PY_DIR=$CUR_DIR/python353
+PY_DIR=$(pwd)/python353
 
-mkdir -p $SRC_DIR
 mkdir -p $PY_DIR
 
 echo "Extracting Python 3.5.3..."
-tar --extract --file $CUR_DIR/Python-3.5.3.tgz
+tar --extract --file Python-3.5.3.tgz
 echo "done."
 
 echo "Compiling Python 3.5.3 from source..."
-cd $CUR_DIR/Python-3.5.3/
+cd Python-3.5.3/
 ./configure --prefix=$PY_DIR
 make -j$N_THREADS >> $LOG 2>> $ERR
 make install >> $LOG 2>> $ERR
 echo "done."
+cd ..
+rm -rf Python-3.5.3/
 
-echo "Setting up virtual environment in "$CUR_DIR"/dgdsl..."
-cd $CUR_DIR
+echo "Setting up virtual environment in "$(pwd)"/dgdsl..."
 virtualenv --python=$PY_DIR/bin/python3 dgdsl
 echo "done."
 
-rm -rf $SRC_DIR
-
-LOG=$CUR_DIR"/depdency.log"
-ERR=$CUR_DIR"/dep_err.log"
 
 echo "Getting and installing pip dependencies..."
-. $CUR_DIR/dgdsl/bin/activate
+. ./dgdsl/bin/activate
 cd ..
 pip install -r requirements.txt
 echo "done."
