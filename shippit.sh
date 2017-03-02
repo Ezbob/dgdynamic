@@ -12,4 +12,4 @@ cd $CUR_DIR
 
 makeself --notemp $BUILD_DIR dgdsl.run "$COMMENT" ./shipping/init.sh
 
-rm -rf $BUILD_DIR
+#rm -rf $BUILD_DIR

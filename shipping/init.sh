@@ -25,7 +25,7 @@ mkdir -p $SRC_DIR >> $LOG 2>> $ERR
 mkdir -p $PY_DIR >> $LOG 2>> $ERR
 
 echo "Extracting Python 3.5.3..."
-tar --extract -f Python-3.5.3.tgz >> $LOG 2>> $ERR
+tar --extract --file $CUR_DIR/Python-3.5.3.tgz
 echo "done."
 
 echo "Compiling Python 3.5.3 from source..."
