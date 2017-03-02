@@ -5,14 +5,16 @@ N_THREADS=4
 LOG=$CUR_DIR"/dump.log"
 ERR=$CUR_DIR"/err.log"
 
-mkdir src >> $LOG 2>> $ERR
-mkdir python353 >> $LOG 2>> $ERR
-
 SRC_DIR=$CUR_DIR/src
 PY_DIR=$CUR_DIR/python353
 
+rm -rf $SRC_DIR
+rm -rf $PY_DIR
+mkdir -p $SRC_DIR
+mkdir -p $PY_DIR
+
 echo "Extracting Python 3.5.3..."
-tar --extract -f Python-3.5.3.tgz -C $SRC_DIR >> $LOG 2>> $ERR
+tar --extract -f Python-3.5.3.tgz -C $SRC_DIR
 echo "done."
 
 echo "Compiling Python 3.5.3 from source..."
@@ -24,7 +26,7 @@ echo "done."
 
 echo "Setting up virtual environment in "$CUR_DIR"/dgdsl..."
 cd $CUR_DIR
-virtualenv --python=$PY_DIR/bin/python3 dgdsl >> $LOG 2>> $ERR
+virtualenv --python=$PY_DIR/bin/python3 dgdsl
 echo "done."
 
 rm -rf $SRC_DIR

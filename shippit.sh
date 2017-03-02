@@ -10,6 +10,6 @@ cd $BUILD_DIR
 rm -rf shippit.sh tests/
 cd $CUR_DIR
 
-makeself --notemp $BUILD_DIR dgdsl.run "$COMMENT" ./shipping/init.sh
+makeself --notemp $BUILD_DIR dgdsl.run "$COMMENT" ./shipping/greeting.sh
 
-#rm -rf $BUILD_DIR
+rm -rf $BUILD_DIR
