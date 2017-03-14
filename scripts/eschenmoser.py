@@ -1,4 +1,4 @@
-from dgDynamic import dgDynamicSim, HyperGraph, show_plots
+from dgDynamic import dgDynamicSim, HyperGraph, show_plots, choices
 import matplotlib.pyplot as plt
 import numpy as np
 from dgDynamic.analytics import DynamicAnalysisDevice
@@ -156,42 +156,51 @@ fourier_measurements = []
 variance_measurements = []
 
 
-def scipy_sim():
-    with ode('scipy') as scipy:
-        scipy.method = "LSODA"
-        out = scipy(ode_sim_range, initial_conditions, parm, drain_params)
+def do_sim_and_measure(simulator, plugin_name, method, do_plot=False):
+    with simulator(plugin_name) as plugin:
+        print("Using plugin: {}".format(plugin_name))
+        if hasattr(plugin, "method"):
+            plugin.method = method
+        out = plugin(ode_sim_range, initial_conditions, parm, drain_params)
+        if out.is_output_set:
+            # for stochkit2 plugin returns output sets for handling multiple trajectories
+            out = out[0]
+        if out.has_errors:
+            print("Error in simulating ", )
+            return None
         analytics = DynamicAnalysisDevice(out)
         variance_measurement = analytics.variance_oscillation_measure()
-        variance_measurements.append(variance_measurement)
-        print("sum variance measurement: {}".format(variance_measurement))
-        #fourier_measurement = analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
-        #print("fourier oscillation measurement: {}".format(fourier_measurement))
+        print("Sum variance measurement: {}".format(variance_measurement))
+        fourier_measurement = analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
+        print("Fourier oscillation measurement: {}".format(fourier_measurement))
 
-        #out.plot(figure_size=(46, 24))
+        if do_plot:
+            dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
+            out.plot(filename="eschenmoser_data/eschenmoser_plot{}_{}.png".format(index + 1, dt),
+                        figure_size=(46, 24),
+                        title="{} - Run: {}, var: {}, four: {}".format(out.solver_used, index + 1, variance_measurement,
+                                                                       fourier_measurement))
+        return variance_measurement, fourier_measurement
 
 
-def stochkit2_sim():
+def stochkit2_sim(do_plot=False):
     with stochastic('stochkit2') as stochkit2:
         stochkit2.method = "tauLeaping"
         out = stochkit2(stoch_sim_range, initial_conditions, parm, drain_params)
-
         analytics = DynamicAnalysisDevice(out[0])
-
-        # Since we use numpy for our dependent and independent variables sets we can easily compute the variance
         variance_measurement = analytics.variance_oscillation_measure()
         variance_measurements.append(variance_measurement)
         print("sum variance measurement: {}".format(variance_measurement))
-
         fourier_measurement = analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
-
         print("fourier oscillation measurement: {}".format(fourier_measurement))
         fourier_measurements.append(fourier_measurement)
 
-        dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-        out[0].plot(filename="eschenmoser_data/eschenmoser_plot{}_{}.png".format(index + 1, dt),
-                    figure_size=(46, 24),
-                    title="StochKit2 - Run: {}, var: {}, four: {}".format(index + 1, variance_measurement,
-                                                                          fourier_measurement))
+        if do_plot:
+            dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
+            out[0].plot(filename="eschenmoser_data/eschenmoser_plot{}_{}.png".format(index + 1, dt),
+                        figure_size=(46, 24),
+                        title="StochKit2 - Run: {}, var: {}, four: {}".format(index + 1, variance_measurement,
+                                                                              fourier_measurement))
 
 for index, parm in enumerate(parameter_matrix):
     print("--- Run {} ---".format(index + 1))
@@ -209,10 +218,11 @@ for index, parm in enumerate(parameter_matrix):
     print("Cycle 2 reaction {!r} with minimal rate: {}"
           .format(cycle2_reactions[cycle2_params.index(cycle2_minimal_rate)], cycle2_minimal_rate))
 
-    scipy_sim()
+    do_sim_and_measure(ode, "scipy", "LSODA")
+    do_sim_and_measure(stochastic, "stochkit2", "tauleaping")
 
 
-plot_minimal_rate_params(c1_minimal_values, c2_minimal_values, variance_measurements)
+#plot_minimal_rate_params(c1_minimal_values, c2_minimal_values, variance_measurements)
 
 
 def fp(float_value, fixed_precision=18):

@@ -14,9 +14,13 @@ class DynamicAnalysisDevice:
         self.windowing_function = windowing_function
         self.sample_size = len(self.output.dependent)
         # default: assuming uniform spacing between time samples
-        self.sample_rate = self.sample_size / self.output.simulation_duration \
-            if sample_rate is None else sample_rate
-        self.sample_spacing = 1 / self.sample_rate if sample_spacing is None else sample_spacing
+        try:
+            self.sample_rate = self.sample_size / self.output.simulation_duration \
+                if sample_rate is None else sample_rate
+            self.sample_spacing = 1 / self.sample_rate if sample_spacing is None else sample_spacing
+        except ZeroDivisionError:
+            self.sample_rate = sample_rate
+            self.sample_spacing = sample_spacing
 
     @staticmethod
     def from_simulation(plugin, simulation_range, initial_conditions, rate_parameters,
@@ -119,9 +123,7 @@ class DynamicAnalysisDevice:
         return np.max(data[lower_i: upper_i])
 
     def fourier_oscillation_measure(self, min_period, max_period):
-        print("Calculating all amplitude spectra")
         ampl_spectra = self.amplitude_spectra
-        print("Calculating fourier frequencies")
         freqs = self.fourier_frequencies
         oscillation_scores = (self.bounded_fourier_oscillation(ampl_spectra, i, min_period, max_period, freqs)
                               for i in range(self.output.dependent.shape[1]))
