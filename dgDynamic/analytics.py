@@ -102,20 +102,33 @@ class DynamicAnalysisDevice:
 
     @staticmethod
     def period_bounds(freqs, min_period, max_period):
-        return np.where(freqs == 1 / max_period)[0][0], np.where(freqs == 1 / min_period)[0][0]
+
+        lower_freq_bound = 1 / min_period
+        upper_freq_bound = 1 / max_period
+
+        def nearest_value(array, value):
+            return np.abs(array - value).argmin()
+
+        return nearest_value(freqs, upper_freq_bound), nearest_value(freqs, lower_freq_bound)
 
     def bounded_fourier_oscillation(self, spectra_data, species_index, min_period, max_period, frequencies=None):
+
         freqs = self.fourier_frequencies if frequencies is None else frequencies
         lower_i, upper_i = self.period_bounds(freqs, min_period, max_period)
         data = spectra_data[species_index]
         return np.max(data[lower_i: upper_i])
 
     def fourier_oscillation_measure(self, min_period, max_period):
+        print("Calculating all amplitude spectra")
         ampl_spectra = self.amplitude_spectra
+        print("Calculating fourier frequencies")
         freqs = self.fourier_frequencies
         oscillation_scores = (self.bounded_fourier_oscillation(ampl_spectra, i, min_period, max_period, freqs)
                               for i in range(self.output.dependent.shape[1]))
         return sum(oscillation_scores)
+
+    def variance_oscillation_measure(self):
+        return np.sum(self.output.dependent.var(axis=0))
 
     @property
     def simulation_range(self):

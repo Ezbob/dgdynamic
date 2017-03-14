@@ -80,20 +80,20 @@ def print_params(params):
     print("}")
 
 
-def spectrum_plot(frequency, spectra, period_bounds):
+def spectrum_plot(analytics, frequency, spectra, period_bounds):
+    """Plot a bounded fourier spectrum according to the period bounds"""
     lower_bound, upper_bound = analytics.period_bounds(frequency, period_bounds[0], period_bounds[1])
     analytics.plot_spectra([spect[lower_bound: upper_bound] for spect in spectra],
         frequency[lower_bound: upper_bound])
 
 
 def plot_minimal_rate_params(cycle1_min_rates, cycle2_min_rates, oscill_measurements):
+    """Plots a colored scatter plot, with the colors representing the value of the oscillation measure"""
     plt.figure()
     colormap = plt.cm.get_cmap('RdYlBu')
     plt.grid()
 
-    vmax_value = max(oscill_measurements) + 10  # Let's scale the colorbar to match the maximum observed value
-    scatter = plt.scatter(cycle1_min_rates, cycle2_min_rates, c=oscill_measurements, cmap=colormap, vmin=0,
-                          vmax=vmax_value)
+    scatter = plt.scatter(cycle1_min_rates, cycle2_min_rates, c=oscill_measurements, cmap=colormap)
 
     plt.ylabel("cycle 2 minimal rate")
     plt.xlabel("cycle 1 minimal rate")
@@ -155,6 +155,44 @@ c2_minimal_values = []
 fourier_measurements = []
 variance_measurements = []
 
+
+def scipy_sim():
+    with ode('scipy') as scipy:
+        scipy.method = "LSODA"
+        out = scipy(ode_sim_range, initial_conditions, parm, drain_params)
+        analytics = DynamicAnalysisDevice(out)
+        variance_measurement = analytics.variance_oscillation_measure()
+        variance_measurements.append(variance_measurement)
+        print("sum variance measurement: {}".format(variance_measurement))
+        #fourier_measurement = analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
+        #print("fourier oscillation measurement: {}".format(fourier_measurement))
+
+        #out.plot(figure_size=(46, 24))
+
+
+def stochkit2_sim():
+    with stochastic('stochkit2') as stochkit2:
+        stochkit2.method = "tauLeaping"
+        out = stochkit2(stoch_sim_range, initial_conditions, parm, drain_params)
+
+        analytics = DynamicAnalysisDevice(out[0])
+
+        # Since we use numpy for our dependent and independent variables sets we can easily compute the variance
+        variance_measurement = analytics.variance_oscillation_measure()
+        variance_measurements.append(variance_measurement)
+        print("sum variance measurement: {}".format(variance_measurement))
+
+        fourier_measurement = analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
+
+        print("fourier oscillation measurement: {}".format(fourier_measurement))
+        fourier_measurements.append(fourier_measurement)
+
+        dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
+        out[0].plot(filename="eschenmoser_data/eschenmoser_plot{}_{}.png".format(index + 1, dt),
+                    figure_size=(46, 24),
+                    title="StochKit2 - Run: {}, var: {}, four: {}".format(index + 1, variance_measurement,
+                                                                          fourier_measurement))
+
 for index, parm in enumerate(parameter_matrix):
     print("--- Run {} ---".format(index + 1))
     cycle1_params = [parm[k] for k in cycle1_reactions]
@@ -171,35 +209,10 @@ for index, parm in enumerate(parameter_matrix):
     print("Cycle 2 reaction {!r} with minimal rate: {}"
           .format(cycle2_reactions[cycle2_params.index(cycle2_minimal_rate)], cycle2_minimal_rate))
 
-    def scipy_sim():
-        with ode('scipy') as scipy:
-
-            scipy.method = "LSODA"
-
-    def stochkit2_sim():
-        with stochastic('stochkit2') as stochkit2:
-            stochkit2.method = "tauLeaping"
-            out = stochkit2(stoch_sim_range, initial_conditions, parm, drain_params)
-
-            # Since we use numpy for our dependent and independent variables sets we can easily compute the variance
-            variance_measurement = np.sum(out[0].dependent.var(axis=0))
-            variance_measurements.append(variance_measurement)
-            print("sum variance measurement: {}".format(np.sum(out[0].dependent.var(axis=0))))
-
-            analytics = DynamicAnalysisDevice(out[0])
-            fourier_measurement = analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
-
-            print("fourier oscillation measurement: {}".format(fourier_measurement))
-            fourier_measurements.append(fourier_measurement)
-
-            dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-            out[0].plot(filename="eschenmoser_data/eschenmoser_plot{}_{}.png".format(index + 1, dt),
-                        figure_size=(46, 24),
-                        title="StochKit2 - Run: {}, var: {}, four: {}".format(index + 1, variance_measurement,
-                                                                              fourier_measurement))
+    scipy_sim()
 
 
-plot_minimal_rate_params(c1_minimal_values, c2_minimal_values, fourier_measurements)
+plot_minimal_rate_params(c1_minimal_values, c2_minimal_values, variance_measurements)
 
 
 def fp(float_value, fixed_precision=18):
