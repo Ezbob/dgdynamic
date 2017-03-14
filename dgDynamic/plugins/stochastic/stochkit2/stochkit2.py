@@ -169,7 +169,7 @@ class StochKit2Stochastic(StochasticPlugin):
                 # Partial trajectories
                 with open(path.join(model_home_dir, 'log.txt')) as log:
                     log_message = log.readlines()
-                    if settings.config.get('Logging', 'LOGGING_ENABLED', fallback=False):
+                    if settings.logging_is_enabled():
                         self.logger.warn(log_message)
                     if len(trajectory_paths) == 0:
                         messages.print_solver_done(name, self.method.name, True)
