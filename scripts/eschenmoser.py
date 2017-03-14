@@ -5,8 +5,9 @@ from dgDynamic.analytics import DynamicAnalysisDevice
 import random
 import enum
 import csv
+import datetime
 
-runs = 10000
+runs = 1
 
 
 class ImportantSpecies(enum.Enum):
@@ -102,26 +103,6 @@ def plot_minimal_rate_params(cycle1_min_rates, cycle2_min_rates, oscill_measurem
 dg = HyperGraph.from_abstract(*reactions)
 all_rates = generate_rates(len(reactions))
 
-# parameters = {"Glyoxylate + C2S6 -> C2S7": 0.41593185562060364,
-#               "C1S5 -> C1S6 + Glyoxylate": 0.03228617071642825,
-#               "C2S2 -> C2S3": 0.7062744944670036,
-#               "Oxaloglycolate <=> C2S4": 0.3567249083111612,
-#               "C2S9 -> C2S10": 0.5568526471228114,
-#               "C1S2 + Glyoxylate -> C1S3": 0.37969675068691977,
-#               "C2S8 -> C2S9": 0.06244753992161167,
-#               "2 HCN -> C1S1": 0.5920694109504293,
-#               "C1S6 -> Glyoxylate": 0.6491898632004972,
-#               "C2S4 <=> C2S5": 0.06373362319324183,
-#               "C2S7 -> C2S8": 0.4887526649075856,
-#               "C1S1 -> C1S2": 0.08334846163431975,
-#               "C2S5 <=> C2S6": 0.263462182307307,
-#               "Oxoaspartate -> C2S6": 0.4772774274488466,
-#               "C1S4 -> C1S5": 0.030805076501288498,
-#               "C2S10 + Glyoxylate -> C2S1": 0.49164100046643444,
-#               "C2S1 -> C2S2": 0.007517466846686305,
-#               "C2S3 -> Oxaloglycolate + Oxoaspartate": 0.7696745757637155,
-#               "C1S3 -> C1S4": 0.17453627387117587}
-
 initial_conditions = {
     ImportantSpecies.HCN.name: 2,
     ImportantSpecies.Glyoxylate.name: 2,
@@ -165,6 +146,10 @@ for sym in ode.symbols:
             'factor': 0.0001
         }}
 
+stoch_sim_range = (60000, 3000)
+ode_sim_range = (0, 60000)
+period_bounds = (600, stoch_sim_range[0] / 2)  # looking from 600 to 30000
+
 c1_minimal_values = []
 c2_minimal_values = []
 fourier_measurements = []
@@ -185,21 +170,33 @@ for index, parm in enumerate(parameter_matrix):
           .format(cycle1_reactions[cycle1_params.index(cycle1_minimal_rate)], cycle1_minimal_rate))
     print("Cycle 2 reaction {!r} with minimal rate: {}"
           .format(cycle2_reactions[cycle2_params.index(cycle2_minimal_rate)], cycle2_minimal_rate))
-    with stochastic('stochkit2') as stochkit2:
-        sim_range = (60000, 3000)
-        stochkit2.method = "tauLeaping"
-        out = stochkit2(sim_range, initial_conditions, parm, drain_params)
 
-        # Since we use numpy for our dependent and independent variables sets we can easily compute the variance
-        variance_measurements.append(np.sum(out[0].dependent.var(axis=0)))
-        print("sum variance measurement: {}".format(np.sum(out[0].dependent.var(axis=0))))
+    def scipy_sim():
+        with ode('scipy') as scipy:
 
-        analytics = DynamicAnalysisDevice(out[0])
-        period_bounds = (600, sim_range[0] / 2)  # looking from 600 to 30000
-        fourier_measurement = analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
+            scipy.method = "LSODA"
 
-        print("fourier oscillation measurement: {}".format(fourier_measurement))
-        fourier_measurements.append(fourier_measurement)
+    def stochkit2_sim():
+        with stochastic('stochkit2') as stochkit2:
+            stochkit2.method = "tauLeaping"
+            out = stochkit2(stoch_sim_range, initial_conditions, parm, drain_params)
+
+            # Since we use numpy for our dependent and independent variables sets we can easily compute the variance
+            variance_measurement = np.sum(out[0].dependent.var(axis=0))
+            variance_measurements.append(variance_measurement)
+            print("sum variance measurement: {}".format(np.sum(out[0].dependent.var(axis=0))))
+
+            analytics = DynamicAnalysisDevice(out[0])
+            fourier_measurement = analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
+
+            print("fourier oscillation measurement: {}".format(fourier_measurement))
+            fourier_measurements.append(fourier_measurement)
+
+            dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
+            out[0].plot(filename="eschenmoser_data/eschenmoser_plot{}_{}.png".format(index + 1, dt),
+                        figure_size=(46, 24),
+                        title="StochKit2 - Run: {}, var: {}, four: {}".format(index + 1, variance_measurement,
+                                                                              fourier_measurement))
 
 
 plot_minimal_rate_params(c1_minimal_values, c2_minimal_values, fourier_measurements)
@@ -209,13 +206,17 @@ def fp(float_value, fixed_precision=18):
     """Fixed point string format conversion"""
     return "{:.{}f}".format(float_value, fixed_precision)
 
-with open("eschenmoser_measurements_{}.tsv".format(runs), mode="w") as tsvfile:
-    tsv_writer = csv.writer(tsvfile, delimiter="\t")
-    tsv_writer.writerow(['param_n', 'variance_sum', 'fourier_score', 'lower_period_bound', 'upper_period_bound'] +
-                        ['{!r}'.format(r) for r in reactions])
-    for var_measure, fourier_measure, param_map in zip(variance_measurements, fourier_measurements, parameter_matrix):
-        row = [len(reactions), fp(var_measure), fp(fourier_measure), fp(period_bounds[0]), fp(period_bounds[1])] + \
-              [fp(param_map[r]) for r in reactions]
-        tsv_writer.writerow(row)
+
+def write_score_data_parameter():
+    dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
+    with open("eschenmoser_data/eschenmoser_measurements_{}_{}.tsv".format(runs, dt), mode="w") as tsvfile:
+        tsv_writer = csv.writer(tsvfile, delimiter="\t")
+        tsv_writer.writerow(['c1_param_n', 'c2_param_n', 'variance_sum', 'fourier_score',
+                             'lower_period_bound', 'upper_period_bound'] +
+                            ['{!r}'.format(r) for r in reactions])
+        for var_measure, fourier_measure, param_map in zip(variance_measurements, fourier_measurements, parameter_matrix):
+            row = [len(cycle1_reactions), len(cycle2_reactions), fp(var_measure), fp(fourier_measure),
+                   fp(period_bounds[0]), fp(period_bounds[1])] + [fp(param_map[r]) for r in reactions]
+            tsv_writer.writerow(row)
 
 show_plots()

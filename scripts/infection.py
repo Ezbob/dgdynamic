@@ -61,7 +61,7 @@ with ode.get_plugin("scipy") as scipy:
 
 with ode.get_plugin("Matlab") as matlab:
     for supported in MatlabOdeSolvers:
-        matlab.integrator_mode = supported
+        matlab.method = supported
         matlab(integration_range, initial_conditions, parameters,).plot(figure_size=figure_size)
 
 show_plots()

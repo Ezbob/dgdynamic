@@ -20,3 +20,12 @@ class OdePlugin(PluginBase, ABC):
         self.initial_t = initial_t
         self.integrator_mode = integrator_mode
         self.delta_t = delta_t
+        self._method = integrator_mode
+
+    @property
+    def method(self):
+        return self._method
+
+    @method.setter
+    def method(self, value):
+        self._method = value
