@@ -5,8 +5,12 @@ import random
 import enum
 import csv
 import datetime
+import sys
 
-runs = 2
+
+runs = int(sys.argv[1]) if len(sys.argv) >= 2 else 2
+
+print("Starting on the Eschenmoser script with {} runs.".format(runs))
 
 
 class ImportantSpecies(enum.Enum):
@@ -70,6 +74,26 @@ def generate_rates(number_of_reactions, decomposed_rates=()):
         if i not in decomposed_args:
             results[i] = random.random()
     return results
+
+
+def fp(float_value, fixed_precision=18):
+    """Fixed point string format conversion"""
+    return "{:.{}f}".format(float_value, fixed_precision)
+
+
+def write_score_data_parameter(name):
+    dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
+    file_path = "eschenmoser_data/eschenmoser_{}_measurements_{}_{}.tsv".format(name, runs, dt)
+    print("Output file: {}".format(file_path))
+    with open(file_path, mode="w") as tsvfile:
+        tsv_writer = csv.writer(tsvfile, delimiter="\t")
+        tsv_writer.writerow(['c1_param_n', 'c2_param_n', 'variance_sum', 'fourier_score',
+                             'lower_period_bound', 'upper_period_bound'] +
+                            ['{!r}'.format(r) for r in reactions])
+        for var_measure, fourier_measure, param_map in zip(variance_measurements, fourier_measurements, parameter_matrix):
+            row = [len(cycle1_reactions), len(cycle2_reactions), fp(var_measure), fp(fourier_measure),
+                   fp(period_bounds[0]), fp(period_bounds[1])] + [fp(param_map[r]) for r in reactions]
+            tsv_writer.writerow(row)
 
 
 def print_params(params):
@@ -191,51 +215,39 @@ def do_sim_and_measure(plugin, plugin_name, method, do_plot=False):
                  figure_size=(46, 24), title=title)
     return variance_measurement, fourier_measurement
 
+try:
+    for index, parm in enumerate(parameter_matrix):
+        print("--- Run {} ---".format(index + 1))
+        cycle1_params = [parm[k] for k in cycle1_reactions]
+        cycle2_params = [parm[k] for k in cycle2_reactions]
 
-for index, parm in enumerate(parameter_matrix):
-    print("--- Run {} ---".format(index + 1))
-    cycle1_params = [parm[k] for k in cycle1_reactions]
-    cycle2_params = [parm[k] for k in cycle2_reactions]
+        cycle1_minimal_rate = min(cycle1_params)
+        cycle2_minimal_rate = min(cycle2_params)
 
-    cycle1_minimal_rate = min(cycle1_params)
-    cycle2_minimal_rate = min(cycle2_params)
+        c1_minimal_values.append(cycle1_minimal_rate)
+        c2_minimal_values.append(cycle2_minimal_rate)
 
-    c1_minimal_values.append(cycle1_minimal_rate)
-    c2_minimal_values.append(cycle2_minimal_rate)
+        print("Cycle 1 reaction {!r} with minimal rate: {}"
+              .format(cycle1_reactions[cycle1_params.index(cycle1_minimal_rate)], cycle1_minimal_rate))
+        print("Cycle 2 reaction {!r} with minimal rate: {}"
+              .format(cycle2_reactions[cycle2_params.index(cycle2_minimal_rate)], cycle2_minimal_rate))
 
-    print("Cycle 1 reaction {!r} with minimal rate: {}"
-          .format(cycle1_reactions[cycle1_params.index(cycle1_minimal_rate)], cycle1_minimal_rate))
-    print("Cycle 2 reaction {!r} with minimal rate: {}"
-          .format(cycle2_reactions[cycle2_params.index(cycle2_minimal_rate)], cycle2_minimal_rate))
+        var_mes, four_mes = do_sim_and_measure(scipy, "scipy", "LSODA")
+        variance_measurements.append(var_mes)
+        fourier_measurements.append(four_mes)
 
-    var_mes, four_mes = do_sim_and_measure(scipy, "scipy", "LSODA")
-    variance_measurements.append(var_mes)
-    fourier_measurements.append(four_mes)
-    #do_sim_and_measure(stochkit2, "stochkit2", "tauleaping")
-    #do_sim_and_measure(matlab, "matlab", "ode45", do_plot=True)  # FIXME fourier for matlab is exceedingly slow
-    #do_sim_and_measure(spim, "spim", '', do_plot=True)  # TODO find out why spim is slacking
+        # do_sim_and_measure(stochkit2, "stochkit2", "tauleaping")
+        # do_sim_and_measure(matlab, "matlab", "ode45", do_plot=True)  # FIXME fourier for matlab is exceedingly slow
+        # do_sim_and_measure(spim, "spim", '', do_plot=True)  # TODO find out why spim is slacking
 
+except KeyboardInterrupt:
+    print("Received Interrupt Signal. ")
+finally:
+    print("Writing results to output file..")
+    write_score_data_parameter('scipy')
 
 #plot_minimal_rate_params(c1_minimal_values, c2_minimal_values, variance_measurements)
 
-
-def fp(float_value, fixed_precision=18):
-    """Fixed point string format conversion"""
-    return "{:.{}f}".format(float_value, fixed_precision)
-
-
-def write_score_data_parameter(name):
-    dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-    with open("eschenmoser_data/eschenmoser_{}_measurements_{}_{}.tsv".format(name, runs, dt), mode="w") as tsvfile:
-        tsv_writer = csv.writer(tsvfile, delimiter="\t")
-        tsv_writer.writerow(['c1_param_n', 'c2_param_n', 'variance_sum', 'fourier_score',
-                             'lower_period_bound', 'upper_period_bound'] +
-                            ['{!r}'.format(r) for r in reactions])
-        for var_measure, fourier_measure, param_map in zip(variance_measurements, fourier_measurements, parameter_matrix):
-            row = [len(cycle1_reactions), len(cycle2_reactions), fp(var_measure), fp(fourier_measure),
-                   fp(period_bounds[0]), fp(period_bounds[1])] + [fp(param_map[r]) for r in reactions]
-            tsv_writer.writerow(row)
-
-write_score_data_parameter('scipy')
+#write_score_data_parameter('scipy')
 
 #show_plots()
