@@ -6,11 +6,21 @@ import enum
 import csv
 import datetime
 import sys
+import os.path
 
 
 runs = int(sys.argv[1]) if len(sys.argv) >= 2 else 2
 
-print("Starting on the Eschenmoser script with {} runs.".format(runs))
+if len(sys.argv) >= 3:
+    output_dir = sys.argv[2] + ('/' if sys.argv[2][-1] != '/' else '')
+else:
+    output_dir = "eschenmoser_data/"
+
+output_dir = os.path.abspath(output_dir)
+if not os.path.exists(output_dir):
+    os.mkdir(output_dir)
+
+print("Starting on the Eschenmoser script with {} runs and output dir: {}.".format(runs, output_dir))
 
 
 class ImportantSpecies(enum.Enum):
@@ -83,7 +93,8 @@ def fp(float_value, fixed_precision=18):
 
 def write_score_data_parameter(name):
     dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-    file_path = "eschenmoser_data/eschenmoser_{}_measurements_{}_{}.tsv".format(name, runs, dt)
+    file_name = "eschenmoser_{}_measurements_{}_{}.tsv".format(name, runs, dt)
+    file_path = os.path.join(output_dir, file_name)
     print("Output file: {}".format(file_path))
     with open(file_path, mode="w") as tsvfile:
         tsv_writer = csv.writer(tsvfile, delimiter="\t")
@@ -211,8 +222,8 @@ def do_sim_and_measure(plugin, plugin_name, method, do_plot=False):
         title = "{} {} - Run: {} / {}, var: {}, four: {}"\
             .format(out.solver_used.name, method, index + 1, runs, variance_measurement, fourier_measurement)
 
-        out.plot(filename="eschenmoser_data/eschenmoser_plot{}_{}_{}.png".format(index + 1, runs, dt),
-                 figure_size=(46, 24), title=title)
+        image_path = os.path.join(output_dir, "eschenmoser_plot{}_{}_{}.png".format(output_dir, index + 1, runs, dt))
+        out.plot(filename=image_path, figure_size=(46, 24), title=title)
     return variance_measurement, fourier_measurement
 
 try:
