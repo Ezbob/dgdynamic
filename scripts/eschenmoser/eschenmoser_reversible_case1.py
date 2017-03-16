@@ -98,20 +98,44 @@ def fp(float_value, fixed_precision=18):
 
 
 def write_score_data_parameter(name):
+
+    def spilt_reversible(r):
+        if '<=>' in r:
+            prefix, _, suffix = r.partition('<=>')
+            return prefix + '->' + suffix, prefix + '<-' + suffix
+        return r,
+
+    def count_cycle_params():
+        return sum(2 if '<=>' in r else 1 for r in cycle1_reactions), \
+               sum(2 if '<=>' in r else 1 for r in cycle2_reactions)
+
     dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
     file_name = "eschenmoser_{}_measurements_{}_{}.tsv".format(name, runs, dt)
     file_path = os.path.join(output_dir, file_name)
     print("Output file: {}".format(file_path))
     with open(file_path, mode="w") as tsvfile:
         tsv_writer = csv.writer(tsvfile, delimiter="\t")
+
+        param_labels = []
+        for r in reactions:
+            splitted = spilt_reversible(r)
+            for label in splitted:
+                param_labels.append(label)
+
         tsv_writer.writerow(['c1_param_n', 'c2_param_n', 'variance_sum', 'fourier_score',
-                             'lower_period_bound', 'upper_period_bound'] +
-                            ['{!r}'.format(r) for r in reactions])
+                             'lower_period_bound', 'upper_period_bound'] + param_labels)
+        c1_count, c2_count = count_cycle_params()
         for var_measure, fourier_measure, param_map in zip(variance_measurements, fourier_measurements,
                                                            parameter_matrix):
-            print(param_map)
-            row = [len(cycle1_reactions), len(cycle2_reactions), fp(var_measure), fp(fourier_measure),
-                   fp(period_bounds[0]), fp(period_bounds[1])] + [fp(param_map[r]) for r in reactions]
+            param_list = []
+            for r in reactions:
+                rate_dict = param_map[r]
+                param_list.append(rate_dict['->'])
+                if '<-' in rate_dict:
+                    param_list.append(rate_dict['<-'])
+
+            row = [c1_count, c2_count, fp(var_measure), fp(fourier_measure),
+                   fp(period_bounds[0]), fp(period_bounds[1])] + param_list
             tsv_writer.writerow(row)
 
 
