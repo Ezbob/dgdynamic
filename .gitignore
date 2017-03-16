@@ -14,5 +14,6 @@ logs
 *.o
 *.jam.*
 *.gch
+eschenmoser_data/
 **__pycache__/
 
