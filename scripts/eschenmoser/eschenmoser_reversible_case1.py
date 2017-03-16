@@ -13,16 +13,17 @@ def argument_handler():
     defaults = {
         'runs': 2,
         'output_dir': "eschenmoser_data/",
-        'plugin': ('stochkit2', 'tauleaping')
+        'plugin': 'stochkit2',
+        'method': 'tauleaping'
     }
     parser = argparse.ArgumentParser(description="Eschenmoser (reversible) script. Calculates the measurements.")
     parser.add_argument('-r', '--runs', type=int, help="How many runs does this script need to run",
                         default=defaults['runs'])
     parser.add_argument('-o', '--output_dir', help="Where to dump the output data", default=defaults['output_dir'])
     parser.add_argument('-p', '--plugin', help="Which plugin to use", choices=['scipy', 'matlab', 'stochkit2', 'spim'],
-                        default=defaults['plugin'][0])
+                        default=defaults['plugin'])
     parser.add_argument('-m', '--method', help="Which method to use. Please choose a matching method with plugin",
-                        default=defaults['plugin'][1])
+                        default=defaults['method'])
 
     parsed_args = parser.parse_args()
     output_dir = os.path.abspath(parsed_args.output_dir)
@@ -316,7 +317,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-#plot_minimal_rate_params(c1_minimal_values, c2_minimal_values, variance_measurements)
 
 #show_plots()
