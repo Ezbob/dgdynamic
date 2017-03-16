@@ -83,12 +83,15 @@ def generate_rates(reactions):
     rates = []
     for reaction in reactions:
         if '<=>' in reaction:
+            f = random.random()
+            b = random.random()
             rates.append(
-                {'->': random.random(), '<-': random.random()}
+                {'->': f, '<-': b}
             )
         else:
+            f = random.random()
             rates.append(
-                {'->': random.random()}
+                {'->': f}
             )
     return rates
 
@@ -171,7 +174,6 @@ def plot_minimal_rate_params(cycle1_min_rates, cycle2_min_rates, oscill_measurem
 
 
 dg = HyperGraph.from_abstract(*reactions)
-all_rates = generate_rates(reactions)
 
 initial_conditions = {
     ImportantSpecies.HCN.name: 2,
@@ -203,7 +205,8 @@ drain_params = {
     }
 }
 
-parameter_matrix = tuple({r: rate_dict for r, rate_dict in zip(reactions, all_rates)} for _ in range(runs))
+parameter_matrix = tuple({r: rate_dict for r, rate_dict in zip(reactions, generate_rates(reactions))}
+                         for _ in range(runs))
 #  dg.print()
 
 ode = dgDynamicSim(dg)
