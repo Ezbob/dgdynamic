@@ -14,7 +14,7 @@ postSection("The graphs")
 for g in inputGraphs:
 	g.print(gp)
 
-p = lambda d: all(a.vLabelCount("A") <= 10 for a in d.right) 
+p = lambda d: all(a.vLabelCount("A") <= 6 for a in d.right) 
 
 strategy = (
 	addSubset(chain_atom) 

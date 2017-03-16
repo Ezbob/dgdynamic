@@ -116,6 +116,7 @@ def write_score_data_parameter(name):
     print("Output file: {}".format(file_path))
     with open(file_path, mode="w") as tsvfile:
         tsv_writer = csv.writer(tsvfile, delimiter="\t")
+        c1_count, c2_count = count_cycle_params()
 
         param_labels = []
         for r in reactions:
@@ -123,9 +124,10 @@ def write_score_data_parameter(name):
             for label in splitted:
                 param_labels.append(label)
 
+        assert len(param_labels) == (c1_count + c2_count)
         tsv_writer.writerow(['c1_param_n', 'c2_param_n', 'variance_sum', 'fourier_score',
                              'lower_period_bound', 'upper_period_bound'] + param_labels)
-        c1_count, c2_count = count_cycle_params()
+
         for var_measure, fourier_measure, param_map in zip(variance_measurements, fourier_measurements,
                                                            parameter_matrix):
             param_list = []
@@ -135,6 +137,7 @@ def write_score_data_parameter(name):
                 if '<-' in rate_dict:
                     param_list.append(rate_dict['<-'])
 
+            assert len(param_list) == (c1_count + c2_count)
             row = [c1_count, c2_count, fp(var_measure), fp(fourier_measure),
                    fp(period_bounds[0]), fp(period_bounds[1])] + param_list
             tsv_writer.writerow(row)
@@ -310,10 +313,10 @@ def main():
     except KeyboardInterrupt:
         print("Received Interrupt Signal. ")
         print("Writing results to output file..")
-        write_score_data_parameter('scipy')
+        write_score_data_parameter(plugin_name)
 
     print("Writing results to output file..")
-    write_score_data_parameter('scipy')
+    write_score_data_parameter(plugin_name)
 
 if __name__ == '__main__':
     main()

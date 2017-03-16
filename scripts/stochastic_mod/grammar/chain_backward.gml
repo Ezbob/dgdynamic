@@ -16,15 +16,15 @@ rule [
         edge [ source 1 target 4 label "-" ]
     ]
     constrainAdj [ 
-        id 1 op "<" count 2 nodeLabels [ label "A" ]
+        id 1 op "<=" count 2
     ]
     constrainAdj [ 
-        id 2 op "<" count 2 nodeLabels [ label "A" ] 
+        id 2 op "<=" count 2 
     ]
     constrainAdj [
-        id 3 op "<" count 2 nodeLabels [ label "A" ]
+        id 3 op "<=" count 2
     ]
     constrainAdj [
-        id 4 op "<" count 2 nodeLabels [ label "A" ]
+        id 4 op "<=" count 2
     ]
 ]
