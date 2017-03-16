@@ -114,7 +114,7 @@ def write_score_data_parameter(name):
                sum(2 if '<=>' in r else 1 for r in cycle2_reactions)
 
     dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-    file_name = "eschenmoser_{}_measurements_{}_{}.tsv".format(name, runs, dt)
+    file_name = "eschenmoser_r_{}_measurements_{}_{}.tsv".format(name, runs, dt)
     file_path = os.path.join(output_dir, file_name)
     print("Output file: {}".format(file_path))
     with open(file_path, mode="w") as tsvfile:
