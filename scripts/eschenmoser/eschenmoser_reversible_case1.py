@@ -7,6 +7,7 @@ import csv
 import datetime
 import os.path
 import argparse
+import numpy as np
 
 
 def argument_handler():
@@ -121,15 +122,22 @@ def write_score_data_parameter(name):
         tsv_writer = csv.writer(tsvfile, delimiter="\t")
         c1_count, c2_count = count_cycle_params()
 
+        f_score_labels = ["fourier_" + sym for sym in ode.symbols]
+        v_score_labels = ["variance_" + sym for sym in ode.symbols]
+
         param_labels = []
         for r in reactions:
             splitted = spilt_reversible(r)
             for label in splitted:
                 param_labels.append(label)
 
-        assert len(param_labels) == (c1_count + c2_count)
-        tsv_writer.writerow(['c1_param_n', 'c2_param_n', 'variance_sum', 'fourier_score',
-                             'lower_period_bound', 'upper_period_bound'] + param_labels)
+        assert len(param_labels) == (c1_count + c2_count) == ode.reaction_count
+        assert len(f_score_labels) == ode.species_count
+        assert len(v_score_labels) == ode.species_count
+        tsv_writer.writerow(['species_n', 'c1_param_n', 'c2_param_n', 'lower_period_bound', 'upper_period_bound']
+                            + f_score_labels
+                            + v_score_labels
+                            + param_labels)
 
         for var_measure, fourier_measure, param_map in zip(variance_measurements, fourier_measurements,
                                                            parameter_matrix):
@@ -140,9 +148,14 @@ def write_score_data_parameter(name):
                 if '<-' in rate_dict:
                     param_list.append(rate_dict['<-'])
 
-            assert len(param_list) == (c1_count + c2_count)
-            row = [c1_count, c2_count, fp(var_measure), fp(fourier_measure),
-                   fp(period_bounds[0]), fp(period_bounds[1])] + param_list
+            assert ode.reaction_count == (c1_count + c2_count)
+            assert len(param_list) == (c1_count + c2_count), "Not enough parameters"
+            assert len(fourier_measure) == ode.species_count, "At least one fourier measure"
+            assert len(var_measure) == ode.species_count
+            row = [ode.species_count, c1_count, c2_count, fp(period_bounds[0]), fp(period_bounds[1])] \
+                + [fp(measure) for measure in fourier_measure] \
+                + [fp(measure) for measure in var_measure] \
+                + param_list
             tsv_writer.writerow(row)
 
 
@@ -256,18 +269,24 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
             print(err)
         return None
     analytics = DynamicAnalysisDevice(out)
-    variance_measurement = analytics.variance_oscillation_measure()
-    print("Sum variance measurement: {}".format(variance_measurement))
-    fourier_measurement = analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
-    print("Fourier oscillation measurement: {}".format(fourier_measurement))
+    variance_measurement = np.array([data.var() for data in out.dependent.T])
+    print("Variance measurements: {}".format(variance_measurement))
+    amp_spec = analytics.amplitude_spectra
+    freqs = analytics.fourier_frequencies
+    fourier_measurement = np.array([
+        analytics.bounded_fourier_oscillation(amp_spec, i, period_bounds[0], period_bounds[1], freqs)
+        for i in range(ode.species_count)
+    ])
+    #  analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
+    print("Fourier oscillation measurements: {}".format(fourier_measurement))
 
     if do_plot:
         dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
         title = "{} {} - Run: {} / {}, var: {}, four: {}"\
-            .format(out.solver_used.name, method, run_number + 1, runs, variance_measurement, fourier_measurement)
+            .format(out.solver_used.name, method, run_number + 1, runs, max(variance_measurement), max(fourier_measurement))
 
-        image_path = os.path.join(output_dir, "eschenmoser_plot{}_{}_{}.png".format(output_dir,
-                                                                                    run_number + 1, runs, dt))
+        image_path = os.path.join(output_dir, "eschenmoser_{}_{}_plot{}_{}_{}.png".format(plugin_name, method_name,
+                                                                                          run_number + 1, runs, dt))
         out.plot(filename=image_path, figure_size=(46, 24), title=title)
     return variance_measurement, fourier_measurement
 
@@ -308,7 +327,8 @@ def main():
 
             #  FIXME fourier for matlab is exceedingly slow
             #  TODO find out why spim is slacking
-            var_mes, four_mes = do_sim_and_measure(index, parm, plugins[plugin_name], plugin_name, method_name)
+            var_mes, four_mes = do_sim_and_measure(index, parm, plugins[plugin_name], plugin_name, method_name,
+                                                   do_plot=True)
 
             variance_measurements.append(var_mes)
             fourier_measurements.append(four_mes)
@@ -321,7 +341,10 @@ def main():
     print("Writing results to output file..")
     write_score_data_parameter(plugin_name)
 
+
 if __name__ == '__main__':
     main()
+    #  print(tuple(ode.symbols))
+    #  pass
 
 #show_plots()
