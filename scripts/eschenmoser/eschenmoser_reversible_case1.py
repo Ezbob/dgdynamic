@@ -15,7 +15,8 @@ def argument_handler():
         'runs': 2,
         'output_dir': "eschenmoser_data/",
         'plugin': 'stochkit2',
-        'method': 'tauleaping'
+        'method': 'tauleaping',
+        'plot': False
     }
     parser = argparse.ArgumentParser(description="Eschenmoser (reversible) script. Calculates the measurements.")
     parser.add_argument('-r', '--runs', type=int, help="How many runs does this script need to run",
@@ -25,12 +26,14 @@ def argument_handler():
                         default=defaults['plugin'])
     parser.add_argument('-m', '--method', help="Which method to use. Please choose a matching method with plugin",
                         default=defaults['method'])
+    parser.add_argument('-s', '--plot', help="Do and save plots in the output directory", default=defaults['plot'],
+                        action='store_true')
 
     parsed_args = parser.parse_args()
     output_dir = os.path.abspath(parsed_args.output_dir)
-    return parsed_args.runs, output_dir, parsed_args.plugin, parsed_args.method
+    return parsed_args.runs, output_dir, parsed_args.plugin, parsed_args.method, parsed_args.plot
 
-runs, output_dir, plugin_name, method_name = argument_handler()
+runs, output_dir, plugin_name, method_name, do_plots = argument_handler()
 
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
@@ -328,7 +331,7 @@ def main():
             #  FIXME fourier for matlab is exceedingly slow
             #  TODO find out why spim is slacking
             var_mes, four_mes = do_sim_and_measure(index, parm, plugins[plugin_name], plugin_name, method_name,
-                                                   do_plot=True)
+                                                   do_plot=do_plots)
 
             variance_measurements.append(var_mes)
             fourier_measurements.append(four_mes)
