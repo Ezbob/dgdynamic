@@ -1,5 +1,8 @@
 """
-Case 1: All reactions has been turned into reversible reactions
+Case 0: The original Eschenmöser double integrated hyper cycles from the J. Andersen paper
+This is more or less a copy of the eschenmoser reversible script with the original model installed.
+Reactions rate generation has been modified to generate the same rate in both directions for reversible reactions.
+Reversible reactions are also split into a "->"-reaction and a "<-"-reaction in the output file.
 """
 from dgDynamic import dgDynamicSim, HyperGraph
 import matplotlib.pyplot as plt
@@ -41,7 +44,7 @@ runs, output_dir, plugin_name, method_name, do_plots = argument_handler()
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
 
-print("Starting on the Eschenmoser(Reversible) script with {} runs and output dir: {}.".format(runs, output_dir))
+print("Starting on the Eschenmoser(Standard) script with {} runs and output dir: {}.".format(runs, output_dir))
 
 
 class ImportantSpecies(enum.Enum):
@@ -52,28 +55,28 @@ class ImportantSpecies(enum.Enum):
 
 
 cycle1_reactions = [
-    "2 {} <=> C1S1".format(ImportantSpecies.HCN.name),
-    "C1S1 <=> C1S2",
-    "C1S2 + {} <=> C1S3".format(ImportantSpecies.Glyoxylate.name),
-    "C1S3 <=> C1S4",
-    "C1S4 <=> C1S5",
-    "C1S5 <=> C1S6 + {}".format(ImportantSpecies.Glyoxylate.name),
-    "C1S6 <=> {}".format(ImportantSpecies.Glyoxylate.name),
+    "2 {} -> C1S1".format(ImportantSpecies.HCN.name),
+    "C1S1 -> C1S2",
+    "C1S2 + {} -> C1S3".format(ImportantSpecies.Glyoxylate.name),
+    "C1S3 -> C1S4",
+    "C1S4 -> C1S5",
+    "C1S5 -> C1S6 + {}".format(ImportantSpecies.Glyoxylate.name),
+    "C1S6 -> {}".format(ImportantSpecies.Glyoxylate.name),
 ]
 
 cycle2_reactions = [
-    "C2S10 + {} <=> C2S1".format(ImportantSpecies.Glyoxylate.name),
-    "C2S1 <=> C2S2",
-    "C2S2 <=> C2S3",
-    "C2S3 <=> {} + {}".format(ImportantSpecies.Oxaloglycolate.name, ImportantSpecies.Oxoaspartate.name),
+    "C2S10 + {} -> C2S1".format(ImportantSpecies.Glyoxylate.name),
+    "C2S1 -> C2S2",
+    "C2S2 -> C2S3",
+    "C2S3 -> {} + {}".format(ImportantSpecies.Oxaloglycolate.name, ImportantSpecies.Oxoaspartate.name),
     "{} <=> C2S4".format(ImportantSpecies.Oxaloglycolate.name),
     "C2S4 <=> C2S5",
     "C2S5 <=> C2S6",
-    "{} <=> C2S6".format(ImportantSpecies.Oxoaspartate.name),
-    "{} + C2S6 <=> C2S7".format(ImportantSpecies.Glyoxylate.name),
-    "C2S7 <=> C2S8",
-    "C2S8 <=> C2S9",
-    "C2S9 <=> C2S10"
+    "{} -> C2S6".format(ImportantSpecies.Oxoaspartate.name),
+    "{} + C2S6 -> C2S7".format(ImportantSpecies.Glyoxylate.name),
+    "C2S7 -> C2S8",
+    "C2S8 -> C2S9",
+    "C2S9 -> C2S10"
 ]
 
 cycle1_hyper = HyperGraph.from_abstract(*cycle1_reactions)
@@ -90,10 +93,10 @@ def generate_rates(reactions):
     rates = []
     for reaction in reactions:
         if '<=>' in reaction:
+            # forward and backward reaction gets equal rate
             f = random.random()
-            b = random.random()
             rates.append(
-                {'->': f, '<-': b}
+                {'->': f, '<-': f}
             )
         else:
             f = random.random()
@@ -121,9 +124,9 @@ def write_score_data_parameter(name):
                sum(2 if '<=>' in r else 1 for r in cycle2_reactions)
 
     dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-    file_name = "eschenmoser_r_{}_measurements_{}_{}.tsv".format(name, runs, dt)
+    file_name = "eschenmoser_{}_measurements_{}_{}.tsv".format(name, runs, dt)
     file_path = os.path.join(output_dir, file_name)
-    print("Output file: {}".format(file_path))
+    print("Output file:\n{}".format(file_path))
     with open(file_path, mode="w") as tsvfile:
         tsv_writer = csv.writer(tsvfile, delimiter="\t")
         c1_count, c2_count = count_cycle_params()
@@ -163,33 +166,6 @@ def write_score_data_parameter(name):
                 + [fp(measure) for measure in var_measure] \
                 + param_list
             tsv_writer.writerow(row)
-
-
-def print_params(params):
-    print("Parameters are: {")
-    for react, param in params.items():
-        print("{!r}: {},".format(react, param))
-    print("}")
-
-
-def spectrum_plot(analytics, frequency, spectra, period_bounds):
-    """Plot a bounded fourier spectrum according to the period bounds"""
-    lower_bound, upper_bound = analytics.period_bounds(frequency, period_bounds[0], period_bounds[1])
-    analytics.plot_spectra([spect[lower_bound: upper_bound] for spect in spectra],
-        frequency[lower_bound: upper_bound])
-
-
-def plot_minimal_rate_params(cycle1_min_rates, cycle2_min_rates, oscill_measurements):
-    """Plots a colored scatter plot, with the colors representing the value of the oscillation measure"""
-    plt.figure()
-    colormap = plt.cm.get_cmap('RdYlBu')
-    plt.grid()
-
-    scatter = plt.scatter(cycle1_min_rates, cycle2_min_rates, c=oscill_measurements, cmap=colormap)
-
-    plt.ylabel("cycle 2 minimal rate")
-    plt.xlabel("cycle 1 minimal rate")
-    plt.colorbar(scatter)
 
 
 dg = HyperGraph.from_abstract(*reactions)
@@ -329,7 +305,7 @@ def main():
     try:
         for index, parm in enumerate(parameter_matrix):
             print("--- Run {} ---".format(index + 1))
-            find_minimum_reaction_rates(parm)
+            # find_minimum_reaction_rates(parm)
 
             #  FIXME fourier for matlab is exceedingly slow
             #  TODO find out why spim is slacking
@@ -350,7 +326,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    #  print(tuple(ode.symbols))
-    #  pass
 
-#show_plots()
