@@ -24,7 +24,7 @@ def argument_handler():
         'method': 'tauleaping',
         'plot': False
     }
-    parser = argparse.ArgumentParser(description="Eschenmoser (reversible) script. Calculates the measurements.")
+    parser = argparse.ArgumentParser(description="Eschenmoser (standard) script. Calculates the measurements.")
     parser.add_argument('-r', '--runs', type=int, help="How many runs does this script need to run",
                         default=defaults['runs'])
     parser.add_argument('-o', '--output_dir', help="Where to dump the output data", default=defaults['output_dir'])
