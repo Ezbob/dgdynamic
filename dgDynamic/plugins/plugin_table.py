@@ -1,16 +1,42 @@
 from dgDynamic.choices import SupportedStochasticPlugins, SupportedOdePlugins
-import dgDynamic.plugins.stochastic.stochkit2.stochkit2 as stochkit2
-import dgDynamic.plugins.stochastic.spim.spim as spim
-import dgDynamic.plugins.ode.scipy.scipy as scipy
-import dgDynamic.plugins.ode.matlab.matlab as matlab
+import importlib
+import warnings
 
-PLUGINS_TAB = {
+
+def tab_init(d):
+    table = {}
+    plugin_common_prefix = 'dgDynamic.plugins'
+    for mode, plugin_dict in d.items():
+        table[mode] = {}
+        plugin_mode_prefix = plugin_common_prefix + '.' + mode
+        for name_enum, path_name in plugin_dict.items():
+            module_path, class_name = path_name
+            full_path = plugin_mode_prefix + '.' + module_path
+            try:
+                module = importlib.import_module(full_path)
+                clazz = getattr(module, class_name)
+            except AttributeError:
+                clazz = None
+                warnings.warn("Failed to find class {} for module {}".format(class_name, full_path),
+                              category=ImportWarning)
+            except ModuleNotFoundError:
+                warnings.warn("Failed to import module {} from {}".format(name_enum.name, full_path),
+                              category=ImportWarning)
+                clazz = None
+            table[mode][name_enum] = clazz
+    return table
+
+PLUGINS_TAB = tab_init({
     'stochastic': {
-        SupportedStochasticPlugins.StochKit2: stochkit2.StochKit2Stochastic,
-        SupportedStochasticPlugins.SPiM: spim.SpimStochastic
+        SupportedStochasticPlugins.StochKit2:
+            ('stochkit2.stochkit2', 'StochKit2Stochastic'),
+        SupportedStochasticPlugins.SPiM:
+            ('spim.spim', 'SpimStochastic')
     },
     'ode': {
-        SupportedOdePlugins.SciPy: scipy.ScipyOde,
-        SupportedOdePlugins.MATLAB: matlab.MatlabOde
+        SupportedOdePlugins.SciPy:
+            ('scipy.scipy', 'ScipyOde'),
+        SupportedOdePlugins.MATLAB:
+            ('matlab.matlab', 'MatlabOde')
     }
-}
+})
