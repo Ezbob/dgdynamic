@@ -5,7 +5,6 @@ Reactions rate generation has been modified to generate the same rate in both di
 Reversible reactions are also split into a "->"-reaction and a "<-"-reaction in the output file.
 """
 from dgDynamic import dgDynamicSim, HyperGraph
-import matplotlib.pyplot as plt
 from dgDynamic.analytics import DynamicAnalysisDevice
 import random
 import enum
@@ -81,9 +80,6 @@ cycle2_reactions = [
 
 cycle1_hyper = HyperGraph.from_abstract(*cycle1_reactions)
 cycle2_hyper = HyperGraph.from_abstract(*cycle2_reactions)
-
-#  cycle1_hyper.print()
-#  cycle2_hyper.print()
 
 reactions = cycle1_reactions + cycle2_reactions
 
@@ -259,7 +255,6 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
         analytics.bounded_fourier_oscillation(amp_spec, i, period_bounds[0], period_bounds[1], freqs)
         for i in range(ode.species_count)
     ])
-    #  analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
     print("Fourier oscillation measurements: {}".format(fourier_measurement))
 
     if do_plot:
@@ -305,7 +300,6 @@ def main():
     try:
         for index, parm in enumerate(parameter_matrix):
             print("--- Run {} ---".format(index + 1))
-            # find_minimum_reaction_rates(parm)
 
             #  FIXME fourier for matlab is exceedingly slow
             #  TODO find out why spim is slacking
