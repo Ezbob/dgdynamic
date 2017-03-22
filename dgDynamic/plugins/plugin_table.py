@@ -17,11 +17,11 @@ def tab_init(d):
                 clazz = getattr(module, class_name)
             except AttributeError:
                 clazz = None
-                warnings.warn("Failed to find class {} for module {}".format(class_name, full_path),
-                              category=ImportWarning)
+                warnings.warn("Failed to find class {} for module {}. Plugin {} disabled."
+                              .format(class_name, full_path, name_enum.name), category=ImportWarning)
             except ModuleNotFoundError:
-                warnings.warn("Failed to import module {} from {}".format(name_enum.name, full_path),
-                              category=ImportWarning)
+                warnings.warn("Failed to import module {} from {}. Plugin {} disabled."
+                              .format(name_enum.name, full_path, name_enum.name), category=ImportWarning)
                 clazz = None
             table[mode][name_enum] = clazz
     return table
