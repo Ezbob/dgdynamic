@@ -280,7 +280,7 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     amp_spec = analytics.amplitude_spectra
     freqs = analytics.fourier_frequencies
     fourier_measurement = np.array([
-        analytics.bounded_fourier_oscillation(amp_spec, i, period_bounds[0], period_bounds[1], freqs)
+        analytics.bounded_fourier_species_maxima(amp_spec, i, period_bounds[0], period_bounds[1], freqs)
         for i in range(ode.species_count)
     ])
     #  analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])

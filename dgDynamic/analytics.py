@@ -117,21 +117,28 @@ class DynamicAnalysisDevice:
     def nearest_value_arg(array, value):
         return np.abs(array - value).argmin()
 
-    def bounded_fourier_oscillation(self, spectra_data, species_index, min_period, max_period, frequencies=None):
-
+    def bounded_fourier_species_maxima(self, spectra_data, species_index, min_period, max_period, frequencies=None,
+                                       with_max_frequency=False):
+        """ Computes a bounded fourier maxima for a species """
         freqs = self.fourier_frequencies if frequencies is None else frequencies
         lower_i, upper_i = self.period_bounds(freqs, min_period, max_period)
         data = spectra_data[species_index]
-        return np.max(data[lower_i: upper_i])
+        max_arg = np.argmax(data[lower_i: upper_i])  # index of the maximal value within the period band
+        if with_max_frequency:
+            return data[max_arg], freqs[max_arg]
+        else:
+            return data[max_arg]
 
     def fourier_oscillation_measure(self, min_period, max_period):
+        """ Computes the sum of bounded fourier maxima """
         ampl_spectra = self.amplitude_spectra
         freqs = self.fourier_frequencies
-        oscillation_scores = (self.bounded_fourier_oscillation(ampl_spectra, i, min_period, max_period, freqs)
+        oscillation_scores = (self.bounded_fourier_species_maxima(ampl_spectra, i, min_period, max_period, freqs)
                               for i in range(self.output.dependent.shape[1]))
         return sum(oscillation_scores)
 
     def variance_oscillation_measure(self):
+        """ Computes the sum of species variances """
         return np.sum(self.output.dependent.var(axis=0))
 
     @property
