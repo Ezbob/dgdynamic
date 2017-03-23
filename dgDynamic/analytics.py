@@ -110,10 +110,12 @@ class DynamicAnalysisDevice:
         lower_freq_bound = 1 / min_period
         upper_freq_bound = 1 / max_period
 
-        def nearest_value(array, value):
-            return np.abs(array - value).argmin()
+        return DynamicAnalysisDevice.nearest_value_arg(freqs, upper_freq_bound), \
+            DynamicAnalysisDevice.nearest_value_arg(freqs, lower_freq_bound)
 
-        return nearest_value(freqs, upper_freq_bound), nearest_value(freqs, lower_freq_bound)
+    @staticmethod
+    def nearest_value_arg(array, value):
+        return np.abs(array - value).argmin()
 
     def bounded_fourier_oscillation(self, spectra_data, species_index, min_period, max_period, frequencies=None):
 
