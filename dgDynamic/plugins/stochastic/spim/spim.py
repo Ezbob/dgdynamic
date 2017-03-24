@@ -91,7 +91,7 @@ class SpimStochastic(StochasticPlugin):
             file_path_code = os.path.join(tmpdir, "spim.spi")
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             with open(file_path_code, mode="w") as script:
-                self.generate_code_file(script, simulation_range, initial_conditions,
+                self.generate_code_file(script, (0, simulation_range[0]), initial_conditions,
                                         rate_parameters, drain_parameters)
 
             if logging_is_enabled():
@@ -112,7 +112,7 @@ class SpimStochastic(StochasticPlugin):
                 errors.append(SimulationError("Simulation time out"))
                 messages.print_solver_done(name, was_failure=True)
                 independent, dependent = collect_data(errors)
-                return SimulationOutput(name, simulation_range,
+                return SimulationOutput(name, (0, simulation_range[0]),
                                         symbols=self._simulator.symbols,
                                         independent=independent, dependent=dependent,
                                         errors=errors)
@@ -122,16 +122,16 @@ class SpimStochastic(StochasticPlugin):
                     self.logger.error("Missing SPiM output")
                 errors.append(SimulationError("Missing SPiM output"))
                 messages.print_solver_done(name, was_failure=True)
-                return SimulationOutput(name, simulation_range,
+                return SimulationOutput(name, (0, simulation_range[0]),
                                         symbols=self._simulator.symbols, errors=errors)
 
             independent, dependent = collect_data(errors)
             if errors:
                 messages.print_solver_done(name, was_failure=True)
-                return SimulationOutput(name, simulation_range, symbols=self._simulator.symbols,
+                return SimulationOutput(name, (0, simulation_range[0]), symbols=self._simulator.symbols,
                                         independent=independent, dependent=dependent,
                                         errors=errors)
             else:
                 messages.print_solver_done(name, was_failure=False)
-                return SimulationOutput(name, simulation_range, symbols=self._simulator.symbols,
+                return SimulationOutput(name, (0, simulation_range[0]), symbols=self._simulator.symbols,
                                         independent=independent, dependent=dependent)

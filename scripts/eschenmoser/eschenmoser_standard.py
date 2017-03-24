@@ -145,7 +145,7 @@ for sym in ode.symbols:
             'factor': 0.0001
         }}
 
-stoch_sim_range = (60000, 3000)
+stoch_sim_range = (60000, 60000)
 ode_sim_range = (0, 60000)
 period_bounds = (600, stoch_sim_range[0] / 2)  # looking from 600 to 30000
 
@@ -222,11 +222,16 @@ def write_score_data_parameter(name, var_measurements, famp_measurements, ffreq_
 
 
 def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=False):
-    """Run some simulation and get the measurements"""
-    print("Using plugin: {}".format(plugin_name))
+    """Do a simulation run and get the measurements"""
+
+    print("Using plugin: {} with method: {}".format(plugin_name, method))
     if hasattr(plugin, "method"):
         # caveat #1: Not all plugins have a method (e.g.: the SPiM plugin only works with it's default method)
         plugin.method = method
+
+    if hasattr(plugin, "delta_t"):
+        # For most ODEs we have delta
+        plugin.delta_t = 1
 
     # caveat #2: the simulation_range format is different when using ODEs and stochastic methods
     # stochastic methods assume that the the start time of the sim is zero, and includes some resolution count (e.g.
@@ -244,10 +249,16 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
             print(err)
         return None
     analytics = DynamicAnalysisDevice(out)
+
+    print("Is data equally spaced?", out.is_data_equally_spaced())
+    freqs = analytics.fourier_frequencies
+    if freqs[0] == 0.0:
+        # cutting off the zero frequency since this is the DC component (mean offset)
+        freqs = freqs[1:]
+    print("Frequency bins: {}".format(len(freqs) + 1))
     variance_measurement = np.array([data.var() for data in out.dependent.T])
     print("Variance measurements: {}".format(variance_measurement))
     amp_spec = analytics.amplitude_spectra
-    freqs = analytics.fourier_frequencies
     fourier_amplitude_measurement = np.array([], dtype=float)
     fourier_frequency_measurement = np.array([], dtype=float)
 
@@ -258,6 +269,8 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
         fourier_amplitude_measurement = np.append(fourier_amplitude_measurement, max_amplitude)
         fourier_frequency_measurement = np.append(fourier_frequency_measurement, max_frequency)
 
+    assert len(fourier_amplitude_measurement) == len(fourier_frequency_measurement)
+    assert len(fourier_amplitude_measurement) == len(variance_measurement)
     print("Fourier maximum amplitude measurements: {}".format(fourier_amplitude_measurement))
     print("Fourier maximum frequency measurements: {}".format(fourier_frequency_measurement))
 

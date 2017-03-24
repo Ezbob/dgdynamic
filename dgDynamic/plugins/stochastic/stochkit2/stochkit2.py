@@ -157,7 +157,8 @@ class StochKit2Stochastic(StochasticPlugin):
 
                 if process.returncode != 0:
                     # Error in process execution
-                    exception = util_exceptions.SimulationError("Error in simulation: {}".format(process.stdout))
+                    exception = util_exceptions.SimulationError("Error in simulation: {}".format(process.stdout
+                                                                                                 .readlines()))
                     messages.print_solver_done(name, self.method.name, was_failure=True)
                     return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
                                             solver_method=self.method, errors=(exception,))
@@ -182,6 +183,10 @@ class StochKit2Stochastic(StochasticPlugin):
                         return SimulationOutputSet(collect_multiple_output(trajectory_paths, errors=(util_exceptions
                                                                                                      .SimulationError(
                                                                                                       log_message),),))
+            elif self.trajectories == 1:
+                # Only one trajectory was requested so don't pack to set
+                messages.print_solver_done(name, self.method.name)
+                return list(collect_multiple_output(trajectory_paths))[0]
             else:
                 # We got all the trajectories!
                 messages.print_solver_done(name, self.method.name)

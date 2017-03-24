@@ -12,10 +12,10 @@ class DynamicAnalysisDevice:
         self.output = simulation_output
         self.solver_plugin = plugin_solver
         self.windowing_function = windowing_function
-        self.sample_size = len(self.output.dependent)
+        self.sample_length = len(self.output.dependent)
         # default: assuming uniform spacing between time samples
         try:
-            self.sample_rate = self.sample_size / self.output.simulation_duration \
+            self.sample_rate = self.sample_length / self.output.simulation_duration \
                 if sample_rate is None else sample_rate
             self.sample_spacing = 1 / self.sample_rate if sample_spacing is None else sample_spacing
         except ZeroDivisionError:
@@ -62,14 +62,14 @@ class DynamicAnalysisDevice:
     def _scale_and_normalize_fourier(self, fourier):
         # http://stackoverflow.com/questions/15147287/numpy-wrong-amplitude-of-fftd-array
         return np.fromiter((f if index == 0 else f * 2 for index, f in enumerate(fourier)), dtype=float) \
-               / self.sample_size
+               / self.sample_length
 
     def generate_fourier_transformations(self, bins=None, *args, **kwargs):
         for dependent_index in range(self.output.dependent_dimension):
             numpy_array = np.fromiter((self.output.dependent[index][dependent_index]
                                        for index in range(len(self.output))), dtype=float)
             if self.windowing_function is not None:
-                window_convolution = numpy_array * self.windowing_function(self.sample_size)
+                window_convolution = numpy_array * self.windowing_function(self.sample_length)
                 yield np.fft.rfft(window_convolution, n=bins, *args, **kwargs)
             else:
                 yield np.fft.rfft(numpy_array, n=bins, *args, **kwargs)
@@ -78,7 +78,7 @@ class DynamicAnalysisDevice:
         for fourier_trans in self.generate_fourier_transformations(*args, **kwargs):
             amplitudes = self._scale_and_normalize_fourier(np.absolute(fourier_trans))
             if with_frequencies:
-                yield amplitudes, np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
+                yield amplitudes, np.fft.rfftfreq(self.sample_length, d=self.sample_spacing)
             else:
                 yield amplitudes
 
@@ -107,11 +107,13 @@ class DynamicAnalysisDevice:
     @staticmethod
     def period_bounds(freqs, min_period, max_period):
 
-        lower_freq_bound = 1 / min_period
-        upper_freq_bound = 1 / max_period
+        higher_freq_bound = 1 / min_period
+        lower_freq_bound = 1 / max_period
 
-        return DynamicAnalysisDevice.nearest_value_arg(freqs, upper_freq_bound), \
-            DynamicAnalysisDevice.nearest_value_arg(freqs, lower_freq_bound)
+        lower_bound_arg = DynamicAnalysisDevice.nearest_value_arg(freqs, lower_freq_bound)
+        upper_bound_arg = DynamicAnalysisDevice.nearest_value_arg(freqs, higher_freq_bound)
+
+        return lower_bound_arg, upper_bound_arg
 
     @staticmethod
     def nearest_value_arg(array, value):
@@ -147,7 +149,7 @@ class DynamicAnalysisDevice:
 
     @property
     def fourier_frequencies(self):
-        return np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
+        return np.fft.rfftfreq(self.sample_length, d=self.sample_spacing)
 
     @property
     def amplitude_spectra(self):

@@ -35,6 +35,24 @@ class SimulationOutput(LogMixin):
         self.symbols = tuple(symbols) if isinstance(symbols, collections.Generator) else symbols
 
     @property
+    def prematurely_sim_stop(self):
+        pass
+
+    def is_data_equally_spaced(self, rel_tol=1e-05, abs_tol=1e-08):
+        delta_t = 0
+        time_vals = self.independent
+        if len(time_vals) >= 2:
+            delta_t = abs(time_vals[1] - time_vals[0])
+        for i in range(1, len(time_vals)):
+            curr_t = time_vals[i]
+            if i < len(time_vals) - 1:
+                next_t = time_vals[i + 1]
+                curr_dt = abs(next_t - curr_t)
+                if not numpy.isclose(curr_dt, delta_t, rtol=rel_tol, atol=abs_tol):
+                    return False
+        return True
+
+    @property
     def is_output_set(self):
         return False
 
