@@ -34,9 +34,12 @@ class SimulationOutput(LogMixin):
         self._file_writer_thread = None
         self.symbols = tuple(symbols) if isinstance(symbols, collections.Generator) else symbols
 
-    @property
-    def prematurely_sim_stop(self):
-        pass
+    def has_sim_prematurely_stopped(self, rel_tol=1e-05, abs_tol=1e-08):
+        if len(self.independent) > 0:
+            return not numpy.isclose(self.independent[-1], self.requested_simulation_range[1],
+                                     rtol=rel_tol, atol=abs_tol)
+        else:
+            return self.requested_simulation_range[1] != 0
 
     def is_data_equally_spaced(self, rel_tol=1e-05, abs_tol=1e-08):
         delta_t = 0

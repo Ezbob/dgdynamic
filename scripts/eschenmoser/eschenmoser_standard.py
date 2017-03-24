@@ -6,6 +6,7 @@ Reversible reactions are also split into a "->"-reaction and a "<-"-reaction in 
 """
 from dgDynamic import dgDynamicSim, HyperGraph
 from dgDynamic.analytics import DynamicAnalysisDevice
+from dgDynamic.utils.exceptions import SimulationError
 import random
 import enum
 import csv
@@ -13,6 +14,7 @@ import datetime
 import os.path
 import argparse
 import numpy as np
+import warnings
 
 
 def argument_handler():
@@ -145,12 +147,21 @@ for sym in ode.symbols:
             'factor': 0.0001
         }}
 
-stoch_sim_range = (60000, 60000)
-ode_sim_range = (0, 60000)
+sim_end_time = 60000
+stoch_sim_range = (sim_end_time, sim_end_time)
+ode_sim_range = (0, sim_end_time)
 period_bounds = (600, stoch_sim_range[0] / 2)  # looking from 600 to 30000
 
+measurement_output = {
+    'variance': [],
+    'fourier_amp': [],
+    'fourier_freq': [],
+    'n_sample': [],
+    'end_t': []
+}
 
-def write_score_data_parameter(name, var_measurements, famp_measurements, ffreq_measurements):
+
+def write_score_data_parameter(name): #var_measurements, famp_measurements, ffreq_measurements):
     """Write all data to a TSV file"""
 
     def fp(float_value, fixed_precision=18):
@@ -186,8 +197,9 @@ def write_score_data_parameter(name, var_measurements, famp_measurements, ffreq_
         assert len(f_freq_score_labls) == ode.species_count
         assert len(v_score_labels) == ode.species_count
 
-        whole_header = ['species_n', 'c1_param_n', 'c2_param_n', 'lower_period_bound', 'upper_period_bound'] \
-            + f_amp_score_labels + f_freq_score_labls + v_score_labels + param_labels
+        whole_header = ['species_n', 'c1_param_n', 'c2_param_n', 'sample_n', 'end_t', 'lower_period_bound',
+                        'upper_period_bound']
+        whole_header += v_score_labels + f_amp_score_labels + f_freq_score_labls + param_labels
         writer.writerow(whole_header)
         return len(whole_header)
 
@@ -202,8 +214,7 @@ def write_score_data_parameter(name, var_measurements, famp_measurements, ffreq_
 
         header_length = add_header(tsv_writer)
 
-        for param_map, var_measure, fourier_amps, fourier_freqs in zip(parameter_matrix, var_measurements,
-                                                                       famp_measurements, ffreq_measurements):
+        for i, param_map in enumerate(parameter_matrix):
             param_list = []
             for r in reactions:
                 rate_dict = param_map[r]
@@ -213,10 +224,15 @@ def write_score_data_parameter(name, var_measurements, famp_measurements, ffreq_
 
             assert ode.reaction_count == (c1_count + c2_count), "Not enough reactions"
             assert len(param_list) == (c1_count + c2_count), "Not enough parameters"
-            assert len(fourier_amps) == ode.species_count, "Not enough amplitude measures"
-            assert len(var_measure) == ode.species_count, "Not enough variances measures"
-            data_row = [ode.species_count, c1_count, c2_count, fp(period_bounds[0]), fp(period_bounds[1])] \
-                + list(map(fp, fourier_amps)) + list(map(fp, fourier_freqs)) + list(map(fp, var_measure)) + param_list
+            assert len(measurement_output['fourier_amp'][i]) == ode.species_count, "Not enough amplitude measures"
+            assert len(measurement_output['variance'][i]) == ode.species_count, "Not enough variances measures"
+
+            data_row = [ode.species_count, c1_count, c2_count, measurement_output['n_sample'][i],
+                        measurement_output['end_t'][i], fp(period_bounds[0]), fp(period_bounds[1])]
+            for label in ['variance', 'fourier_amp', 'fourier_freq']:
+                data_row += list(map(fp, measurement_output[label][i]))
+            data_row += param_list
+
             assert len(data_row) == header_length, "Header length and data row length differs"
             tsv_writer.writerow(data_row)
 
@@ -239,18 +255,17 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     sim_range = ode_sim_range if plugin_name.lower() in ['scipy', 'matlab'] else stoch_sim_range
 
     out = plugin(sim_range, initial_conditions, params, drain_params)
-    if out.is_output_set:
-        # caveat #3: the stochkit2 returns SimulationOutputSet which are collections of SimulationOutput.
-        # This is to handle the outputting of multiple trajectories/random walks/realizations
-        out = out[0]
+
     if out.has_errors and len(out.dependent) == len(out.independent) == 0:
-        print("Error in simulating {}".format(plugin_name))
-        for err in out.errors:
-            print(err)
-        return None
+        warnings.warn("Simulation Error encountered using plugin: {}".format(plugin_name))
+        raise SimulationError(*[m for err in out.errors for m in err.args])
     analytics = DynamicAnalysisDevice(out)
+    sim_end = out.independent[-1]
+    n_sample_points = len(out.dependent)
 
     print("Is data equally spaced?", out.is_data_equally_spaced())
+    print("Stop prematurely?", out.has_sim_prematurely_stopped())
+
     freqs = analytics.fourier_frequencies
     if freqs[0] == 0.0:
         # cutting off the zero frequency since this is the DC component (mean offset)
@@ -274,7 +289,7 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     print("Fourier maximum amplitude measurements: {}".format(fourier_amplitude_measurement))
     print("Fourier maximum frequency measurements: {}".format(fourier_frequency_measurement))
 
-    if do_plot:
+    if do_plot and not out.has_sim_prematurely_stopped():
         dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
         title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {})"\
             .format(out.solver_used.name, method, run_number + 1, runs, max(np.sqrt(variance_measurement)),
@@ -283,14 +298,27 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
         image_path = os.path.join(output_dir, "eschenmoser_{}_{}_plot{}_{}_{}.png".format(plugin_name, method_name,
                                                                                           run_number + 1, runs, dt))
         out.plot(filename=image_path, figure_size=(46, 24), title=title)
-    return variance_measurement, fourier_amplitude_measurement, fourier_frequency_measurement
+
+    if out.has_sim_prematurely_stopped():
+        dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
+        title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {}), aborted at ({}, {})" \
+            .format(out.solver_used.name, method, run_number + 1, runs, max(np.sqrt(variance_measurement)),
+                    max(fourier_amplitude_measurement), max(fourier_frequency_measurement), out.independent[-1],
+                    out.dependent[-1])
+
+        image_path = os.path.join(output_dir, "aborted_eschenmoser_{}_{}_plot{}_{}_{}.png".format(
+            plugin_name, method_name, run_number + 1, runs, dt))
+        out.plot(filename=image_path, figure_size=(46, 24), title=title)
+
+    measurement_output['n_sample'].append(n_sample_points)
+    measurement_output['end_t'].append(sim_end)
+    measurement_output['variance'].append(variance_measurement)
+    measurement_output['fourier_freq'].append(fourier_frequency_measurement)
+    measurement_output['fourier_amp'].append(fourier_amplitude_measurement)
 
 
 def main():
     """Do the actual simulation"""
-    fourier_amplitude_measurements = []
-    fourier_frequency_measurements = []
-    variance_measurements = []
 
     plugins = {
         'matlab': ode('matlab'),
@@ -304,19 +332,16 @@ def main():
 
             #  FIXME fourier for matlab is exceedingly slow
             #  TODO find out why spim is slacking
-            var_mes, four_amp, four_freq = do_sim_and_measure(index, parm, plugins[plugin_name], plugin_name,
-                                                              method_name, do_plot=do_plots)
 
-            variance_measurements.append(var_mes)
-            fourier_amplitude_measurements.append(four_amp)
-            fourier_frequency_measurements.append(four_freq)
+            do_sim_and_measure(index, parm, plugins[plugin_name], plugin_name, method_name, do_plot=do_plots)
 
     except KeyboardInterrupt:
         print("Received Interrupt Signal. ")
+    except SimulationError as e:
+        print("Received Simulation error: ", *e.args)
     finally:
         print("Writing results to output file..")
-        write_score_data_parameter(plugin_name, variance_measurements, fourier_amplitude_measurements,
-                                   fourier_frequency_measurements)
+        write_score_data_parameter(plugin_name)
 
 if __name__ == '__main__':
     main()
