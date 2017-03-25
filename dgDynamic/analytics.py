@@ -165,6 +165,14 @@ class DynamicAnalysisDevice:
     def amplitude_spectrum(self, index):
         return tuple(self.generate_amplitude_spectrum())[index]
 
+    def pair_distance_measurement(self):
+        data = self.output.dependent
+
+        def pair_diff(array):
+            return sum(abs(array[i + 1] - array[i]) for i in range(len(array) - 1))
+
+        return np.array([pair_diff(species) for species in data.T])
+
     @staticmethod
     def converge_points(upper_bound, lower_bound, relative_tolerance=1.e-5,
                         absolute_tolerance=1.e-8):

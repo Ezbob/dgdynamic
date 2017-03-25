@@ -157,11 +157,12 @@ measurement_output = {
     'fourier_amp': [],
     'fourier_freq': [],
     'n_sample': [],
-    'end_t': []
+    'end_t': [],
+    'pair_diff': []
 }
 
 
-def write_score_data_parameter(name): #var_measurements, famp_measurements, ffreq_measurements):
+def write_score_data_parameter(name):
     """Write all data to a TSV file"""
 
     def fp(float_value, fixed_precision=18):
@@ -185,6 +186,7 @@ def write_score_data_parameter(name): #var_measurements, famp_measurements, ffre
         f_amp_score_labels = ["fourier_amp_" + sym for sym in ode.symbols]
         f_freq_score_labls = ["fourier_freq_" + sym for sym in ode.symbols]
         v_score_labels = ["variance_" + sym for sym in ode.symbols]
+        pd_score_labels = ["pair_diff_" + sym for sym in ode.symbols]
 
         param_labels = []
         for r in reactions:
@@ -197,9 +199,9 @@ def write_score_data_parameter(name): #var_measurements, famp_measurements, ffre
         assert len(f_freq_score_labls) == ode.species_count
         assert len(v_score_labels) == ode.species_count
 
-        whole_header = ['species_n', 'c1_param_n', 'c2_param_n', 'sample_n', 'end_t', 'lower_period_bound',
-                        'upper_period_bound']
-        whole_header += v_score_labels + f_amp_score_labels + f_freq_score_labls + param_labels
+        whole_header = ['species_n', 'c1_param_n', 'c2_param_n', 'sample_n', 'end_t', 'expected_end_t',
+                        'lower_period_bound', 'upper_period_bound']
+        whole_header += v_score_labels + pd_score_labels + f_amp_score_labels + f_freq_score_labls + param_labels
         writer.writerow(whole_header)
         return len(whole_header)
 
@@ -226,10 +228,11 @@ def write_score_data_parameter(name): #var_measurements, famp_measurements, ffre
             assert len(param_list) == (c1_count + c2_count), "Not enough parameters"
             assert len(measurement_output['fourier_amp'][i]) == ode.species_count, "Not enough amplitude measures"
             assert len(measurement_output['variance'][i]) == ode.species_count, "Not enough variances measures"
+            assert len(measurement_output['pair_diff'][i]) == ode.species_count, "Not enough pair diff measures"
 
             data_row = [ode.species_count, c1_count, c2_count, measurement_output['n_sample'][i],
-                        measurement_output['end_t'][i], fp(period_bounds[0]), fp(period_bounds[1])]
-            for label in ['variance', 'fourier_amp', 'fourier_freq']:
+                        measurement_output['end_t'][i], sim_end_time, fp(period_bounds[0]), fp(period_bounds[1])]
+            for label in ['variance', 'pair_diff', 'fourier_amp', 'fourier_freq']:
                 data_row += list(map(fp, measurement_output[label][i]))
             data_row += param_list
 
@@ -259,6 +262,7 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     if out.has_errors and len(out.dependent) == len(out.independent) == 0:
         warnings.warn("Simulation Error encountered using plugin: {}".format(plugin_name))
         raise SimulationError(*[m for err in out.errors for m in err.args])
+
     analytics = DynamicAnalysisDevice(out)
     sim_end = out.independent[-1]
     n_sample_points = len(out.dependent)
@@ -271,8 +275,11 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
         # cutting off the zero frequency since this is the DC component (mean offset)
         freqs = freqs[1:]
     print("Frequency bins: {}".format(len(freqs) + 1))
+
     variance_measurement = np.array([data.var() for data in out.dependent.T])
     print("Variance measurements: {}".format(variance_measurement))
+    pair_diff = analytics.pair_distance_measurement()
+    print("Pair distance measurements: {}".format(pair_diff))
     amp_spec = analytics.amplitude_spectra
     fourier_amplitude_measurement = np.array([], dtype=float)
     fourier_frequency_measurement = np.array([], dtype=float)
@@ -315,6 +322,7 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     measurement_output['variance'].append(variance_measurement)
     measurement_output['fourier_freq'].append(fourier_frequency_measurement)
     measurement_output['fourier_amp'].append(fourier_amplitude_measurement)
+    measurement_output['pair_diff'].append(pair_diff)
 
 
 def main():
