@@ -1,9 +1,12 @@
 """
-Case 1: All reactions has been turned into reversible reactions
+Case 0: The original Eschenmöser double integrated hyper cycles from the J. Andersen paper
+This is more or less a copy of the eschenmoser reversible script with the original model installed.
+Reactions rate generation has been modified to generate the same rate in both directions for reversible reactions.
+Reversible reactions are also split into a "->"-reaction and a "<-"-reaction in the output file.
 """
 from dgDynamic import dgDynamicSim, HyperGraph
-import matplotlib.pyplot as plt
 from dgDynamic.analytics import DynamicAnalysisDevice
+from dgDynamic.utils.exceptions import SimulationError
 import random
 import enum
 import csv
@@ -11,9 +14,11 @@ import datetime
 import os.path
 import argparse
 import numpy as np
+import warnings
 
 
 def argument_handler():
+    """Parses CLI arguments for the script"""
     defaults = {
         'runs': 2,
         'output_dir': "eschenmoser_data/",
@@ -21,7 +26,7 @@ def argument_handler():
         'method': 'tauleaping',
         'plot': False
     }
-    parser = argparse.ArgumentParser(description="Eschenmoser (reversible) script. Calculates the measurements.")
+    parser = argparse.ArgumentParser(description="Eschenmoser (Reversible) script. Calculates the measurements.")
     parser.add_argument('-r', '--runs', type=int, help="How many runs does this script need to run",
                         default=defaults['runs'])
     parser.add_argument('-o', '--output_dir', help="Where to dump the output data", default=defaults['output_dir'])
@@ -79,119 +84,7 @@ cycle2_reactions = [
 cycle1_hyper = HyperGraph.from_abstract(*cycle1_reactions)
 cycle2_hyper = HyperGraph.from_abstract(*cycle2_reactions)
 
-#  cycle1_hyper.print()
-#  cycle2_hyper.print()
-
 reactions = cycle1_reactions + cycle2_reactions
-
-
-def generate_rates(reactions):
-    """Get a list of tuples containing the random rates"""
-    rates = []
-    for reaction in reactions:
-        if '<=>' in reaction:
-            f = random.random()
-            b = random.random()
-            rates.append(
-                {'->': f, '<-': b}
-            )
-        else:
-            f = random.random()
-            rates.append(
-                {'->': f}
-            )
-    return rates
-
-
-def fp(float_value, fixed_precision=18):
-    """Fixed point string format conversion"""
-    return "{:.{}f}".format(float_value, fixed_precision)
-
-
-def write_score_data_parameter(name):
-
-    def spilt_reversible(r):
-        if '<=>' in r:
-            prefix, _, suffix = r.partition('<=>')
-            return prefix + '->' + suffix, prefix + '<-' + suffix
-        return r,
-
-    def count_cycle_params():
-        return sum(2 if '<=>' in r else 1 for r in cycle1_reactions), \
-               sum(2 if '<=>' in r else 1 for r in cycle2_reactions)
-
-    dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-    file_name = "eschenmoser_r_{}_measurements_{}_{}.tsv".format(name, runs, dt)
-    file_path = os.path.join(output_dir, file_name)
-    print("Output file: {}".format(file_path))
-    with open(file_path, mode="w") as tsvfile:
-        tsv_writer = csv.writer(tsvfile, delimiter="\t")
-        c1_count, c2_count = count_cycle_params()
-
-        f_score_labels = ["fourier_" + sym for sym in ode.symbols]
-        v_score_labels = ["variance_" + sym for sym in ode.symbols]
-
-        param_labels = []
-        for r in reactions:
-            splitted = spilt_reversible(r)
-            for label in splitted:
-                param_labels.append(label)
-
-        assert len(param_labels) == (c1_count + c2_count) == ode.reaction_count
-        assert len(f_score_labels) == ode.species_count
-        assert len(v_score_labels) == ode.species_count
-        tsv_writer.writerow(['species_n', 'c1_param_n', 'c2_param_n', 'lower_period_bound', 'upper_period_bound']
-                            + f_score_labels
-                            + v_score_labels
-                            + param_labels)
-
-        for var_measure, fourier_measure, param_map in zip(variance_measurements, fourier_measurements,
-                                                           parameter_matrix):
-            param_list = []
-            for r in reactions:
-                rate_dict = param_map[r]
-                param_list.append(rate_dict['->'])
-                if '<-' in rate_dict:
-                    param_list.append(rate_dict['<-'])
-
-            assert ode.reaction_count == (c1_count + c2_count)
-            assert len(param_list) == (c1_count + c2_count), "Not enough parameters"
-            assert len(fourier_measure) == ode.species_count, "At least one fourier measure"
-            assert len(var_measure) == ode.species_count
-            row = [ode.species_count, c1_count, c2_count, fp(period_bounds[0]), fp(period_bounds[1])] \
-                + [fp(measure) for measure in fourier_measure] \
-                + [fp(measure) for measure in var_measure] \
-                + param_list
-            tsv_writer.writerow(row)
-
-
-def print_params(params):
-    print("Parameters are: {")
-    for react, param in params.items():
-        print("{!r}: {},".format(react, param))
-    print("}")
-
-
-def spectrum_plot(analytics, frequency, spectra, period_bounds):
-    """Plot a bounded fourier spectrum according to the period bounds"""
-    lower_bound, upper_bound = analytics.period_bounds(frequency, period_bounds[0], period_bounds[1])
-    analytics.plot_spectra([spect[lower_bound: upper_bound] for spect in spectra],
-        frequency[lower_bound: upper_bound])
-
-
-def plot_minimal_rate_params(cycle1_min_rates, cycle2_min_rates, oscill_measurements):
-    """Plots a colored scatter plot, with the colors representing the value of the oscillation measure"""
-    plt.figure()
-    colormap = plt.cm.get_cmap('RdYlBu')
-    plt.grid()
-
-    scatter = plt.scatter(cycle1_min_rates, cycle2_min_rates, c=oscill_measurements, cmap=colormap)
-
-    plt.ylabel("cycle 2 minimal rate")
-    plt.xlabel("cycle 1 minimal rate")
-    plt.colorbar(scatter)
-
-
 dg = HyperGraph.from_abstract(*reactions)
 
 initial_conditions = {
@@ -224,9 +117,27 @@ drain_params = {
     }
 }
 
+
+def generate_rates(reactions):
+    """Generate random rates for reactions"""
+    rates = []
+    for reaction in reactions:
+        if '<=>' in reaction:
+            f = random.random()
+            b = random.random()
+            rates.append(
+                {'->': f, '<-': b}
+            )
+        else:
+            f = random.random()
+            rates.append(
+                {'->': f}
+            )
+    return rates
+
+
 parameter_matrix = tuple({r: rate_dict for r, rate_dict in zip(reactions, generate_rates(reactions))}
                          for _ in range(runs))
-#  dg.print()
 
 ode = dgDynamicSim(dg)
 stochastic = dgDynamicSim(dg, 'stochastic')
@@ -237,27 +148,110 @@ for sym in ode.symbols:
             'factor': 0.0001
         }}
 
-stoch_sim_range = (60000, 3000)
-ode_sim_range = (0, 60000)
+sim_end_time = 60000
+stoch_sim_range = (sim_end_time, sim_end_time)
+ode_sim_range = (0, sim_end_time)
 period_bounds = (600, stoch_sim_range[0] / 2)  # looking from 600 to 30000
 
-fourier_measurements = []
-variance_measurements = []
-
-plugins = {
-    'matlab': ode('matlab'),
-    'scipy': ode('scipy'),
-    'stochkit2': stochastic('stochkit2'),
-    'spim': stochastic("spim")
+measurement_output = {
+    'variance': [],
+    'fourier_amp': [],
+    'fourier_freq': [],
+    'n_sample': [],
+    'end_t': [],
+    'pair_diff': []
 }
 
 
+def write_score_data_parameter(name):
+    """Write all data to a TSV file"""
+
+    def fp(float_value, fixed_precision=18):
+        """Fixed point string format conversion"""
+        return "{:.{}f}".format(float_value, fixed_precision)
+
+    def spilt_reversible(r):
+        """This splits reversible reaction into forward('->') and backward('->') components"""
+        if '<=>' in r:
+            prefix, _, suffix = r.partition('<=>')
+            return prefix + '->' + suffix, prefix + '<-' + suffix
+        return r,
+
+    def count_cycle_params():
+        """Get the reaction count for each cycle. A reversible reactions count for two reactions"""
+        return sum(2 if '<=>' in r else 1 for r in cycle1_reactions), \
+               sum(2 if '<=>' in r else 1 for r in cycle2_reactions)
+
+    def add_header(writer):
+        """Calculate the header (first line in tsv file) which determines the order of variables"""
+        f_amp_score_labels = ["fourier_amp_" + sym for sym in ode.symbols]
+        f_freq_score_labls = ["fourier_freq_" + sym for sym in ode.symbols]
+        v_score_labels = ["variance_" + sym for sym in ode.symbols]
+        pd_score_labels = ["pair_diff_" + sym for sym in ode.symbols]
+
+        param_labels = []
+        for r in reactions:
+            splitted = spilt_reversible(r)
+            for label in splitted:
+                param_labels.append(label)
+
+        assert len(param_labels) == (c1_count + c2_count) == ode.reaction_count
+        assert len(f_amp_score_labels) == ode.species_count
+        assert len(f_freq_score_labls) == ode.species_count
+        assert len(v_score_labels) == ode.species_count
+
+        whole_header = ['species_n', 'c1_param_n', 'c2_param_n', 'sample_n', 'end_t', 'expected_end_t',
+                        'lower_period_bound', 'upper_period_bound']
+        whole_header += v_score_labels + pd_score_labels + f_amp_score_labels + f_freq_score_labls + param_labels
+        writer.writerow(whole_header)
+        return len(whole_header)
+
+    dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
+    file_name = "eschenmoser_{}_measurements_{}_{}.tsv".format(name, runs, dt)
+    file_path = os.path.join(output_dir, file_name)
+    print("Output file:\n{}".format(file_path))
+
+    with open(file_path, mode="w") as tsvfile:
+        tsv_writer = csv.writer(tsvfile, delimiter="\t")
+        c1_count, c2_count = count_cycle_params()
+
+        header_length = add_header(tsv_writer)
+
+        for i, param_map in enumerate(parameter_matrix):
+            param_list = []
+            for r in reactions:
+                rate_dict = param_map[r]
+                param_list.append(fp(rate_dict['->']))
+                if '<-' in rate_dict:
+                    param_list.append(fp(rate_dict['<-']))
+
+            assert ode.reaction_count == (c1_count + c2_count), "Not enough reactions"
+            assert len(param_list) == (c1_count + c2_count), "Not enough parameters"
+            assert len(measurement_output['fourier_amp'][i]) == ode.species_count, "Not enough amplitude measures"
+            assert len(measurement_output['variance'][i]) == ode.species_count, "Not enough variances measures"
+            assert len(measurement_output['pair_diff'][i]) == ode.species_count, "Not enough pair diff measures"
+
+            data_row = [ode.species_count, c1_count, c2_count, measurement_output['n_sample'][i],
+                        measurement_output['end_t'][i], sim_end_time, fp(period_bounds[0]), fp(period_bounds[1])]
+            for label in ['variance', 'pair_diff', 'fourier_amp', 'fourier_freq']:
+                data_row += list(map(fp, measurement_output[label][i]))
+            data_row += param_list
+
+            assert len(data_row) == header_length, "Header length and data row length differs"
+            tsv_writer.writerow(data_row)
+
+
 def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=False):
-    """Run some simulation and get the measurements"""
-    print("Using plugin: {}".format(plugin_name))
+    """Do a simulation run and get the measurements"""
+
+    print("Using plugin: {} with method: {}".format(plugin_name, method))
     if hasattr(plugin, "method"):
         # caveat #1: Not all plugins have a method (e.g.: the SPiM plugin only works with it's default method)
         plugin.method = method
+
+    if hasattr(plugin, "delta_t"):
+        # For most ODEs we have delta
+        plugin.delta_t = 1
 
     # caveat #2: the simulation_range format is different when using ODEs and stochastic methods
     # stochastic methods assume that the the start time of the sim is zero, and includes some resolution count (e.g.
@@ -265,92 +259,99 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     sim_range = ode_sim_range if plugin_name.lower() in ['scipy', 'matlab'] else stoch_sim_range
 
     out = plugin(sim_range, initial_conditions, params, drain_params)
-    if out.is_output_set:
-        # caveat #3: the stochkit2 returns SimulationOutputSet which are collections of SimulationOutput.
-        # This is to handle the outputting of multiple trajectories/random walks/realizations
-        out = out[0]
+
     if out.has_errors and len(out.dependent) == len(out.independent) == 0:
-        print("Error in simulating {}".format(plugin_name))
-        for err in out.errors:
-            print(err)
-        return None
+        warnings.warn("Simulation Error encountered using plugin: {}".format(plugin_name))
+        raise SimulationError(*[m for err in out.errors for m in err.args])
+
     analytics = DynamicAnalysisDevice(out)
+    sim_end = out.independent[-1]
+    n_sample_points = len(out.dependent)
+
+    print("Is data equally spaced?", out.is_data_equally_spaced())
+    print("Stop prematurely?", out.has_sim_prematurely_stopped())
+
+    freqs = analytics.fourier_frequencies
+    if freqs[0] == 0.0:
+        # cutting off the zero frequency since this is the DC component (mean offset)
+        freqs = freqs[1:]
+    print("Frequency bins: {}".format(len(freqs) + 1))
+
     variance_measurement = np.array([data.var() for data in out.dependent.T])
     print("Variance measurements: {}".format(variance_measurement))
+    pair_diff = analytics.pair_distance_measurement()
+    print("Pair distance measurements: {}".format(pair_diff))
     amp_spec = analytics.amplitude_spectra
-    freqs = analytics.fourier_frequencies
-    fourier_measurement = np.array([
-        analytics.bounded_fourier_species_maxima(amp_spec, i, period_bounds[0], period_bounds[1], freqs)
-        for i in range(ode.species_count)
-    ])
-    #  analytics.fourier_oscillation_measure(period_bounds[0], period_bounds[1])
-    print("Fourier oscillation measurements: {}".format(fourier_measurement))
+    fourier_amplitude_measurement = np.array([], dtype=float)
+    fourier_frequency_measurement = np.array([], dtype=float)
 
-    if do_plot:
+    for i in range(ode.species_count):
+        max_amplitude, max_frequency = analytics.bounded_fourier_species_maxima(amp_spec, i, period_bounds[0],
+                                                                                period_bounds[1], freqs,
+                                                                                with_max_frequency=True)
+        fourier_amplitude_measurement = np.append(fourier_amplitude_measurement, max_amplitude)
+        fourier_frequency_measurement = np.append(fourier_frequency_measurement, max_frequency)
+
+    assert len(fourier_amplitude_measurement) == len(fourier_frequency_measurement)
+    assert len(fourier_amplitude_measurement) == len(variance_measurement)
+    print("Fourier maximum amplitude measurements: {}".format(fourier_amplitude_measurement))
+    print("Fourier maximum frequency measurements: {}".format(fourier_frequency_measurement))
+
+    if do_plot and not out.has_sim_prematurely_stopped():
         dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-        title = "{} {} - Run: {} / {}, var: {}, four: {}"\
-            .format(out.solver_used.name, method, run_number + 1, runs, max(variance_measurement), max(fourier_measurement))
+        title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {})"\
+            .format(out.solver_used.name, method, run_number + 1, runs, max(np.sqrt(variance_measurement)),
+                    max(fourier_amplitude_measurement), max(fourier_frequency_measurement))
 
         image_path = os.path.join(output_dir, "eschenmoser_{}_{}_plot{}_{}_{}.png".format(plugin_name, method_name,
                                                                                           run_number + 1, runs, dt))
         out.plot(filename=image_path, figure_size=(46, 24), title=title)
-    return variance_measurement, fourier_measurement
 
+    if out.has_sim_prematurely_stopped():
+        dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
+        title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {}), aborted at ({}, {})" \
+            .format(out.solver_used.name, method, run_number + 1, runs, max(np.sqrt(variance_measurement)),
+                    max(fourier_amplitude_measurement), max(fourier_frequency_measurement), out.independent[-1],
+                    out.dependent[-1])
 
-def find_minimum_reaction_rates(param):
-    cycle1_forward_params = [param[k]['->'] for k in cycle1_reactions]
-    cycle1_backward_params = [param[k]['<-'] for k in cycle1_reactions]
-    cycle2_forward_params = [param[k]['->'] for k in cycle2_reactions]
-    cycle2_backward_params = [param[k]['<-'] for k in cycle2_reactions]
+        image_path = os.path.join(output_dir, "aborted_eschenmoser_{}_{}_plot{}_{}_{}.png".format(
+            plugin_name, method_name, run_number + 1, runs, dt))
+        out.plot(filename=image_path, figure_size=(46, 24), title=title)
 
-    c1_minimal_rates = min(cycle1_forward_params), min(cycle1_backward_params)
-    c2_minimal_rates = min(cycle2_forward_params), min(cycle2_backward_params)
-
-    if c1_minimal_rates[0] < c1_minimal_rates[1]:
-        fm = c1_minimal_rates[0]
-        fr = cycle1_reactions[cycle1_forward_params.index(fm)].replace('<=>', '->')
-    else:
-        fm = c1_minimal_rates[1]
-        fr = cycle1_reactions[cycle1_backward_params.index(fm)].replace('<=>', '<-')
-
-    if c2_minimal_rates[0] < c2_minimal_rates[1]:
-        bm = c2_minimal_rates[0]
-        br = cycle2_reactions[cycle2_forward_params.index(bm)].replace('<=>', '->')
-    else:
-        bm = c2_minimal_rates[1]
-        br = cycle2_reactions[cycle2_backward_params.index(bm)].replace('<=>', '<-')
-
-    print("Cycle 1 reaction {!r} with minimal rate: {}".format(fr, fm))
-    print("Cycle 2 reaction {!r} with minimal rate: {}".format(br, bm))
+    measurement_output['n_sample'].append(n_sample_points)
+    measurement_output['end_t'].append(sim_end)
+    measurement_output['variance'].append(variance_measurement)
+    measurement_output['fourier_freq'].append(fourier_frequency_measurement)
+    measurement_output['fourier_amp'].append(fourier_amplitude_measurement)
+    measurement_output['pair_diff'].append(pair_diff)
 
 
 def main():
     """Do the actual simulation"""
+
+    plugins = {
+        'matlab': ode('matlab'),
+        'scipy': ode('scipy'),
+        'stochkit2': stochastic('stochkit2'),
+        'spim': stochastic("spim")
+    }
     try:
         for index, parm in enumerate(parameter_matrix):
             print("--- Run {} ---".format(index + 1))
-            find_minimum_reaction_rates(parm)
 
             #  FIXME fourier for matlab is exceedingly slow
             #  TODO find out why spim is slacking
-            var_mes, four_mes = do_sim_and_measure(index, parm, plugins[plugin_name], plugin_name, method_name,
-                                                   do_plot=do_plots)
 
-            variance_measurements.append(var_mes)
-            fourier_measurements.append(four_mes)
+            do_sim_and_measure(index, parm, plugins[plugin_name], plugin_name, method_name, do_plot=do_plots)
 
     except KeyboardInterrupt:
         print("Received Interrupt Signal. ")
+    except SimulationError as e:
+        print("Received Simulation error: ", *e.args)
+    finally:
         print("Writing results to output file..")
         write_score_data_parameter(plugin_name)
 
-    print("Writing results to output file..")
-    write_score_data_parameter(plugin_name)
-
-
 if __name__ == '__main__':
     main()
-    #  print(tuple(ode.symbols))
-    #  pass
 
-#show_plots()
