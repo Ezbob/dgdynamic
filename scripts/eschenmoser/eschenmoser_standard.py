@@ -218,9 +218,9 @@ def write_score_data_parameter(name): #var_measurements, famp_measurements, ffre
             param_list = []
             for r in reactions:
                 rate_dict = param_map[r]
-                param_list.append(rate_dict['->'])
+                param_list.append(fp(rate_dict['->']))
                 if '<-' in rate_dict:
-                    param_list.append(rate_dict['<-'])
+                    param_list.append(fp(rate_dict['<-']))
 
             assert ode.reaction_count == (c1_count + c2_count), "Not enough reactions"
             assert len(param_list) == (c1_count + c2_count), "Not enough parameters"
