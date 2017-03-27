@@ -2,13 +2,18 @@
 `dgDynamic` is a library for dynamic simulations on deviation graphs produced by the MØD framework.
  
 ### Installation ###
-To use this application, one have to access to the MØD framework.
-Other Python dependencies are marked down in the `requirement.txt` file, and can be installed using the `pip` package 
-manager via the command:
+To use this library, one have to access to the MØD framework.
+
+This library has been packaged as pip package and can be installed by the following command:
  
 ```
-sudo pip install -r requirement.txt
+./compile_stochkit2 && pip --user install .
 ```
-This installs all of the dependencies globally in your Python distribution folder.
- 
+This installs all of the Python dependencies via pip and installs them locally for your user.
+To install the package globally, do the following:
+
+```
+./compile_stochkit2 && sudo pip install .
+```
+
 Built for Python version 3.5.
