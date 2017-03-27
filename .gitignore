@@ -19,3 +19,6 @@ eschenmoser_data/
 **__pycache__/
 **/StochKit/custom_drivers/
 **/StochKit/bin/
+
+## JUST FOR RELEASE
+StochKit/
