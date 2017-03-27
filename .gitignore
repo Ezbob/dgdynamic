@@ -17,4 +17,5 @@ logs
 *.tsv
 eschenmoser_data/
 **__pycache__/
-
+**/StochKit/custom_drivers/
+**/StochKit/bin/
