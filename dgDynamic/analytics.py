@@ -12,11 +12,15 @@ class DynamicAnalysisDevice:
         self.output = simulation_output
         self.solver_plugin = plugin_solver
         self.windowing_function = windowing_function
-        self.sample_size = len(self.output.dependent)
+        self.sample_length = len(self.output.dependent)
         # default: assuming uniform spacing between time samples
-        self.sample_rate = self.sample_size / self.output.simulation_duration \
-            if sample_rate is None else sample_rate
-        self.sample_spacing = 1 / self.sample_rate if sample_spacing is None else sample_spacing
+        try:
+            self.sample_rate = self.sample_length / self.output.simulation_duration \
+                if sample_rate is None else sample_rate
+            self.sample_spacing = 1 / self.sample_rate if sample_spacing is None else sample_spacing
+        except ZeroDivisionError:
+            self.sample_rate = sample_rate
+            self.sample_spacing = sample_spacing
 
     @staticmethod
     def from_simulation(plugin, simulation_range, initial_conditions, rate_parameters,
@@ -58,14 +62,14 @@ class DynamicAnalysisDevice:
     def _scale_and_normalize_fourier(self, fourier):
         # http://stackoverflow.com/questions/15147287/numpy-wrong-amplitude-of-fftd-array
         return np.fromiter((f if index == 0 else f * 2 for index, f in enumerate(fourier)), dtype=float) \
-               / self.sample_size
+               / self.sample_length
 
     def generate_fourier_transformations(self, bins=None, *args, **kwargs):
         for dependent_index in range(self.output.dependent_dimension):
             numpy_array = np.fromiter((self.output.dependent[index][dependent_index]
                                        for index in range(len(self.output))), dtype=float)
             if self.windowing_function is not None:
-                window_convolution = numpy_array * self.windowing_function(self.sample_size)
+                window_convolution = numpy_array * self.windowing_function(self.sample_length)
                 yield np.fft.rfft(window_convolution, n=bins, *args, **kwargs)
             else:
                 yield np.fft.rfft(numpy_array, n=bins, *args, **kwargs)
@@ -74,7 +78,7 @@ class DynamicAnalysisDevice:
         for fourier_trans in self.generate_fourier_transformations(*args, **kwargs):
             amplitudes = self._scale_and_normalize_fourier(np.absolute(fourier_trans))
             if with_frequencies:
-                yield amplitudes, np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
+                yield amplitudes, np.fft.rfftfreq(self.sample_length, d=self.sample_spacing)
             else:
                 yield amplitudes
 
@@ -102,20 +106,42 @@ class DynamicAnalysisDevice:
 
     @staticmethod
     def period_bounds(freqs, min_period, max_period):
-        return np.where(freqs == 1 / max_period)[0][0], np.where(freqs == 1 / min_period)[0][0]
 
-    def bounded_fourier_oscillation(self, spectra_data, species_index, min_period, max_period, frequencies=None):
+        higher_freq_bound = 1 / min_period
+        lower_freq_bound = 1 / max_period
+
+        lower_bound_arg = DynamicAnalysisDevice.nearest_value_arg(freqs, lower_freq_bound)
+        upper_bound_arg = DynamicAnalysisDevice.nearest_value_arg(freqs, higher_freq_bound)
+
+        return lower_bound_arg, upper_bound_arg
+
+    @staticmethod
+    def nearest_value_arg(array, value):
+        return np.abs(array - value).argmin()
+
+    def bounded_fourier_species_maxima(self, spectra_data, species_index, min_period, max_period, frequencies=None,
+                                       with_max_frequency=False):
+        """ Computes a bounded fourier maxima for a species """
         freqs = self.fourier_frequencies if frequencies is None else frequencies
         lower_i, upper_i = self.period_bounds(freqs, min_period, max_period)
         data = spectra_data[species_index]
-        return np.max(data[lower_i: upper_i])
+        max_arg = np.argmax(data[lower_i: upper_i])  # index of the maximal value within the period band
+        if with_max_frequency:
+            return data[max_arg], freqs[max_arg]
+        else:
+            return data[max_arg]
 
     def fourier_oscillation_measure(self, min_period, max_period):
+        """ Computes the sum of bounded fourier maxima """
         ampl_spectra = self.amplitude_spectra
         freqs = self.fourier_frequencies
-        oscillation_scores = (self.bounded_fourier_oscillation(ampl_spectra, i, min_period, max_period, freqs)
+        oscillation_scores = (self.bounded_fourier_species_maxima(ampl_spectra, i, min_period, max_period, freqs)
                               for i in range(self.output.dependent.shape[1]))
         return sum(oscillation_scores)
+
+    def variance_oscillation_measure(self):
+        """ Computes the sum of species variances """
+        return np.sum(self.output.dependent.var(axis=0))
 
     @property
     def simulation_range(self):
@@ -123,7 +149,7 @@ class DynamicAnalysisDevice:
 
     @property
     def fourier_frequencies(self):
-        return np.fft.rfftfreq(self.sample_size, d=self.sample_spacing)
+        return np.fft.rfftfreq(self.sample_length, d=self.sample_spacing)
 
     @property
     def amplitude_spectra(self):
@@ -138,6 +164,14 @@ class DynamicAnalysisDevice:
 
     def amplitude_spectrum(self, index):
         return tuple(self.generate_amplitude_spectrum())[index]
+
+    def pair_distance_measurement(self):
+        data = self.output.dependent
+
+        def pair_diff(array):
+            return sum(abs(array[i + 1] - array[i]) for i in range(len(array) - 1))
+
+        return np.array([pair_diff(species) for species in data.T])
 
     @staticmethod
     def converge_points(upper_bound, lower_bound, relative_tolerance=1.e-5,

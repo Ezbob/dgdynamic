@@ -22,12 +22,42 @@ class SimulationOutput(LogMixin):
         self.solver_used = solved_by
         self.solver_method_used = solver_method
         self.requested_simulation_range = user_sim_range
+
         if independent is not None and len(independent) >= 2:
             self.simulation_duration = abs(independent[-1] - independent[0])
+        elif independent is not None and len(independent) == 1:
+            self.simulation_duration = independent[0]
+        else:
+            self.simulation_duration = 0.0
         self._ignored = tuple(item[1] for item in ignore)
         self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])
         self._file_writer_thread = None
         self.symbols = tuple(symbols) if isinstance(symbols, collections.Generator) else symbols
+
+    def has_sim_prematurely_stopped(self, rel_tol=1e-05, abs_tol=1e-08):
+        if len(self.independent) > 0:
+            return not numpy.isclose(self.independent[-1], self.requested_simulation_range[1],
+                                     rtol=rel_tol, atol=abs_tol)
+        else:
+            return self.requested_simulation_range[1] != 0
+
+    def is_data_equally_spaced(self, rel_tol=1e-05, abs_tol=1e-08):
+        delta_t = 0
+        time_vals = self.independent
+        if len(time_vals) >= 2:
+            delta_t = abs(time_vals[1] - time_vals[0])
+        for i in range(1, len(time_vals)):
+            curr_t = time_vals[i]
+            if i < len(time_vals) - 1:
+                next_t = time_vals[i + 1]
+                curr_dt = abs(next_t - curr_t)
+                if not numpy.isclose(curr_dt, delta_t, rtol=rel_tol, atol=abs_tol):
+                    return False
+        return True
+
+    @property
+    def is_output_set(self):
+        return False
 
     @property
     def has_errors(self):
@@ -209,6 +239,10 @@ class SimulationOutputSet(LogMixin):
             raise TypeError("Expected an iterable collection of file names; got {}"
                             .format(type(filename)))
         return self
+
+    @property
+    def is_output_set(self):
+        return True
 
     @property
     def filtered_output(self):

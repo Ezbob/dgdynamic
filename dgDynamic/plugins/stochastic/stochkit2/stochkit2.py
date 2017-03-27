@@ -157,7 +157,8 @@ class StochKit2Stochastic(StochasticPlugin):
 
                 if process.returncode != 0:
                     # Error in process execution
-                    exception = util_exceptions.SimulationError("Error in simulation: {}".format(process.stdout))
+                    exception = util_exceptions.SimulationError("Error in simulation: {}".format(process.stdout
+                                                                                                 .readlines()))
                     messages.print_solver_done(name, self.method.name, was_failure=True)
                     return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
                                             solver_method=self.method, errors=(exception,))
@@ -169,18 +170,23 @@ class StochKit2Stochastic(StochasticPlugin):
                 # Partial trajectories
                 with open(path.join(model_home_dir, 'log.txt')) as log:
                     log_message = log.readlines()
-                    self.logger.warn(log_message)
+                    if settings.logging_is_enabled():
+                        self.logger.warn(log_message)
                     if len(trajectory_paths) == 0:
                         messages.print_solver_done(name, self.method.name, True)
                         return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
                                                 solver_method=self.method, errors=(util_exceptions
                                                                                    .SimulationError("Simulation ended "
-                                                                                                    "with no output")))
+                                                                                                    "with no output"),))
                     else:
                         messages.print_solver_done(name, self.method.name, True)
                         return SimulationOutputSet(collect_multiple_output(trajectory_paths, errors=(util_exceptions
                                                                                                      .SimulationError(
                                                                                                       log_message),),))
+            elif self.trajectories == 1:
+                # Only one trajectory was requested so don't pack to set
+                messages.print_solver_done(name, self.method.name)
+                return list(collect_multiple_output(trajectory_paths))[0]
             else:
                 # We got all the trajectories!
                 messages.print_solver_done(name, self.method.name)

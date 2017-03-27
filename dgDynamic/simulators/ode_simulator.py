@@ -21,7 +21,7 @@ class ODESystem(DynamicSimulator):
     def get_plugin_from_enum(self, enum_variable, *args, **kwargs):
         for enum_var, plugin_class in PLUGINS_TAB['ode'].items():
             if enum_var == enum_variable:
-                return plugin_class(self, *args, **kwargs)
+                return plugin_class(self, *args, **kwargs) if plugin_class is not None else None
 
     def get_plugin(self, plugin_name: Union[str, SupportedOdePlugins], *args, **kwargs):
         if isinstance(plugin_name, str):
