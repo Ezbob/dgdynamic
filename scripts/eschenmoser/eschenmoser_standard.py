@@ -298,9 +298,10 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
 
     if do_plot and not out.has_sim_prematurely_stopped():
         dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-        title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {})"\
+        title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {}, pd: {})"\
             .format(out.solver_used.name, method, run_number + 1, runs, max(np.sqrt(variance_measurement)),
-                    max(fourier_amplitude_measurement), max(fourier_frequency_measurement))
+                    max(fourier_amplitude_measurement), max(fourier_frequency_measurement),
+                    max(pair_diff))
 
         image_path = os.path.join(output_dir, "eschenmoser_{}_{}_plot{}_{}_{}.png".format(plugin_name, method_name,
                                                                                           run_number + 1, runs, dt))
@@ -308,10 +309,10 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
 
     if out.has_sim_prematurely_stopped():
         dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-        title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {}), aborted at ({}, {})" \
+        title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {}, pair_diff: {}), aborted at ({}, {})" \
             .format(out.solver_used.name, method, run_number + 1, runs, max(np.sqrt(variance_measurement)),
-                    max(fourier_amplitude_measurement), max(fourier_frequency_measurement), out.independent[-1],
-                    out.dependent[-1])
+                    max(fourier_amplitude_measurement), max(fourier_frequency_measurement),
+                    max(pair_diff), out.independent[-1], out.dependent[-1])
 
         image_path = os.path.join(output_dir, "aborted_eschenmoser_{}_{}_plot{}_{}_{}.png".format(
             plugin_name, method_name, run_number + 1, runs, dt))
