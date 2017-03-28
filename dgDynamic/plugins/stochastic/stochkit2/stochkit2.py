@@ -157,8 +157,7 @@ class StochKit2Stochastic(StochasticPlugin):
 
                 if process.returncode != 0:
                     # Error in process execution
-                    exception = util_exceptions.SimulationError("Error in simulation: {}".format(process.stdout
-                                                                                                 .readlines()))
+                    exception = util_exceptions.SimulationError("Error in simulation: {}".format(output.decode()))
                     messages.print_solver_done(name, self.method.name, was_failure=True)
                     return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
                                             solver_method=self.method, errors=(exception,))

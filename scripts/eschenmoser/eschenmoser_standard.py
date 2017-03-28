@@ -259,6 +259,8 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
 
     out = plugin(sim_range, initial_conditions, params, drain_params)
 
+    assert out is not None, "Output from run {} was None".format(run_number)
+
     if out.has_errors and len(out.dependent) == len(out.independent) == 0:
         warnings.warn("Simulation Error encountered using plugin: {}".format(plugin_name))
         raise SimulationError(*[m for err in out.errors for m in err.args])
@@ -335,6 +337,10 @@ def main():
         'stochkit2': stochastic('stochkit2'),
         'spim': stochastic("spim")
     }
+
+    for p_n, plugin in plugins.items():
+        assert plugin is not None, "Plugin {} was not initialized.".format(p_n)
+
     try:
         for index, parm in enumerate(parameter_matrix):
             print("--- Run {} ---".format(index + 1))
