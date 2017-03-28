@@ -42,10 +42,8 @@ if __name__ == '__main__':
             def _post_install():
                 def find_module_path():
                     for p in sys.path:
-                        if os.path.isdir(p):
-                            for f in os.listdir(p):
-                                if f == my_name:
-                                    return os.path.join(p, f)
+                        if os.path.isdir(p) and my_name in os.listdir(p):
+                            return os.path.join(p, my_name)
                 install_path = find_module_path()
                 os.system("tar --extract --file " +
                           os.path.join(install_path, "plugins/stochastic/stochkit2/stochkit.tar.gz"))
