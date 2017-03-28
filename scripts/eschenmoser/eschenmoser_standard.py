@@ -7,6 +7,7 @@ Reversible reactions are also split into a "->"-reaction and a "<-"-reaction in 
 from dgDynamic import dgDynamicSim, HyperGraph
 from dgDynamic.analytics import DynamicAnalysisDevice
 from dgDynamic.utils.exceptions import SimulationError
+import matplotlib.pyplot as plt
 import random
 import enum
 import csv
@@ -308,6 +309,7 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
         image_path = os.path.join(output_dir, "eschenmoser_{}_{}_plot{}_{}_{}.png".format(plugin_name, method_name,
                                                                                           run_number + 1, runs, dt))
         out.plot(filename=image_path, figure_size=(46, 24), title=title)
+        plt.close('all')  # we don't need to show the figures
 
     if out.has_sim_prematurely_stopped():
         dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
@@ -319,6 +321,7 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
         image_path = os.path.join(output_dir, "aborted_eschenmoser_{}_{}_plot{}_{}_{}.png".format(
             plugin_name, method_name, run_number + 1, runs, dt))
         out.plot(filename=image_path, figure_size=(46, 24), title=title)
+        plt.close('all')
 
     measurement_output['n_sample'].append(n_sample_points)
     measurement_output['end_t'].append(sim_end)
