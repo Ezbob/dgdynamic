@@ -18,6 +18,13 @@ if __name__ == '__main__':
         'dgDynamic/plugins/ode/matlab',
         'dgDynamic/plugins/ode/scipy'
     ]
+
+    extras = [
+        'default_config.ini',
+        'spim.ocaml',
+        'stochkit.tar.gz'
+    ]
+
     p_dict_dir = {
         ".".join(p_name.split('/')): p_name
         for p_name in package_dirs
@@ -32,6 +39,7 @@ if __name__ == '__main__':
         author_email='andersbusch@gmail.com',
         license='MIT',
         package_dir=p_dict_dir,
+        package_data={'': extras},
         packages=list(p_dict_dir.keys()),
         install_requires=[
             'scipy>=0.18.1',
