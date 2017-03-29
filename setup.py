@@ -2,6 +2,7 @@ from setuptools import setup
 from setuptools.command.install import install
 import os
 import sys
+import tarfile
 import atexit
 
 if __name__ == '__main__':
@@ -37,14 +38,12 @@ if __name__ == '__main__':
                         if os.path.isdir(p) and package_name in os.listdir(p):
                             return os.path.join(p, package_name)
                 install_path = find_module_path()
-                print("I was installed here", install_path)
-                print("print me baby")
-                os.listdir(install_path)
-                print("yeah!")
-                os.system("tar --extract --file " +
-                          os.path.join(install_path, "plugins/stochastic/stochkit2/stochkit.tar.gz"))
-                os.system("cd " + os.path.join(install_path, "plugins/stochastic/stochkit2/StochKit/") +
-                          "&& ./install.sh")
+                stochkit2_plugin_path = os.path.join(install_path, "plugins/stochastic/stochkit2/")
+                stochkit2_tar_path = os.path.join(stochkit2_plugin_path, "stochkit.tar.gz")
+                stochkit2_installer_path = os.path.join(stochkit2_plugin_path, "StochKit")
+
+                os.system("tar xvzf " + stochkit2_tar_path + " -C " + stochkit2_plugin_path)
+                os.system("cd " + stochkit2_installer_path + " && ./install.sh")
 
             atexit.register(_post_install)
 
