@@ -5,14 +5,14 @@ import os
 import os.path
 import subprocess
 import tempfile
-import dgDynamic.plugins.stochastic.spim.spim_converter as converters
-import dgDynamic.utils.messages as messages
+import dgdynamic.plugins.stochastic.spim.spim_converter as converters
+import dgdynamic.utils.messages as messages
 from collections import OrderedDict
-from dgDynamic.choices import SupportedStochasticPlugins
-from dgDynamic.config.settings import config, logging_is_enabled
-from dgDynamic.output import SimulationOutput
-from dgDynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
-from dgDynamic.utils.exceptions import SimulationError
+from dgdynamic.choices import SupportedStochasticPlugins
+from dgdynamic.config.settings import config, logging_is_enabled
+from dgdynamic.output import SimulationOutput
+from dgdynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
+from dgdynamic.utils.exceptions import SimulationError
 
 name = SupportedStochasticPlugins.SPiM
 
@@ -56,7 +56,7 @@ class SpimStochastic(StochasticPlugin):
                                                                  initial_conditions=initial_conditions))
 
     def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None,
-                 timeout=None, rel_tol=None, abs_tol=None) -> SimulationOutput:
+                 timeout=None, rel_tol=None, abs_tol=None):
 
         if rate_parameters is None or initial_conditions is None:
             raise ValueError("Missing parameters or initial values")

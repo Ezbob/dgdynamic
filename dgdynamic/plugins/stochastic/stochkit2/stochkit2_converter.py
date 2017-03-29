@@ -1,7 +1,7 @@
 import io
-import dgDynamic.base_converters.convert_base as base
-from dgDynamic.config.settings import config
-from dgDynamic.utils.exceptions import ModelError
+import dgdynamic.base_converters.convert_base as base
+from dgdynamic.config.settings import config
+from dgdynamic.utils.exceptions import ModelError
 
 INDENT_SPACES = 4
 

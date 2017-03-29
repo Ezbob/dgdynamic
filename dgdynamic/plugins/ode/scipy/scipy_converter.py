@@ -1,5 +1,5 @@
-from dgDynamic.base_converters.ode.converter_ode import substitute, join_parameter_maps
-from dgDynamic.base_converters.convert_base import get_edge_rate_dict, get_drain_rate_dict
+from dgdynamic.base_converters.ode.converter_ode import substitute, join_parameter_maps
+from dgdynamic.base_converters.convert_base import get_edge_rate_dict, get_drain_rate_dict
 
 
 def get_scipy_lambda(simulator: 'ODESystem', parameter_substitutions, drain_substitutions):

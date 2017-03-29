@@ -1,15 +1,15 @@
 import sys
 import enum
 import scipy.integrate
-import dgDynamic.utils.messages as messages
-from dgDynamic.choices import ScipyOdeSolvers, SupportedOdePlugins
-from dgDynamic.config.settings import config
-from dgDynamic.base_converters.convert_base import get_initial_values
-from dgDynamic.output import SimulationOutput
-from dgDynamic.plugins.ode.ode_plugin import OdePlugin
-from dgDynamic.plugins.ode.scipy.scipy_converter import get_scipy_lambda
-from dgDynamic.utils.exceptions import SimulationError
-from dgDynamic.utils.project_utils import LogMixin
+import dgdynamic.utils.messages as messages
+from dgdynamic.choices import ScipyOdeSolvers, SupportedOdePlugins
+from dgdynamic.config.settings import config
+from dgdynamic.base_converters.convert_base import get_initial_values
+from dgdynamic.output import SimulationOutput
+from dgdynamic.plugins.ode.ode_plugin import OdePlugin
+from dgdynamic.plugins.ode.scipy.scipy_converter import get_scipy_lambda
+from dgdynamic.utils.exceptions import SimulationError
+from dgdynamic.utils.project_utils import LogMixin
 
 name = SupportedOdePlugins.SciPy
 
@@ -21,8 +21,7 @@ class ScipyOde(OdePlugin, LogMixin):
     def __init__(self, simulator, method=ScipyOdeSolvers.VODE, delta_t=0.1, initial_t=0):
         super().__init__(simulator, delta_t=delta_t, initial_t=initial_t, integrator_mode=method)
 
-    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs) \
-            -> SimulationOutput:
+    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
         ode_function = get_scipy_lambda(self._simulator, rate_parameters, drain_parameters)
 
         if not ode_function:

@@ -2,7 +2,6 @@ from setuptools import setup
 from setuptools.command.install import install
 import os
 import sys
-import tarfile
 import atexit
 
 if __name__ == '__main__':

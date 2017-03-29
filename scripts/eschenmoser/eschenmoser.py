@@ -1,6 +1,6 @@
-from dgDynamic import dgDynamicSim, HyperGraph, show_plots, choices
+from dgdynamic import dgDynamicSim, HyperGraph, show_plots, choices
 import matplotlib.pyplot as plt
-from dgDynamic.analytics import DynamicAnalysisDevice
+from dgdynamic.analytics import DynamicAnalysisDevice
 import random
 import enum
 import csv

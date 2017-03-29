@@ -3,7 +3,7 @@ import scipy.signal as signal
 import scipy.interpolate as interpol
 import matplotlib.pyplot as plt
 import scipy.optimize as opt
-from dgDynamic.output import SimulationOutput, SimulationOutputSet
+from dgdynamic.output import SimulationOutput, SimulationOutputSet
 
 
 class DynamicAnalysisDevice:

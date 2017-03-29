@@ -1,9 +1,9 @@
 from io import StringIO
-from dgDynamic.base_converters.convert_base import get_edge_rate_dict, get_drain_rate_dict
+from dgdynamic.base_converters.convert_base import get_edge_rate_dict, get_drain_rate_dict
 
 
 def generate_preamble(sample_range, draw_automata=False, symbols_dict=None, species_count=0, ignored=None,
-                      float_precision=18) -> str:
+                      float_precision=18):
 
     with StringIO() as str_out:
         if isinstance(sample_range, (tuple, list, set)):
@@ -38,7 +38,7 @@ def generate_preamble(sample_range, draw_automata=False, symbols_dict=None, spec
 
 
 def generate_rates(derivation_graph, channel_dict, parameters=None, drain_parameters=None, internal_drains=None,
-                   float_precision=18) -> str:
+                   float_precision=18):
     edge_rate_dict = dict(get_edge_rate_dict(deviation_graph=derivation_graph, user_parameters=parameters))
     drain_rate_dict = dict(get_drain_rate_dict(internal_drains=internal_drains, user_drain_rates=drain_parameters))
 
@@ -58,7 +58,7 @@ def generate_rates(derivation_graph, channel_dict, parameters=None, drain_parame
         return str_out.getvalue()
 
 
-def generate_initial_values(symbols_dict, initial_conditions) -> str:
+def generate_initial_values(symbols_dict, initial_conditions):
 
     with StringIO() as str_out:
         str_out.write("run ( ")

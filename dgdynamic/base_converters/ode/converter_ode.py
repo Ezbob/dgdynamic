@@ -2,9 +2,8 @@
 This module contains stuff relevant for all converters
 """
 from io import StringIO
-from typing import Tuple
 from string import Template
-from dgDynamic.utils.project_utils import log_it
+from dgdynamic.utils.project_utils import log_it
 from itertools import chain
 
 
@@ -22,8 +21,8 @@ def join_parameter_maps(*maps):
 
 
 @log_it
-def substitute(generated_equations: Tuple[Tuple], substitution_map,
-               extra_symbols=DefaultFunctionSymbols(), postprocessor=None) -> str:
+def substitute(generated_equations, substitution_map,
+               extra_symbols=DefaultFunctionSymbols(), postprocessor=None):
     """
     This function is tasked with generating a function string from the SymPy description
     """

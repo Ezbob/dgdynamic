@@ -1,10 +1,9 @@
-import dgDynamic.choices as choices
+import dgdynamic.choices as choices
 from .mod_dynamics import dgDynamicSim, HyperGraph
-import typing as tp
 import enum
 
 
-def plugin_from_parameters(plugin_name: tp.Union[enum.Enum, str], rate_parameters: dict, *unchanging_species):
+def plugin_from_parameters(plugin_name, rate_parameters, *unchanging_species):
 
     if isinstance(plugin_name, str):
         if any(plugin_name.strip().lower() == member.name.lower() for member in choices.SupportedOdePlugins):

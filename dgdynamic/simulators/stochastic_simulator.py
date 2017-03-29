@@ -1,5 +1,5 @@
-from dgDynamic.choices import SupportedStochasticPlugins
-from dgDynamic.intermediate.intermediate_generators import generate_channels, generate_propensities
+from dgdynamic.choices import SupportedStochasticPlugins
+from dgdynamic.intermediate.intermediate_generators import generate_channels, generate_propensities
 from .simulator import DynamicSimulator
 from ..plugins.plugin_table import PLUGINS_TAB
 

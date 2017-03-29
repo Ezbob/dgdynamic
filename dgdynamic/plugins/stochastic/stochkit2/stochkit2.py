@@ -1,7 +1,7 @@
-from dgDynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
-from dgDynamic.choices import SupportedStochasticPlugins, StochKit2StochasticSolvers
+from dgdynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
+from dgdynamic.choices import SupportedStochasticPlugins, StochKit2StochasticSolvers
 from .stochkit2_converter import generate_model
-from dgDynamic.output import SimulationOutput, SimulationOutputSet
+from dgdynamic.output import SimulationOutput, SimulationOutputSet
 import enum
 import subprocess
 import re
@@ -9,10 +9,10 @@ import os
 import signal
 import array
 import tempfile
-import dgDynamic.utils.messages as messages
-import dgDynamic.config.settings as settings
+import dgdynamic.utils.messages as messages
+import dgdynamic.config.settings as settings
 import os.path as path
-import dgDynamic.utils.exceptions as util_exceptions
+import dgdynamic.utils.exceptions as util_exceptions
 
 name = SupportedStochasticPlugins.StochKit2
 this_dir = path.abspath(path.dirname(__file__))

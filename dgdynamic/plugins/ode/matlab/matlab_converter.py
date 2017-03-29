@@ -1,5 +1,5 @@
-from dgDynamic.base_converters.ode.converter_ode import DefaultFunctionSymbols, substitute, join_parameter_maps
-from dgDynamic.base_converters.convert_base import get_edge_rate_dict, get_drain_rate_dict
+from dgdynamic.base_converters.ode.converter_ode import DefaultFunctionSymbols, substitute, join_parameter_maps
+from dgdynamic.base_converters.convert_base import get_edge_rate_dict, get_drain_rate_dict
 
 
 class MatlabSymbols(DefaultFunctionSymbols):

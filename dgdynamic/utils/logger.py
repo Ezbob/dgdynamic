@@ -1,7 +1,7 @@
 import logging
 import os
 import shutil
-from dgDynamic.config.settings import config
+from dgdynamic.config.settings import config
 
 
 def _set_logging():

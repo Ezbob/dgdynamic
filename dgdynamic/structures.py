@@ -1,5 +1,5 @@
-from dgDynamic.utils.project_utils import LogMixin
-from dgDynamic.base_converters.reaction_parser import hyper_edge_to_string
+from dgdynamic.utils.project_utils import LogMixin
+from dgdynamic.base_converters.reaction_parser import hyper_edge_to_string
 import mod
 
 

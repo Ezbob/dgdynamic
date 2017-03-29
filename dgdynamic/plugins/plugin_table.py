@@ -1,4 +1,4 @@
-from dgDynamic.choices import SupportedStochasticPlugins, SupportedOdePlugins
+from dgdynamic.choices import SupportedStochasticPlugins, SupportedOdePlugins
 import importlib
 import warnings
 

@@ -4,14 +4,14 @@
 import sys
 import enum
 import matlab.engine
-import dgDynamic.utils.messages as messages
-from dgDynamic.choices import MatlabOdeSolvers, SupportedOdePlugins
-from dgDynamic.base_converters.convert_base import get_initial_values
-from dgDynamic.output import SimulationOutput
-from dgDynamic.plugins.ode.matlab.matlab_converter import get_matlab_lambda
-from dgDynamic.plugins.ode.ode_plugin import OdePlugin
-from dgDynamic.utils.exceptions import SimulationError
-from dgDynamic.utils.project_utils import LogMixin
+import dgdynamic.utils.messages as messages
+from dgdynamic.choices import MatlabOdeSolvers, SupportedOdePlugins
+from dgdynamic.base_converters.convert_base import get_initial_values
+from dgdynamic.output import SimulationOutput
+from dgdynamic.plugins.ode.matlab.matlab_converter import get_matlab_lambda
+from dgdynamic.plugins.ode.ode_plugin import OdePlugin
+from dgdynamic.utils.exceptions import SimulationError
+from dgdynamic.utils.project_utils import LogMixin
 
 name = SupportedOdePlugins.MATLAB
 
@@ -31,8 +31,7 @@ class MatlabOde(OdePlugin, LogMixin):
         self.clear_workspace()
         self.engine.exit()
 
-    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs) \
-            -> SimulationOutput:
+    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
         ode_function = get_matlab_lambda(simulator=self._simulator, parameter_substitutions=rate_parameters,
                                          drain_substitutions=drain_parameters)
 

@@ -1,6 +1,6 @@
-from dgDynamic.utils.project_utils import LogMixin, make_directory
-from dgDynamic.config.settings import config
-from dgDynamic.utils.plotter import matplotlib_plot
+from dgdynamic.utils.project_utils import LogMixin, make_directory
+from dgdynamic.config.settings import config
+from dgdynamic.utils.plotter import matplotlib_plot
 import threading
 import time
 import csv

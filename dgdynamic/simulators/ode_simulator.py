@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from ..intermediate.intermediate_generators import generate_rate_laws, generate_rate_equations
-from typing import Union
-from dgDynamic.choices import SupportedOdePlugins
+from dgdynamic.choices import SupportedOdePlugins
 from .simulator import DynamicSimulator
 from ..utils.exceptions import SimulationError
 from ..plugins.plugin_table import PLUGINS_TAB
@@ -23,7 +22,7 @@ class ODESystem(DynamicSimulator):
             if enum_var == enum_variable:
                 return plugin_class(self, *args, **kwargs) if plugin_class is not None else None
 
-    def get_plugin(self, plugin_name: Union[str, SupportedOdePlugins], *args, **kwargs):
+    def get_plugin(self, plugin_name, *args, **kwargs):
         if isinstance(plugin_name, str):
             for plugin in SupportedOdePlugins:
                 if plugin.value.strip().lower() == plugin_name.strip().lower():

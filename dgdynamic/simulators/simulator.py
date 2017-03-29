@@ -1,7 +1,6 @@
 import abc
-from typing import Tuple
 from ..base_converters.reaction_parser import abstract_mod_parser
-from dgDynamic.utils.project_utils import LogMixin
+from dgdynamic.utils.project_utils import LogMixin
 from ..intermediate.intermediate_generators import generate_rate_laws, generate_rate_equations
 from collections import OrderedDict
 
@@ -52,7 +51,7 @@ class DynamicSimulator(abc.ABC, LogMixin):
             target_stoichiometrics[v.graph.name] = targets.count(v)
         return source_stoiciometrics, target_stoichiometrics
 
-    def parse_abstract_reaction(self, reaction: str) -> Tuple:
+    def parse_abstract_reaction(self, reaction):
         return abstract_mod_parser(self, reaction)
 
     def __call__(self, plugins, *args, **kwargs):

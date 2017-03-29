@@ -1,13 +1,11 @@
 from ..utils.exceptions import InitialValueError
-from typing import Union, Optional, Generator, Tuple
 from .reaction_parser import abstract_mod_parser
 from ..utils.project_utils import log_it
-import dgDynamic.utils.typehints as th
 
 
 @log_it
-def get_edge_rate_dict(deviation_graph: th.MødDeviationGraph, user_parameters: dict,
-                       internal_parameters_map: Optional[dict]=None):
+def get_edge_rate_dict(deviation_graph, user_parameters: dict,
+                       internal_parameters_map=None):
     """
     Get a dictionary with edge.ids as keys and their associated rates as values
     :param deviation_graph:
@@ -73,7 +71,7 @@ def get_edge_rate_dict(deviation_graph: th.MødDeviationGraph, user_parameters: 
 
 
 @log_it
-def get_drain_rate_dict(internal_drains: dict, user_drain_rates: dict):
+def get_drain_rate_dict(internal_drains, user_drain_rates):
     """
     Sanitize the user drain input with this function
     :param internal_drains: from the simulator maps species symbol to drain symbols that needs to replaced
@@ -132,7 +130,7 @@ def get_drain_rate_dict(internal_drains: dict, user_drain_rates: dict):
 
 
 @log_it
-def get_initial_values(initial_conditions, symbols) -> Union[set, tuple, list]:
+def get_initial_values(initial_conditions, symbols):
     if isinstance(initial_conditions, (tuple, set, list)):
         return initial_conditions
     elif isinstance(initial_conditions, dict):
