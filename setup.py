@@ -6,24 +6,17 @@ import atexit
 
 if __name__ == '__main__':
 
-    my_name = 'dgDynamic'
-
-    package_dirs = [
-        'dgDynamic',
-        'dgDynamic/intermediate',
-        'dgDynamic/base_converters',
-        'dgDynamic/base_converters/ode',
-        'dgDynamic/utils',
-        'dgDynamic/config',
-        'dgDynamic/simulators',
-        'dgDynamic/plugins',
-        'dgDynamic/plugins/stochastic',
-        'dgDynamic/plugins/stochastic/stochkit2',
-        'dgDynamic/plugins/stochastic/spim',
-        'dgDynamic/plugins/ode',
-        'dgDynamic/plugins/ode/matlab',
-        'dgDynamic/plugins/ode/scipy'
+    package_name = 'dgdynamic'
+    excludes = [
+        '__pycache__',
+        'StochKit'
     ]
+
+    def find_package_dirs(package_dir_path, excludes):
+        return [path for path, dirs, files in os.walk(package_dir_path)
+                if not any(exclude_name in path for exclude_name in excludes)]
+
+    package_dirs = find_package_dirs(package_name, excludes)
 
     extras = [
         'default_config.ini',
@@ -41,9 +34,13 @@ if __name__ == '__main__':
             def _post_install():
                 def find_module_path():
                     for p in sys.path:
-                        if os.path.isdir(p) and my_name in os.listdir(p):
-                            return os.path.join(p, my_name)
+                        if os.path.isdir(p) and package_name in os.listdir(p):
+                            return os.path.join(p, package_name)
                 install_path = find_module_path()
+                print("I was installed here", install_path)
+                print("print me baby")
+                os.listdir(install_path)
+                print("yeah!")
                 os.system("tar --extract --file " +
                           os.path.join(install_path, "plugins/stochastic/stochkit2/stochkit.tar.gz"))
                 os.system("cd " + os.path.join(install_path, "plugins/stochastic/stochkit2/StochKit/") +
@@ -55,7 +52,7 @@ if __name__ == '__main__':
 
     setup(
         cmdclass={'install': CustomInstall},
-        name='dgdynamic',
+        name=package_name,
         version='0.5.2',
         description='Dynamic simulation library for the MØD graph transformation framework',
         url='https://bitbucket.org/Ezben/dgdynamic',

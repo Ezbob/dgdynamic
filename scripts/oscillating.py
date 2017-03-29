@@ -1,5 +1,5 @@
-from dgDynamic.choices import SupportedOdePlugins, MatlabOdeSolvers, ScipyOdeSolvers, SupportedStochasticPlugins
-from dgDynamic.mod_dynamics import dgDynamicSim, show_plots, HyperGraph
+from dgdynamic.choices import SupportedOdePlugins, MatlabOdeSolvers, ScipyOdeSolvers, SupportedStochasticPlugins
+from dgdynamic.mod_dynamics import dgDynamicSim, show_plots, HyperGraph
 
 
 dg = HyperGraph.from_abstract(

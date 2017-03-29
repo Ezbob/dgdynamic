@@ -1,5 +1,5 @@
-from dgDynamic import dgDynamicSim, show_plots
-from dgDynamic.structures import HyperGraph
+from dgdynamic import dgDynamicSim, show_plots
+from dgdynamic.structures import HyperGraph
 
 include("grammar.py")
 

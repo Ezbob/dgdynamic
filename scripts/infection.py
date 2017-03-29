@@ -5,8 +5,8 @@ This model, models the relationship between the
 The recovered becomes immune to the infected once they recover,
 and the model starts out with some infected.
 """
-from dgDynamic import dgDynamicSim, show_plots, HyperGraph
-from dgDynamic.choices import MatlabOdeSolvers
+from dgdynamic import dgDynamicSim, show_plots, HyperGraph
+from dgdynamic.choices import MatlabOdeSolvers
 import numpy
 
 susceptible_infected = "S + I -> 2 I"

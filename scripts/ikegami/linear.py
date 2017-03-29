@@ -6,8 +6,8 @@ See Section: "The linear case: self-origanisation of first-order autocatalysis"
 import mod
 import numpy
 
-from dgDynamic.mod_dynamics import dgDynamicSim, HyperGraph, show_plots
-from dgDynamic.choices import ScipyOdeSolvers
+from dgdynamic.mod_dynamics import dgDynamicSim, HyperGraph, show_plots
+from dgdynamic.choices import ScipyOdeSolvers
 
 root_symbol = 'A'
 species_limit = 10

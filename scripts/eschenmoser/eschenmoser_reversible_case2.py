@@ -3,9 +3,9 @@ Case 2: Continued on the hyper cycle definition from case 1, we here try some di
 This means that we take a reaction from each of the hyper cycles and make the backward reaction dependent on a fraction
 of the forward reaction. This should add a sense of flow direction to the two hyper cycles.
 """
-from dgDynamic import dgDynamicSim, HyperGraph
-from dgDynamic.analytics import DynamicAnalysisDevice
-from dgDynamic.utils.exceptions import SimulationError
+from dgdynamic import dgDynamicSim, HyperGraph
+from dgdynamic.analytics import DynamicAnalysisDevice
+from dgdynamic.utils.exceptions import SimulationError
 import matplotlib.pyplot as plt
 import random
 import enum

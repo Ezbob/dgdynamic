@@ -3,9 +3,9 @@ Case 1: The original Eschenmöser hyper cycles, from case 0, has been modified t
 hyper cycle reactions. Rates for the reversible reactions has been randomly generated, and each reaction direction has
 its own independently generated rate. Initial hypothesis for this reaction network is that it will not oscillate.
 """
-from dgDynamic import dgDynamicSim, HyperGraph
-from dgDynamic.analytics import DynamicAnalysisDevice
-from dgDynamic.utils.exceptions import SimulationError
+from dgdynamic import dgDynamicSim, HyperGraph
+from dgdynamic.analytics import DynamicAnalysisDevice
+from dgdynamic.utils.exceptions import SimulationError
 import matplotlib.pyplot as plt
 import random
 import enum

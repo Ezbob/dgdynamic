@@ -5,8 +5,8 @@ Numerically solving non-linear case as described in the Ikegami et.al. paper
 import mod
 import numpy
 
-from dgDynamic.mod_dynamics import dgDynamicSim, show_plots
-from dgDynamic.choices import MatlabOdeSolvers, ScipyOdeSolvers
+from dgdynamic.mod_dynamics import dgDynamicSim, show_plots
+from dgdynamic.choices import MatlabOdeSolvers, ScipyOdeSolvers
 
 root_symbol = 'A'
 species_limit = 60

@@ -1,7 +1,7 @@
 import mod
 
-from dgDynamic.choices import SupportedOdePlugins, MatlabOdeSolvers, ScipyOdeSolvers, SupportedStochasticPlugins
-from dgDynamic.mod_dynamics import dgDynamicSim, show_plots, HyperGraph
+from dgdynamic.choices import SupportedOdePlugins, MatlabOdeSolvers, ScipyOdeSolvers, SupportedStochasticPlugins
+from dgdynamic.mod_dynamics import dgDynamicSim, show_plots, HyperGraph
 
 # Enable logging when uncommented
 # set_logging(new_session=True)

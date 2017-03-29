@@ -4,9 +4,9 @@ This is more or less a copy of the eschenmoser reversible script with the origin
 Reactions rate generation has been modified to generate the same rate in both directions for reversible reactions.
 Reversible reactions are also split into a "->"-reaction and a "<-"-reaction in the output file.
 """
-from dgDynamic import dgDynamicSim, HyperGraph
-from dgDynamic.analytics import DynamicAnalysisDevice
-from dgDynamic.utils.exceptions import SimulationError
+from dgdynamic import dgDynamicSim, HyperGraph
+from dgdynamic.analytics import DynamicAnalysisDevice
+from dgdynamic.utils.exceptions import SimulationError
 import matplotlib.pyplot as plt
 import random
 import enum
