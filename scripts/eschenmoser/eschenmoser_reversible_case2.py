@@ -1,7 +1,7 @@
 """
-Case 1: The original Eschenmöser hyper cycles, from case 0, has been modified to have reversible reactions in all
-hyper cycle reactions. Rates for the reversible reactions has been randomly generated, and each reaction direction has
-its own independently generated rate. Initial hypothesis for this reaction network is that it will not oscillate.
+Case 2: Continued on the hyper cycle definition from case 1, we here try some direction to each of the hyper cycles.
+This means that we take a reaction from each of the hyper cycles and make the backward reaction dependent on a fraction
+of the forward reaction. This should add a sense of flow direction to the two hyper cycles.
 """
 from dgDynamic import dgDynamicSim, HyperGraph
 from dgDynamic.analytics import DynamicAnalysisDevice
@@ -16,6 +16,7 @@ import argparse
 import numpy as np
 import warnings
 
+# TODO actually do what we write in the introduction doc
 
 def argument_handler():
     """Parses CLI arguments for the script"""
