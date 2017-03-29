@@ -5,7 +5,7 @@ import warnings
 
 def tab_init(d):
     table = {}
-    plugin_common_prefix = 'dgDynamic.plugins'
+    plugin_common_prefix = 'dgdynamic.plugins'
     for mode, plugin_dict in d.items():
         table[mode] = {}
         plugin_mode_prefix = plugin_common_prefix + '.' + mode
