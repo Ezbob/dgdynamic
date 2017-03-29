@@ -145,9 +145,11 @@ stochastic = dgDynamicSim(dg, 'stochastic')
 
 for sym in ode.symbols:
     if sym not in drain_params:
-        drain_params[sym] = {'out': {
-            'factor': 0.0001
-        }}
+        drain_params[sym] = {
+            'out': {
+                'factor': 0.0001
+            }
+        }
 
 sim_end_time = 60000
 stoch_sim_range = (sim_end_time, sim_end_time)
