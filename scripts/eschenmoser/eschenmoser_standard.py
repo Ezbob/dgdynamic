@@ -342,9 +342,6 @@ def main():
         'spim': stochastic("spim")
     }
 
-    for p_n, plugin in plugins.items():
-        assert plugin is not None, "Plugin {} was not initialized.".format(p_n)
-
     try:
         for index, parm in enumerate(parameter_matrix):
             print("--- Run {} ---".format(index + 1))

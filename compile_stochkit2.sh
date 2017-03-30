@@ -2,7 +2,7 @@
 
 CUR_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
-cd $CUR_DIR/dgDynamic/plugins/stochastic/stochkit2/ 
+cd $CUR_DIR/dgdynamic/plugins/stochastic/stochkit2/
 
 echo "Extracting StochKit2"
 tar --extract --verbose --file stochkit.tar.gz
