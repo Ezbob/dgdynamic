@@ -274,25 +274,22 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     print("Stop prematurely?", out.has_sim_prematurely_stopped())
 
     freqs = analytics.fourier_frequencies
-    if freqs[0] == 0.0:
-        # cutting off the zero frequency since this is the DC component (mean offset)
-        freqs = freqs[1:]
-    print("Frequency bins: {}".format(len(freqs) + 1))
+    amp_spec = analytics.amplitude_spectra
+
+    print("Frequency bins: {}".format(len(freqs)))
+    freqs, amp_spec = analytics.cutoff_dc_component(freqs, amp_spec)
 
     variance_measurement = np.array([data.var() for data in out.dependent.T])
     print("Variance measurements: {}".format(variance_measurement))
     pair_diff = analytics.pair_distance_measurement()
     print("Pair distance measurements: {}".format(pair_diff))
-    amp_spec = analytics.amplitude_spectra
     fourier_amplitude_measurement = np.array([], dtype=float)
     fourier_frequency_measurement = np.array([], dtype=float)
 
     for i in range(ode.species_count):
-        max_amplitude, max_frequency = analytics.bounded_fourier_species_maxima(amp_spec, i, period_bounds[0],
-                                                                                period_bounds[1], freqs,
-                                                                                with_max_frequency=True)
-        fourier_amplitude_measurement = np.append(fourier_amplitude_measurement, max_amplitude)
-        fourier_frequency_measurement = np.append(fourier_frequency_measurement, max_frequency)
+        arg_max_fourier = amp_spec[i].argmax()
+        fourier_amplitude_measurement = np.append(fourier_amplitude_measurement, amp_spec[i, arg_max_fourier])
+        fourier_frequency_measurement = np.append(fourier_frequency_measurement, freqs[arg_max_fourier])
 
     assert len(fourier_amplitude_measurement) == len(fourier_frequency_measurement)
     assert len(fourier_amplitude_measurement) == len(variance_measurement)
@@ -306,9 +303,13 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
                     max(fourier_amplitude_measurement), max(fourier_frequency_measurement),
                     max(pair_diff))
 
-        image_path = os.path.join(output_dir, "eschenmoser_{}_{}_plot{}_{}_{}.png".format(plugin_name, method_name,
-                                                                                          run_number + 1, runs, dt))
+        image_path = os.path.join(output_dir, "eschenmoser_{}_{}_plot{}_{}_{}.png"
+                                  .format(plugin_name, method_name, run_number + 1, runs, dt))
         out.plot(filename=image_path, figure_size=(46, 24), title=title)
+
+        image_path = os.path.join(output_dir, "eschenmoser_fourier_{}_{}_plot{}_{}_{}.png"
+                                  .format(plugin_name, method_name, run_number + 1, runs, dt))
+        analytics.plot_spectra(amp_spec, freqs, title=title, filename=image_path, figure_size=(46, 24))
         plt.close('all')  # we don't need to show the figures
 
     if out.has_sim_prematurely_stopped():

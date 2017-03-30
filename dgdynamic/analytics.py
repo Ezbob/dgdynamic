@@ -159,6 +159,17 @@ class DynamicAnalysisDevice:
     def power_spectra(self):
         return np.asanyarray(tuple(self.generate_power_spectrum()), dtype=float)
 
+    @staticmethod
+    def cutoff_dc_component(frequencies, spectra_data):
+        if frequencies[0] == 0.0:
+            # Cutting off the zero frequency since this is the DC component (mean offset)
+            res_frequencies = frequencies[1:]
+            # This equate to cutting the first column off
+            res_amp_spec = spectra_data[:, 1:]
+            assert res_frequencies.shape[0] == res_amp_spec.shape[1], "Something went wrong in the cutoff"
+            return res_frequencies, res_amp_spec
+        return frequencies, spectra_data
+
     def power_spectrum(self, index):
         return tuple(self.generate_power_spectrum())[index]
 
@@ -220,7 +231,7 @@ class DynamicAnalysisDevice:
             self.function_intersection(maxima_interpolation, minima_interpolation)
 
     def plot_spectrum(self, spectrum_data, frequencies, label=None, include_maxima=False, include_maximum=False,
-                      is_power_spectra=False, new_figure=True):
+                      is_power_spectra=False, new_figure=True, figure_size=None):
         if new_figure:
             plt.figure()
         plt.grid()
@@ -229,6 +240,15 @@ class DynamicAnalysisDevice:
         else:
             plt.ylabel("amplitude")
         plt.xlabel("frequencies")
+
+        if figure_size is not None:
+            assert hasattr(figure_size, "__len__") and len(figure_size) >= 2, \
+                "Figure size most be a collection of two elements"
+
+            def cm2inch(number): return number / 2.54
+            fig = plt.gcf()
+            fig.set_size_inches(cm2inch(figure_size[0]), cm2inch(figure_size[1]), forward=True)
+
         plt.plot(frequencies, spectrum_data, marker='o', label=label)
 
         if include_maxima:
@@ -240,10 +260,14 @@ class DynamicAnalysisDevice:
         plt.legend()
 
     def plot_spectra(self, spectra_data, frequencies, include_maxima=False, include_maximum=False,
-                     is_power_spectra=False):
+                     is_power_spectra=False, title=None, filename=None, figure_size=None):
         plt.figure()
         plt.grid()
+        plt.title(title)
         for data, label in zip(spectra_data, self.output.symbols):
             self.plot_spectrum(data, frequencies, label=label, include_maximum=include_maximum,
-                               include_maxima=include_maxima, is_power_spectra=is_power_spectra, new_figure=False)
+                               include_maxima=include_maxima, is_power_spectra=is_power_spectra,
+                               new_figure=False, figure_size=figure_size)
         plt.legend()
+        if filename is not None:
+            plt.savefig(filename)
