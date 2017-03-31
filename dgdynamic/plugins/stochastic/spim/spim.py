@@ -59,6 +59,11 @@ class SpimStochastic(StochasticPlugin):
     def simulate(self, end_t, initial_conditions, rate_parameters, drain_parameters=None,
                  timeout=None, rel_tol=None, abs_tol=None):
 
+        self.logger.info("Starting on SPiM simulation")
+        self.logger.info("End_t: {} resolution: {}".format(end_t, self.resolution))
+        self.logger.info("Initial conditions: {}".format(initial_conditions))
+        self.logger.info("Rates: {}".format(rate_parameters))
+        self.logger.info("Drains: {}".format(drain_parameters))
         if rate_parameters is None or initial_conditions is None:
             raise ValueError("Missing parameters or initial values")
 
