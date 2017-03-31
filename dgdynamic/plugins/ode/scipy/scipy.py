@@ -19,7 +19,7 @@ class ScipyOde(OdePlugin, LogMixin):
     Scipy ODE solver plugin
     """
     def __init__(self, simulator, method=ScipyOdeSolvers.VODE, delta_t=0.1, initial_t=0):
-        super().__init__(simulator, delta_t=delta_t, initial_t=initial_t, integrator_mode=method)
+        super().__init__(simulator, delta_t=delta_t, initial_t=initial_t, method=method)
 
     def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
         ode_function = get_scipy_lambda(self._simulator, rate_parameters, drain_parameters)

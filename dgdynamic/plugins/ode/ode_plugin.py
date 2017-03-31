@@ -11,12 +11,12 @@ class OdePlugin(PluginBase, ABC):
     def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters, *args, **kwargs):
         pass
 
-    def __init__(self, simulator, delta_t=0.1, initial_t=0, integrator_mode=None):
+    def __init__(self, simulator, delta_t=0.1, initial_t=0, method=None):
         super().__init__()
         self._simulator = simulator
         self.initial_t = initial_t
         self.delta_t = delta_t
-        self._method = integrator_mode
+        self._method = method
 
     @property
     def method(self):
