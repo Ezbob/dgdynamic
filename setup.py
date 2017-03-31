@@ -16,6 +16,10 @@ if __name__ == '__main__':
         return [path for path, dirs, files in os.walk(package_dir_path)
                 if not any(exclude_name in path for exclude_name in excludes)]
 
+    def get_requirements():
+        with open('requirements.txt', mode="r") as file:
+            return list(map(str.strip, file))
+
     package_dirs = find_package_dirs(package_name, excludes)
 
     extras = [
@@ -61,12 +65,7 @@ if __name__ == '__main__':
         include_package_data=True,
         package_data={'': extras},
         packages=list(p_dict_dir.keys()),
-        install_requires=[
-            'scipy>=0.18.1',
-            'numpy>=1.11.2',
-            'sympy>=1.0',
-            'matplotlib>=1.5.2'
-        ],
+        install_requires=get_requirements(),
         zip_safe=False
     )
 
