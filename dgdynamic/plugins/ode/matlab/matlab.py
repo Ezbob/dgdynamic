@@ -12,6 +12,7 @@ from dgdynamic.plugins.ode.matlab.matlab_converter import get_matlab_lambda
 from dgdynamic.plugins.ode.ode_plugin import OdePlugin
 from dgdynamic.utils.exceptions import SimulationError
 from dgdynamic.utils.project_utils import LogMixin
+from dgdynamic.plugins.sim_validation import simulation_parameter_validate
 
 name = SupportedOdePlugins.MATLAB
 
@@ -32,6 +33,9 @@ class MatlabOde(OdePlugin, LogMixin):
         self.engine.exit()
 
     def simulate(self, end_t, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
+        simulation_parameter_validate(end_t=end_t, initial_conditions=initial_conditions,
+                                      rates_params=rate_parameters, drain_params=drain_parameters)
+
         ode_function = get_matlab_lambda(simulator=self._simulator, parameter_substitutions=rate_parameters,
                                          drain_substitutions=drain_parameters)
 

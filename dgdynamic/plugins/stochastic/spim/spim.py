@@ -13,6 +13,7 @@ from dgdynamic.config.settings import config, logging_is_enabled
 from dgdynamic.output import SimulationOutput
 from dgdynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
 from dgdynamic.utils.exceptions import SimulationError
+from dgdynamic.plugins.sim_validation import simulation_parameter_validate
 
 name = SupportedStochasticPlugins.SPiM
 
@@ -64,8 +65,9 @@ class SpimStochastic(StochasticPlugin):
         self.logger.info("Initial conditions: {}".format(initial_conditions))
         self.logger.info("Rates: {}".format(rate_parameters))
         self.logger.info("Drains: {}".format(drain_parameters))
-        if rate_parameters is None or initial_conditions is None:
-            raise ValueError("Missing parameters or initial values")
+
+        simulation_parameter_validate(end_t=end_t, initial_conditions=initial_conditions,
+                                      rates_params=rate_parameters, drain_params=drain_parameters)
 
         def collect_data(errors=None):
             errors = [] if errors is None else errors

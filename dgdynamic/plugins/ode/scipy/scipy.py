@@ -10,6 +10,7 @@ from dgdynamic.plugins.ode.ode_plugin import OdePlugin
 from dgdynamic.plugins.ode.scipy.scipy_converter import get_scipy_lambda
 from dgdynamic.utils.exceptions import SimulationError
 from dgdynamic.utils.project_utils import LogMixin
+from dgdynamic.plugins.sim_validation import simulation_parameter_validate
 
 name = SupportedOdePlugins.SciPy
 
@@ -22,6 +23,9 @@ class ScipyOde(OdePlugin, LogMixin):
         super().__init__(simulator, delta_t=delta_t, initial_t=initial_t, method=method)
 
     def simulate(self, end_t, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
+        simulation_parameter_validate(end_t=end_t, initial_conditions=initial_conditions,
+                                      rates_params=rate_parameters, drain_params=drain_parameters)
+
         ode_function = get_scipy_lambda(self._simulator, rate_parameters, drain_parameters)
 
         if not ode_function:

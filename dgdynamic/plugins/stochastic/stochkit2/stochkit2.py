@@ -2,6 +2,7 @@ from dgdynamic.plugins.stochastic.stochastic_plugin import StochasticPlugin
 from dgdynamic.choices import SupportedStochasticPlugins, StochKit2StochasticSolvers
 from .stochkit2_converter import generate_model
 from dgdynamic.output import SimulationOutput, SimulationOutputSet
+from dgdynamic.plugins.sim_validation import simulation_parameter_validate
 import enum
 import subprocess
 import re
@@ -70,6 +71,9 @@ class StochKit2Stochastic(StochasticPlugin):
         self.logger.info("Starting on StochKit2 simulation with {} trajectories, "
                          "{} method, end time: {}, and {} sample points".format(self.trajectories, self.method,
                                                                                 end_t, self.resolution))
+
+        simulation_parameter_validate(end_t=end_t, initial_conditions=initial_conditions,
+                                      rates_params=rate_parameters, drain_params=drain_parameters)
 
         def read_output(filepath):
             independent = array.array('d')
