@@ -33,8 +33,6 @@ parameters = {
     recovered: 0.03,
 }
 
-integration_range = (0, 200)
-
 ode = dgDynamicSim(dg, simulator_choice="ODE")
 stochastic = dgDynamicSim(dg, simulator_choice="stochastic")
 
@@ -42,26 +40,25 @@ stochastic = dgDynamicSim(dg, simulator_choice="stochastic")
 name = "infected"
 # figure_size in centimetres
 figure_size = (40, 20)
+end_t = 200
 
 with stochastic("spim") as spim:
-    simulation_range = (200, 1000)
     for i in range(3):
-        spim(simulation_range, initial_conditions, parameters,).plot(figure_size=figure_size)
+        spim(end_t, initial_conditions, parameters,).plot(figure_size=figure_size)
 
 with stochastic("stochkit2") as stochkit2:
-    simulation_range = (200, 1000)
     stochkit2.trajectories = 3
-    stochkit2.simulate(simulation_range, initial_conditions, parameters,).plot(figure_size=figure_size)
+    stochkit2.simulate(end_t, initial_conditions, parameters,).plot(figure_size=figure_size)
 
 with ode.get_plugin("scipy") as scipy:
     # Let's generate some sample delta_ts
     for dt in numpy.linspace(0.1, 1, num=5):
         scipy.delta_t = dt
-        scipy.simulate(integration_range, initial_conditions, parameters,).plot(figure_size=figure_size)
+        scipy.simulate(end_t, initial_conditions, parameters,).plot(figure_size=figure_size)
 
 with ode.get_plugin("Matlab") as matlab:
     for supported in MatlabOdeSolvers:
         matlab.method = supported
-        matlab(integration_range, initial_conditions, parameters,).plot(figure_size=figure_size)
+        matlab(end_t, initial_conditions, parameters,).plot(figure_size=figure_size)
 
 show_plots()

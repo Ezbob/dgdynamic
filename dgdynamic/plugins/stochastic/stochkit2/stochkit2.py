@@ -20,8 +20,9 @@ this_dir = path.abspath(path.dirname(__file__))
 
 class StochKit2Stochastic(StochasticPlugin):
 
-    def __init__(self, simulator, stochastic_method=StochKit2StochasticSolvers.SSA, timeout=None, trajectories=1):
-        super().__init__(simulator, timeout)
+    def __init__(self, simulator, stochastic_method=StochKit2StochasticSolvers.SSA, timeout=None, trajectories=1,
+                 resolution=1000):
+        super().__init__(simulator, timeout, resolution)
         self._method = stochastic_method
         self.tau_leaping_epsilon = 0.03
         self.switch_threshold = 10
@@ -63,13 +64,12 @@ class StochKit2Stochastic(StochasticPlugin):
     def trajectories(self, value):
         self._trajectories = abs(int(value))
 
-    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
-        end_time, sample_number = int(simulation_range[0]), int(simulation_range[1])
+    def simulate(self, end_t, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
         model_filename = "model.xml"
         output_dirname = "model_output"
         self.logger.info("Starting on StochKit2 simulation with {} trajectories, "
                          "{} method, end time: {}, and {} sample points".format(self.trajectories, self.method,
-                                                                                end_time, sample_number))
+                                                                                end_t, self.resolution))
 
         def read_output(filepath):
             independent = array.array('d')
@@ -89,11 +89,11 @@ class StochKit2Stochastic(StochasticPlugin):
                 try:
                     header, independent, dependent = read_output(tpath)
 
-                    yield SimulationOutput(name, (0, simulation_range[0]), header,
+                    yield SimulationOutput(name, (0, end_t), header,
                                            independent=independent, dependent=dependent,
                                            solver_method=self.method, errors=errors)
                 except FileNotFoundError as e:
-                    yield SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
+                    yield SimulationOutput(name, (0, end_t), self._simulator.symbols,
                                            solver_method=self.method, errors=(e,) + errors)
 
         self.logger.info("started on StochKit2 simulation")
@@ -117,8 +117,8 @@ class StochKit2Stochastic(StochasticPlugin):
             program_path = path.join(self.stochkit2_path, program_name)
             self.logger.info("Using stochkit2 driver at {}".format(program_name))
             execution_args = [program_path, '-m {}'.format(model_path),
-                              '-r {}'.format(self.trajectories), '-t {}'.format(end_time,),
-                              '-i {}'.format(sample_number),
+                              '-r {}'.format(self.trajectories), '-t {}'.format(end_t),
+                              '-i {}'.format(self.resolution),
                               '--epsilon {}'.format(self.tau_leaping_epsilon),
                               '--threshold {}'.format(self.switch_threshold),
                               *self.flag_options]
@@ -138,7 +138,7 @@ class StochKit2Stochastic(StochasticPlugin):
                     except FileNotFoundError:
                         # Error in listing trajectory files
                         messages.print_solver_done(name, self.method.name, True)
-                        return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
+                        return SimulationOutput(name, (0, end_t), self._simulator.symbols,
                                                 solver_method=self.method, errors=(exception,
                                                                                    util_exceptions.
                                                                                    SimulationError(
@@ -147,7 +147,7 @@ class StochKit2Stochastic(StochasticPlugin):
                     if len(partial_trajectories) == 0:
                         # There was no trajectory files
                         messages.print_solver_done(name, self.method.name, True)
-                        return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
+                        return SimulationOutput(name, (0, end_t), self._simulator.symbols,
                                                 solver_method=self.method, errors=(exception,))
                     else:
                         # Collected from all partial trajectory files
@@ -159,7 +159,7 @@ class StochKit2Stochastic(StochasticPlugin):
                     # Error in process execution
                     exception = util_exceptions.SimulationError("Error in simulation: {}".format(output.decode()))
                     messages.print_solver_done(name, self.method.name, was_failure=True)
-                    return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
+                    return SimulationOutput(name, (0, end_t), self._simulator.symbols,
                                             solver_method=self.method, errors=(exception,))
             output_trajectories_path = path.join(model_home_dir, 'trajectories')
             trajectory_paths = tuple(os.path.join(output_trajectories_path, t)
@@ -173,7 +173,7 @@ class StochKit2Stochastic(StochasticPlugin):
                         self.logger.warn(log_message)
                     if len(trajectory_paths) == 0:
                         messages.print_solver_done(name, self.method.name, True)
-                        return SimulationOutput(name, (0, simulation_range[0]), self._simulator.symbols,
+                        return SimulationOutput(name, (0, end_t), self._simulator.symbols,
                                                 solver_method=self.method, errors=(util_exceptions
                                                                                    .SimulationError("Simulation ended "
                                                                                                     "with no output"),))

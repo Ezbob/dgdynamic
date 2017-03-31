@@ -19,8 +19,9 @@ name = SupportedStochasticPlugins.SPiM
 
 class SpimStochastic(StochasticPlugin):
 
-    def __init__(self, simulator, timeout=None, absolute_float_tolerance=1e-9, relative_float_tolerance=0.0):
-        super().__init__(simulator, timeout)
+    def __init__(self, simulator, timeout=None, resolution=1000, absolute_float_tolerance=1e-9,
+                 relative_float_tolerance=0.0):
+        super().__init__(simulator, timeout, resolution)
         self._spim_path = config['Simulation']['SPIM_PATH']
         if not self._spim_path:
             self._spim_path = os.path.join(os.path.dirname(__file__), "spim.ocaml")
@@ -55,7 +56,7 @@ class SpimStochastic(StochasticPlugin):
         writable_stream.write(converters.generate_initial_values(symbols_dict=symbol_translate_dict,
                                                                  initial_conditions=initial_conditions))
 
-    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None,
+    def simulate(self, end_t, initial_conditions, rate_parameters, drain_parameters=None,
                  timeout=None, rel_tol=None, abs_tol=None):
 
         if rate_parameters is None or initial_conditions is None:
@@ -91,7 +92,7 @@ class SpimStochastic(StochasticPlugin):
             file_path_code = os.path.join(tmpdir, "spim.spi")
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             with open(file_path_code, mode="w") as script:
-                self.generate_code_file(script, simulation_range, initial_conditions,
+                self.generate_code_file(script, (end_t, self.resolution), initial_conditions,
                                         rate_parameters, drain_parameters)
 
             if logging_is_enabled():
@@ -112,7 +113,7 @@ class SpimStochastic(StochasticPlugin):
                 errors.append(SimulationError("Simulation time out"))
                 messages.print_solver_done(name, was_failure=True)
                 independent, dependent = collect_data(errors)
-                return SimulationOutput(name, (0, simulation_range[0]),
+                return SimulationOutput(name, (0, end_t),
                                         symbols=self._simulator.symbols,
                                         independent=independent, dependent=dependent,
                                         errors=errors)
@@ -122,16 +123,16 @@ class SpimStochastic(StochasticPlugin):
                     self.logger.error("Missing SPiM output")
                 errors.append(SimulationError("Missing SPiM output"))
                 messages.print_solver_done(name, was_failure=True)
-                return SimulationOutput(name, (0, simulation_range[0]),
+                return SimulationOutput(name, (0, end_t),
                                         symbols=self._simulator.symbols, errors=errors)
 
             independent, dependent = collect_data(errors)
             if errors:
                 messages.print_solver_done(name, was_failure=True)
-                return SimulationOutput(name, (0, simulation_range[0]), symbols=self._simulator.symbols,
+                return SimulationOutput(name, (0, end_t), symbols=self._simulator.symbols,
                                         independent=independent, dependent=dependent,
                                         errors=errors)
             else:
                 messages.print_solver_done(name, was_failure=False)
-                return SimulationOutput(name, (0, simulation_range[0]), symbols=self._simulator.symbols,
+                return SimulationOutput(name, (0, end_t), symbols=self._simulator.symbols,
                                         independent=independent, dependent=dependent)

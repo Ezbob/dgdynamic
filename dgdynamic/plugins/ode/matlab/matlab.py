@@ -31,14 +31,14 @@ class MatlabOde(OdePlugin, LogMixin):
         self.clear_workspace()
         self.engine.exit()
 
-    def simulate(self, simulation_range, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
+    def simulate(self, end_t, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
         ode_function = get_matlab_lambda(simulator=self._simulator, parameter_substitutions=rate_parameters,
                                          drain_substitutions=drain_parameters)
 
         if ode_function is None or len(ode_function) == 0:
             self.logger.error("Matlab ode function was not generated")
             messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
-            return SimulationOutput(name, simulation_range, self._simulator.symbols,
+            return SimulationOutput(name, (self.initial_t, end_t), self._simulator.symbols,
                                     errors=(SimulationError("Ode function could not be generated"),))
 
         self.logger.debug("Solving ode using MATLAB")
@@ -51,11 +51,11 @@ class MatlabOde(OdePlugin, LogMixin):
             # python 3 returns a view not a list of values
             self.add_to_workspace('y0', matlab.double(list(conditions)))
 
-        self.add_to_workspace('tspan', matlab.double(simulation_range))
+        self.add_to_workspace('tspan', matlab.double((self.initial_t, end_t)))
 
         eval_str = "ode" + str(self.method.value) + "(" + ode_function + ", tspan, y0)"
         self.logger.debug("evaluating matlab \
-expression: {} with tspan: {} and y0: {}".format(eval_str, simulation_range, initial_conditions))
+expression: {} with tspan: {} and y0: {}".format(eval_str, (self.initial_t, end_t), initial_conditions))
 
         t_result, y_result = self.engine.eval(eval_str, nargout=2)
         if len(t_result) >= 2:
@@ -75,7 +75,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, simulation_range, ini
 
         self.logger.info("Return output object")
         messages.print_solver_done(name, method_name=self.method.name)
-        return SimulationOutput(solved_by=name, user_sim_range=simulation_range,
+        return SimulationOutput(solved_by=name, user_sim_range=(self.initial_t, end_t),
                                 symbols=self._simulator.symbols,
                                 dependent=y_result, independent=t_result,
                                 ignore=self._simulator.ignored, solver_method=self.method)
