@@ -23,12 +23,12 @@ class DynamicAnalysisDevice:
             self.sample_spacing = sample_spacing
 
     @staticmethod
-    def from_simulation(plugin, simulation_range, initial_conditions, rate_parameters,
+    def from_simulation(plugin, end_t, initial_conditions, rate_parameters,
                         drain_parameters=None, using_filtered_output=True, *args, **kwargs):
         """
         Do a simulation using a plugin and spit out the output and a initialized object of this class
         :param plugin:
-        :param simulation_range:
+        :param end_t:
         :param initial_conditions:
         :param rate_parameters:
         :param drain_parameters:
@@ -38,10 +38,10 @@ class DynamicAnalysisDevice:
         :return:
         """
         if using_filtered_output:
-            output = plugin(simulation_range, initial_conditions, rate_parameters,
+            output = plugin(end_t, initial_conditions, rate_parameters,
                             drain_parameters, *args, **kwargs).filtered_output
         else:
-            output = plugin(simulation_range, initial_conditions, rate_parameters,
+            output = plugin(end_t, initial_conditions, rate_parameters,
                             drain_parameters, *args, **kwargs)
 
         sample_spacing = None
@@ -253,10 +253,10 @@ class DynamicAnalysisDevice:
 
         if include_maxima:
             maxima_values, maxima_frequency = self.nonzero_maxima(spectrum_data, frequencies)
-            plt.plot(maxima_frequency, maxima_values, 'ro', marker="^", markersize=10, color='white')
+            plt.plot(maxima_frequency, maxima_values, 'ro', marker="^", markersize=10, color='red')
         if include_maximum:
             maximum_value, maximum_frequency = self.nonzero_maximum(spectrum_data, frequencies)
-            plt.plot(maximum_frequency, maximum_value, 'ro', marker='*', markersize=12, color='white')
+            plt.plot(maximum_frequency, maximum_value, 'ro', marker='*', markersize=12, color='red')
         plt.legend()
 
     def plot_spectra(self, spectra_data, frequencies, include_maxima=False, include_maximum=False,
