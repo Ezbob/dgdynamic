@@ -11,6 +11,11 @@ if __name__ == '__main__':
         '__pycache__',
         'StochKit'
     ]
+    extras = [
+        'default_config.ini',
+        'spim.ocaml',
+        'stochkit.tar.gz'
+    ]
 
     def find_package_dirs(package_dir_path, excludes):
         return [path for path, dirs, files in os.walk(package_dir_path)
@@ -22,13 +27,7 @@ if __name__ == '__main__':
 
     package_dirs = find_package_dirs(package_name, excludes)
 
-    extras = [
-        'default_config.ini',
-        'spim.ocaml',
-        'stochkit.tar.gz'
-    ]
-
-    p_dict_dir = {
+    internal_python_paths = {
         ".".join(p_name.split('/')): p_name
         for p_name in package_dirs
     }
@@ -61,10 +60,10 @@ if __name__ == '__main__':
         author='Anders Busch',
         author_email='andersbusch@gmail.com',
         license='MIT',
-        package_dir=p_dict_dir,
+        package_dir=internal_python_paths,
         include_package_data=True,
         package_data={'': extras},
-        packages=list(p_dict_dir.keys()),
+        packages=list(internal_python_paths.keys()),
         install_requires=get_requirements(),
         zip_safe=False
     )

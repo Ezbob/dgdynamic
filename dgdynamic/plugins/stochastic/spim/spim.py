@@ -91,7 +91,7 @@ class SpimStochastic(StochasticPlugin):
             file_path_code = os.path.join(tmpdir, "spim.spi")
             csv_file_path = os.path.join(tmpdir, "spim.spi.csv")
             with open(file_path_code, mode="w") as script:
-                self.generate_code_file(script, (0, simulation_range[0]), initial_conditions,
+                self.generate_code_file(script, simulation_range, initial_conditions,
                                         rate_parameters, drain_parameters)
 
             if logging_is_enabled():
