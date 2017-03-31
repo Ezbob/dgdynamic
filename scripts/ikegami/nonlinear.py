@@ -15,7 +15,7 @@ dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
 theta = numpy.nextafter(max_concentration, 0)
 
-integration_range = (0, 600)
+end_t = 600
 
 # Exclude every A_3i species
 banned_set = tuple(3 * i for i in range(species_limit))
@@ -66,27 +66,26 @@ stochkit2 = sto('stochkit2')
 solver.integrator_mode = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.08
 
-out = solver.simulate(integration_range, initial_conditions, parameters)
-out.plot(filename="scipy_nonlinear.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
+out = solver.simulate(end_t, initial_conditions, parameters)
+out.plot(filename="scipy_nonlinear.svg", axis_limits=((0, end_t), (0, 1.5)), figure_size=(60, 30))
 
 solver = ode('matlab')
 
 solver.integrator_mode = MatlabOdeSolvers.ode45
-out = solver.simulate(integration_range, initial_conditions, parameters)
+out = solver.simulate(end_t, initial_conditions, parameters)
 
-out.plot(filename="matlab_nonlinear.svg", axis_limits=(integration_range, (0, 1.5)), figure_size=(60, 30))
+out.plot(filename="matlab_nonlinear.svg", axis_limits=((0, end_t), (0, 1.5)), figure_size=(60, 30))
 
 initial_conditions = {symbol: 1 for symbol in get_symbols()}
 initial_conditions['A1'] = 10000000  # int(100 / 1e-5) * 100
-
-spim_sim_range = (5000, 300)
 
 # out = spim.simulate(spim_sim_range, initial_conditions, parameters)
 # out.plot(filename="spim_nonlinear.svg", figure_size=(60, 30))
 
 stochkit2.method = 'tauLeaping'
+stochkit2.resolution = 7500
 
-out = stochkit2.simulate(spim_sim_range, initial_conditions, parameters)
+out = stochkit2.simulate(end_t, initial_conditions, parameters)
 out.plot(filename="stochkit2_nonlinear.svg", figure_size=(60, 30))
 
 show_plots()

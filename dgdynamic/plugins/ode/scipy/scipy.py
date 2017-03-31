@@ -32,7 +32,7 @@ class ScipyOde(OdePlugin, LogMixin):
             if config.getboolean('Logging', 'ENABLED_LOGGING'):
                 self.logger.error("Scipy ode function was not generated")
             messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
-            return SimulationOutput(name, end_t,
+            return SimulationOutput(name, end_t, symbols=self._simulator.symbols,
                                     errors=(SimulationError("Ode function could not be generated"),))
 
         try:

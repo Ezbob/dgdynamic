@@ -67,8 +67,8 @@ drain_par = {}
 #     0.01,
 # )
 
-# Specify the integration range
-integration_range = (0, 400)
+# Specify the end_t
+end_t = 400
 
 # Get ODE solver plugin for the given abstract reaction system
 # input can be either a entry in the SupportedSolvers enum, or a string (such as "scipy" or "matlab")
@@ -96,8 +96,8 @@ scipy_ode.delta_t = 0.1
 # Set initial t value, default is 0
 scipy_ode.initial_t = 0
 
-# Set the integration range. This has to be a tuple of two numbers; a lower bound and a upper bound
-scipy_ode.simulation_range = integration_range
+# Set the end_t
+scipy_ode.end_t = end_t
 
 # Set the initial conditions
 scipy_ode.initial_conditions = initial_conditions

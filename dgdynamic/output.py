@@ -23,6 +23,11 @@ class SimulationOutput(LogMixin):
         self.solver_method_used = solver_method
         self.requested_simulation_range = user_sim_range
 
+        print(solved_by,)
+        print(self.dependent.shape, self.independent.shape)
+        print(self.dependent)
+        print(self.independent)
+
         if independent is not None and len(independent) >= 2:
             self.simulation_duration = abs(independent[-1] - independent[0])
         elif independent is not None and len(independent) == 1:
@@ -162,7 +167,9 @@ class SimulationOutput(LogMixin):
         assert isinstance(header_labels, (list, set, tuple))
 
         def header():
-            assert len(header_labels) == dependent_dimension
+            assert len(header_labels) - len(self._ignored) == dependent_dimension, \
+                "Expected {} number of labels got {}"\
+                .format(dependent_dimension, len(header_labels))
             yield "time"
             for index, label in enumerate(header_labels):
                 if unfiltered and index in self._ignored:

@@ -36,11 +36,15 @@ parameters = {
 }
 
 drain_para = {
-    'C': {'in': 0, 'out': 0.01}
+    'C': {
+        'out': {
+            'factor': 0.01
+        }
+    }
 }
 
-# Specify the integration range
-integration_range = (0, 6000)
+# Specify the end time
+end_t = 6000
 
 # Get ODE solver plugin for the given abstract reaction system
 # input can be either a entry in the SupportedSolvers enum, or a string (such as "scipy" or "matlab")
@@ -69,7 +73,7 @@ scipy_ode.delta_t = 0.1
 scipy_ode.initial_t = 0
 
 # Solve the ODE system to get the output object
-output = scipy_ode.simulate(integration_range, initial_conditions, parameters, drain_para)
+output = scipy_ode.simulate(end_t, initial_conditions, parameters, drain_para)
 
 # Save the data to a file in the data folder using the output object
 output.save(name)
@@ -77,14 +81,17 @@ output.save(name)
 # Plot the data using the MatPlotLib, also using the output object
 output.plot("plot.svg", figure_size=(60, 30))
 
+# Setting the number of sample points
+spim.resolution = 1000
+
 # Using the stochastic pi machine for simulations
-spim.simulate((40, 200), initial_conditions, parameters, drain_para)\
+spim.simulate(end_t, initial_conditions, parameters, drain_para)\
    .plot("plot2.svg", figure_size=(40, 20))
 
 # The following solver uses the matlab engine for python to compute the solutions to the ODEs
 matlab_ode = ode.get_plugin('matlab')
 
-matlab_ode.simulate(integration_range, initial_conditions, parameters, drain_para).save(name).plot(figure_size=(40, 20))
+matlab_ode.simulate(end_t, initial_conditions, parameters, drain_para).save(name).plot(figure_size=(40, 20))
 # solve the ODEs, save the output and plot it afterwards
 
 show_plots()

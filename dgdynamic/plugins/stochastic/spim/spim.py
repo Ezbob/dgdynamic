@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import dgdynamic.plugins.stochastic.spim.spim_converter as converters
 import dgdynamic.utils.messages as messages
+import numpy
 from collections import OrderedDict
 from dgdynamic.choices import SupportedStochasticPlugins
 from dgdynamic.config.settings import config, logging_is_enabled
@@ -71,6 +72,9 @@ class SpimStochastic(StochasticPlugin):
 
         def collect_data(errors=None):
             errors = [] if errors is None else errors
+
+            ignore_pad = [(i, initial_conditions[label]) for label, i in self._simulator.ignored]
+            res_indep, res_dep = [], []
             with open(csv_file_path) as file:
                 reader = csv.reader(file)
                 next(reader)
@@ -80,15 +84,16 @@ class SpimStochastic(StochasticPlugin):
                     if new_time > old_time or math.isclose(new_time, old_time,
                                                            rel_tol=self.relative_float_tolerance,
                                                            abs_tol=self.absolute_float_tolerance):
-                        independent.append(new_time)
-                        dependent.append(array.array('d', map(float, line[1:])))
+                        res_indep.append(new_time)
+                        dep = list(map(float, line[1:]))
+                        for index, val in ignore_pad:
+                            dep.insert(index, val)
+                        res_dep.append(dep)
                         old_time = new_time
                     else:
                         errors.append(SimulationError("Simulation time regression detected"))
-            return independent, dependent
+            return numpy.array(res_indep), numpy.array(res_dep)
 
-        independent = array.array('d')
-        dependent = list()
         errors = list()
         self.timeout = timeout if timeout is not None else self.timeout
         self.relative_float_tolerance = rel_tol if rel_tol is not None else self.relative_float_tolerance
@@ -122,6 +127,7 @@ class SpimStochastic(StochasticPlugin):
                 independent, dependent = collect_data(errors)
                 return SimulationOutput(name, (0, end_t),
                                         symbols=self._simulator.symbols,
+                                        ignore=self._simulator.ignored,
                                         independent=independent, dependent=dependent,
                                         errors=errors)
 
@@ -138,8 +144,10 @@ class SpimStochastic(StochasticPlugin):
                 messages.print_solver_done(name, was_failure=True)
                 return SimulationOutput(name, (0, end_t), symbols=self._simulator.symbols,
                                         independent=independent, dependent=dependent,
+                                        ignore=self._simulator.ignored,
                                         errors=errors)
             else:
                 messages.print_solver_done(name, was_failure=False)
                 return SimulationOutput(name, (0, end_t), symbols=self._simulator.symbols,
+                                        ignore=self._simulator.ignored,
                                         independent=independent, dependent=dependent)

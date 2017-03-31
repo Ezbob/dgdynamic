@@ -15,7 +15,7 @@ dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
 theta = numpy.nextafter(max_concentration, 0)
 
-integration_range = (0, 300)
+end_t = 300
 
 # Exclude every A_3i species
 banned_set = tuple(3 * i for i in range(1, species_limit))
@@ -87,7 +87,7 @@ stochkit2 = sto('stochkit2')
 solver.integrator_mode = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.08
 
-out = solver.simulate(integration_range, initial_conditions, parameters, drain_params)
+out = solver.simulate(end_t, initial_conditions, parameters, drain_params)
 out.plot(filename="scipy3.svg", figure_size=(60, 30))
 
 #

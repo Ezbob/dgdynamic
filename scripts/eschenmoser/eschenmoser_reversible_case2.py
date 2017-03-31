@@ -181,9 +181,7 @@ stochastic = dgDynamicSim(dg, 'stochastic')
 add_natural_drain(ode.symbols)
 
 sim_end_time = 60000
-stoch_sim_range = (sim_end_time, sim_end_time)
-ode_sim_range = (0, sim_end_time)
-period_bounds = (600, stoch_sim_range[0] / 2)  # looking from 600 to 30000
+period_bounds = (600, sim_end_time / 2)  # looking from 600 to 30000
 
 measurement_output = {
     'variance': [],
@@ -277,20 +275,16 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     """Do a simulation run and get the measurements"""
 
     print("Using plugin: {} with method: {}".format(plugin_name, method))
-    if hasattr(plugin, "method"):
-        # caveat #1: Not all plugins have a method (e.g.: the SPiM plugin only works with it's default method)
-        plugin.method = method
+    plugin.method = method
 
     if hasattr(plugin, "delta_t"):
         # For most ODEs we have delta
         plugin.delta_t = 1
+    else:
+        # For stochastic sim we set the resolution (that is the number of sample numbers needed)
+        plugin.resolution = sim_end_time
 
-    # caveat #2: the simulation_range format is different when using ODEs and stochastic methods
-    # stochastic methods assume that the the start time of the sim is zero, and includes some resolution count (e.g.
-    # how many sample do we need over the sim period)
-    sim_range = ode_sim_range if plugin_name.lower() in ['scipy', 'matlab'] else stoch_sim_range
-
-    out = plugin(sim_range, initial_conditions, params, drain_params)
+    out = plugin(sim_end_time, initial_conditions, params, drain_params)
 
     assert out is not None, "Output from run {} was None".format(run_number)
 

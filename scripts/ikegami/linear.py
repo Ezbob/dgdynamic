@@ -15,8 +15,7 @@ max_concentration = 1.0
 dimension_limit = species_limit // 2 + 1
 epsilon = numpy.nextafter(0, 1)
 theta = numpy.nextafter(max_concentration, 0)
-
-integration_range = (0, 10000)
+end_t = 10000
 
 # this corresponds to setting the r_ij values
 disabled_reactions = [
@@ -72,6 +71,6 @@ solver = ode("scipy")
 solver.integrator_mode = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.1
 
-output = solver.simulate(integration_range, initial_conditions, parameters,)
+output = solver.simulate(end_t, initial_conditions, parameters,)
 output.save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))
 show_plots()

@@ -180,9 +180,8 @@ for sym in ode.symbols:
             'factor': 0.0001
         }}
 
-stoch_sim_range = (60000, 3000)
-ode_sim_range = (0, 60000)
-period_bounds = (600, stoch_sim_range[0] / 2)  # looking from 600 to 30000
+sim_end_t = 60000
+period_bounds = (600, sim_end_t / 2)  # looking from 600 to 30000
 
 c1_minimal_values = []
 c2_minimal_values = []
@@ -197,12 +196,14 @@ spim = stochastic("spim")
 
 def do_sim_and_measure(plugin, plugin_name, method, do_plot=False):
     print("Using plugin: {}".format(plugin_name))
-    if hasattr(plugin, "method"):
-        plugin.method = method
+    plugin.method = method
 
-    sim_range = ode_sim_range if plugin_name.lower() in ['scipy', 'matlab'] else stoch_sim_range
+    if hasattr(plugin, "delta_t"):
+        plugin.delta_t = 1
+    else:
+        plugin.resolution = sim_end_t
 
-    out = plugin(sim_range, initial_conditions, parm, drain_params)
+    out = plugin(sim_end_t, initial_conditions, parm, drain_params)
     if out.is_output_set:
         # for stochkit2 plugin returns output sets for handling multiple trajectories
         out = out[0]
