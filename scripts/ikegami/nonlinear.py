@@ -63,7 +63,7 @@ solver = ode("scipy")
 spim = sto('SPIM')
 stochkit2 = sto('stochkit2')
 
-solver.integrator_mode = ScipyOdeSolvers.LSODA
+solver.method = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.08
 
 out = solver.simulate(end_t, initial_conditions, parameters)
@@ -71,7 +71,7 @@ out.plot(filename="scipy_nonlinear.svg", axis_limits=((0, end_t), (0, 1.5)), fig
 
 solver = ode('matlab')
 
-solver.integrator_mode = MatlabOdeSolvers.ode45
+solver.method = MatlabOdeSolvers.ode45
 out = solver.simulate(end_t, initial_conditions, parameters)
 
 out.plot(filename="matlab_nonlinear.svg", axis_limits=((0, end_t), (0, 1.5)), figure_size=(60, 30))
@@ -79,13 +79,13 @@ out.plot(filename="matlab_nonlinear.svg", axis_limits=((0, end_t), (0, 1.5)), fi
 initial_conditions = {symbol: 1 for symbol in get_symbols()}
 initial_conditions['A1'] = 10000000  # int(100 / 1e-5) * 100
 
-# out = spim.simulate(spim_sim_range, initial_conditions, parameters)
-# out.plot(filename="spim_nonlinear.svg", figure_size=(60, 30))
+out = spim.simulate(end_t + 2400, initial_conditions, parameters)
+out.plot(filename="spim_nonlinear.svg", figure_size=(60, 30))
 
 stochkit2.method = 'tauLeaping'
 stochkit2.resolution = 7500
 
-out = stochkit2.simulate(end_t, initial_conditions, parameters)
+out = stochkit2.simulate(end_t + 2400, initial_conditions, parameters)
 out.plot(filename="stochkit2_nonlinear.svg", figure_size=(60, 30))
 
 show_plots()

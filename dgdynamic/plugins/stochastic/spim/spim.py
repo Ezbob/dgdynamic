@@ -72,7 +72,6 @@ class SpimStochastic(StochasticPlugin):
 
         def collect_data(errors=None):
             errors = [] if errors is None else errors
-
             ignore_pad = [(i, initial_conditions[label]) for label, i in self._simulator.ignored]
             res_indep, res_dep = [], []
             with open(csv_file_path) as file:

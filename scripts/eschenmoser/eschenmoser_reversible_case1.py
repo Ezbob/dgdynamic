@@ -149,8 +149,7 @@ def add_natural_drain(symbols, natural_drain=0.0001):
             count += 1
     print("Natural out drain set to {} for {} reactions".format(natural_drain, count))
 
-generated_rates = generate_rates(reactions)
-parameter_matrix = tuple({r: rate_dict for r, rate_dict in zip(reactions, generated_rates)}
+parameter_matrix = tuple({r: rate_dict for r, rate_dict in zip(reactions, generate_rates(reactions))}
                          for _ in range(runs))
 
 ode = dgDynamicSim(dg)
