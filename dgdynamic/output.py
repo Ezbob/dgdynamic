@@ -23,11 +23,6 @@ class SimulationOutput(LogMixin):
         self.solver_method_used = solver_method
         self.requested_simulation_range = user_sim_range
 
-        print(solved_by,)
-        print(self.dependent.shape, self.independent.shape)
-        print(self.dependent)
-        print(self.independent)
-
         if independent is not None and len(independent) >= 2:
             self.simulation_duration = abs(independent[-1] - independent[0])
         elif independent is not None and len(independent) == 1:
