@@ -43,6 +43,7 @@ def argument_handler():
     return parsed_args.runs, output_dir, parsed_args.plugin, parsed_args.method, parsed_args.plot
 
 runs, output_dir, plugin_name, method_name, do_plots = argument_handler()
+file_prefix = "eschenmoser_std"
 
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
@@ -136,17 +137,26 @@ def generate_rates(reactions):
             )
     return rates
 
-parameter_matrix = tuple({r: rate_dict for r, rate_dict in zip(reactions, generate_rates(reactions))}
+
+def add_natural_drain(symbols, natural_drain=0.0001):
+    count = 0
+    for sym in symbols:
+        if sym not in drain_params or 'out' not in drain_params[sym]:
+            drain_params[sym] = {
+                'out': {
+                    'factor': natural_drain
+                }
+            }
+            count += 1
+    print("Natural out drain set to {} for {} reactions".format(natural_drain, count))
+
+generated_rates = generate_rates(reactions)
+parameter_matrix = tuple({r: rate_dict for r, rate_dict in zip(reactions, generated_rates)}
                          for _ in range(runs))
 
 ode = dgDynamicSim(dg)
 stochastic = dgDynamicSim(dg, 'stochastic')
-
-for sym in ode.symbols:
-    if sym not in drain_params:
-        drain_params[sym] = {'out': {
-            'factor': 0.0001
-        }}
+add_natural_drain(ode.symbols)
 
 sim_end_time = 60000
 stoch_sim_range = (sim_end_time, sim_end_time)
@@ -207,7 +217,7 @@ def write_score_data_parameter(name):
         return len(whole_header)
 
     dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-    file_name = "eschenmoser_{}_measurements_{}_{}.tsv".format(name, runs, dt)
+    file_name = "{}_{}_measurements_{}_{}.tsv".format(file_prefix, name, runs, dt)
     file_path = os.path.join(output_dir, file_name)
     print("Output file:\n{}".format(file_path))
 
@@ -303,12 +313,12 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
                     max(fourier_amplitude_measurement), max(fourier_frequency_measurement),
                     max(pair_diff))
 
-        image_path = os.path.join(output_dir, "eschenmoser_{}_{}_plot{}_{}_{}.png"
-                                  .format(plugin_name, method_name, run_number + 1, runs, dt))
+        image_path = os.path.join(output_dir, "{}_{}_{}_plot{}_{}_{}.png"
+                                  .format(file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
         out.plot(filename=image_path, figure_size=(46, 24), title=title)
 
-        image_path = os.path.join(output_dir, "eschenmoser_fourier_{}_{}_plot{}_{}_{}.png"
-                                  .format(plugin_name, method_name, run_number + 1, runs, dt))
+        image_path = os.path.join(output_dir, "{}_fourier_{}_{}_plot{}_{}_{}.png"
+                                  .format(file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
         analytics.plot_spectra(amp_spec, freqs, title=title, filename=image_path, figure_size=(46, 24))
         plt.close('all')  # we don't need to show the figures
 
@@ -319,8 +329,8 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
                     max(fourier_amplitude_measurement), max(fourier_frequency_measurement),
                     max(pair_diff), out.independent[-1], out.dependent[-1])
 
-        image_path = os.path.join(output_dir, "aborted_eschenmoser_{}_{}_plot{}_{}_{}.png".format(
-            plugin_name, method_name, run_number + 1, runs, dt))
+        image_path = os.path.join(output_dir, "aborted_{}_{}_{}_plot{}_{}_{}.png".format(
+            file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
         out.plot(filename=image_path, figure_size=(46, 24), title=title)
         plt.close('all')
 

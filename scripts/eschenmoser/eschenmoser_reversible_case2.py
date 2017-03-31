@@ -18,6 +18,7 @@ import warnings
 
 # TODO actually do what we write in the introduction doc
 
+
 def argument_handler():
     """Parses CLI arguments for the script"""
     defaults = {
@@ -25,9 +26,10 @@ def argument_handler():
         'output_dir': "eschenmoser_data/",
         'plugin': 'stochkit2',
         'method': 'tauleaping',
-        'plot': False
+        'plot': False,
+        'limit_factor': 0.1
     }
-    parser = argparse.ArgumentParser(description="Eschenmoser (Reversible) script. Calculates the measurements.")
+    parser = argparse.ArgumentParser(description="Eschenmoser (Reversible case 2) script. Calculates the measurements.")
     parser.add_argument('-r', '--runs', type=int, help="How many runs does this script need to run",
                         default=defaults['runs'])
     parser.add_argument('-o', '--output_dir', help="Where to dump the output data", default=defaults['output_dir'])
@@ -37,17 +39,21 @@ def argument_handler():
                         default=defaults['method'])
     parser.add_argument('-s', '--plot', help="Do and save plots in the output directory", default=defaults['plot'],
                         action='store_true')
+    parser.add_argument('-l', '--limiter', help="Backward reaction limit factor for the targeted reactions",
+                        default=defaults['limit_factor'], type=float, choices=[1., 0.1, 0.01, 0.001, 0.0001, 0.00001])
 
     parsed_args = parser.parse_args()
     output_dir = os.path.abspath(parsed_args.output_dir)
-    return parsed_args.runs, output_dir, parsed_args.plugin, parsed_args.method, parsed_args.plot
+    return parsed_args.runs, output_dir, parsed_args.plugin, parsed_args.method, parsed_args.plot, parsed_args.limiter
 
-runs, output_dir, plugin_name, method_name, do_plots = argument_handler()
+runs, output_dir, plugin_name, method_name, do_plots, backward_limiter = argument_handler()
+
+file_prefix = "eschenmoser_r2"
 
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
 
-print("Starting on the Eschenmoser(Reversible) script with {} runs and output dir: {}.".format(runs, output_dir))
+print("Starting on the Eschenmoser(Reversible case 2) script with {} runs and output dir: {}.".format(runs, output_dir))
 
 
 class ImportantSpecies(enum.Enum):
@@ -81,6 +87,13 @@ cycle2_reactions = [
     "C2S8 <=> C2S9",
     "C2S9 <=> C2S10"
 ]
+
+# These are the "targeted" reaction which should add a
+targeted_c1_reaction = "C1S5 <=> C1S6 + {}".format(ImportantSpecies.Glyoxylate.name)
+targeted_c2_reaction = "C2S3 <=> {} + {}" \
+    .format(ImportantSpecies.Oxaloglycolate.name, ImportantSpecies.Oxoaspartate.name)
+
+print("Targeted reactions for cycle 1: {} and cycle2: {}".format(targeted_c1_reaction, targeted_c2_reaction))
 
 cycle1_hyper = HyperGraph.from_abstract(*cycle1_reactions)
 cycle2_hyper = HyperGraph.from_abstract(*cycle2_reactions)
@@ -122,13 +135,22 @@ drain_params = {
 def generate_rates(reactions):
     """Generate random rates for reactions"""
     rates = []
+    print("Backward reaction limiter set to: {}".format(backward_limiter))
     for reaction in reactions:
         if '<=>' in reaction:
-            f = random.random()
-            b = random.random()
-            rates.append(
-                {'->': f, '<-': b}
-            )
+            if reaction in [targeted_c1_reaction, targeted_c2_reaction]:
+                f = random.random()
+                b = backward_limiter * f
+                print("Setting {} to have forward {} and backward {} rates".format(reaction, f, b))
+                rates.append(
+                    {'->': f, '<-': b}
+                )
+            else:
+                f = random.random()
+                b = random.random()
+                rates.append(
+                    {'->': f, '<-': b}
+                )
         else:
             f = random.random()
             rates.append(
@@ -137,19 +159,26 @@ def generate_rates(reactions):
     return rates
 
 
-parameter_matrix = tuple({r: rate_dict for r, rate_dict in zip(reactions, generate_rates(reactions))}
+def add_natural_drain(symbols, natural_drain=0.0001):
+    count = 0
+    for sym in symbols:
+        if sym not in drain_params or 'out' not in drain_params[sym]:
+
+            drain_params[sym] = {
+                'out': {
+                    'factor': natural_drain
+                }
+            }
+            count += 1
+    print("Natural out drain set to {} for {} reactions".format(natural_drain, count))
+
+generated_rates = generate_rates(reactions)
+parameter_matrix = tuple({r: rate_dict for r, rate_dict in zip(reactions, generated_rates)}
                          for _ in range(runs))
 
 ode = dgDynamicSim(dg)
 stochastic = dgDynamicSim(dg, 'stochastic')
-
-for sym in ode.symbols:
-    if sym not in drain_params:
-        drain_params[sym] = {
-            'out': {
-                'factor': 0.0001
-            }
-        }
+add_natural_drain(ode.symbols)
 
 sim_end_time = 60000
 stoch_sim_range = (sim_end_time, sim_end_time)
@@ -210,7 +239,7 @@ def write_score_data_parameter(name):
         return len(whole_header)
 
     dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-    file_name = "eschenmoser_{}_measurements_{}_{}.tsv".format(name, runs, dt)
+    file_name = "{}_{}_measurements_{}_{}.tsv".format(file_prefix, name, runs, dt)
     file_path = os.path.join(output_dir, file_name)
     print("Output file:\n{}".format(file_path))
 
@@ -263,6 +292,8 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
 
     out = plugin(sim_range, initial_conditions, params, drain_params)
 
+    assert out is not None, "Output from run {} was None".format(run_number)
+
     if out.has_errors and len(out.dependent) == len(out.independent) == 0:
         warnings.warn("Simulation Error encountered using plugin: {}".format(plugin_name))
         raise SimulationError(*[m for err in out.errors for m in err.args])
@@ -275,25 +306,22 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     print("Stop prematurely?", out.has_sim_prematurely_stopped())
 
     freqs = analytics.fourier_frequencies
-    if freqs[0] == 0.0:
-        # cutting off the zero frequency since this is the DC component (mean offset)
-        freqs = freqs[1:]
-    print("Frequency bins: {}".format(len(freqs) + 1))
+    amp_spec = analytics.amplitude_spectra
+
+    print("Frequency bins: {}".format(len(freqs)))
+    freqs, amp_spec = analytics.cutoff_dc_component(freqs, amp_spec)
 
     variance_measurement = np.array([data.var() for data in out.dependent.T])
     print("Variance measurements: {}".format(variance_measurement))
     pair_diff = analytics.pair_distance_measurement()
     print("Pair distance measurements: {}".format(pair_diff))
-    amp_spec = analytics.amplitude_spectra
     fourier_amplitude_measurement = np.array([], dtype=float)
     fourier_frequency_measurement = np.array([], dtype=float)
 
     for i in range(ode.species_count):
-        max_amplitude, max_frequency = analytics.bounded_fourier_species_maxima(amp_spec, i, period_bounds[0],
-                                                                                period_bounds[1], freqs,
-                                                                                with_max_frequency=True)
-        fourier_amplitude_measurement = np.append(fourier_amplitude_measurement, max_amplitude)
-        fourier_frequency_measurement = np.append(fourier_frequency_measurement, max_frequency)
+        arg_max_fourier = amp_spec[i].argmax()
+        fourier_amplitude_measurement = np.append(fourier_amplitude_measurement, amp_spec[i, arg_max_fourier])
+        fourier_frequency_measurement = np.append(fourier_frequency_measurement, freqs[arg_max_fourier])
 
     assert len(fourier_amplitude_measurement) == len(fourier_frequency_measurement)
     assert len(fourier_amplitude_measurement) == len(variance_measurement)
@@ -307,10 +335,14 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
                     max(fourier_amplitude_measurement), max(fourier_frequency_measurement),
                     max(pair_diff))
 
-        image_path = os.path.join(output_dir, "eschenmoser_{}_{}_plot{}_{}_{}.png".format(plugin_name, method_name,
-                                                                                          run_number + 1, runs, dt))
+        image_path = os.path.join(output_dir, "{}_{}_{}_plot{}_{}_{}.png"
+                                  .format(file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
         out.plot(filename=image_path, figure_size=(46, 24), title=title)
-        plt.close('all')
+
+        image_path = os.path.join(output_dir, "{}_fourier_{}_{}_plot{}_{}_{}.png"
+                                  .format(file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
+        analytics.plot_spectra(amp_spec, freqs, title=title, filename=image_path, figure_size=(46, 24))
+        plt.close('all')  # we don't need to show the figures
 
     if out.has_sim_prematurely_stopped():
         dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
@@ -319,8 +351,8 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
                     max(fourier_amplitude_measurement), max(fourier_frequency_measurement),
                     max(pair_diff), out.independent[-1], out.dependent[-1])
 
-        image_path = os.path.join(output_dir, "aborted_eschenmoser_{}_{}_plot{}_{}_{}.png".format(
-            plugin_name, method_name, run_number + 1, runs, dt))
+        image_path = os.path.join(output_dir, "aborted_{}_{}_{}_plot{}_{}_{}.png".format(
+            file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
         out.plot(filename=image_path, figure_size=(46, 24), title=title)
         plt.close('all')
 
