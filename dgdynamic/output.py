@@ -1,6 +1,7 @@
 from dgdynamic.utils.project_utils import LogMixin, make_directory
 from dgdynamic.config.settings import config
 from dgdynamic.utils.plotter import matplotlib_plot
+from scipy.interpolate import interpolate
 import threading
 import time
 import csv
@@ -29,7 +30,11 @@ class SimulationOutput(LogMixin):
             self.simulation_duration = independent[0]
         else:
             self.simulation_duration = 0.0
-        self._ignored = tuple(item[1] for item in ignore)
+
+        if isinstance(ignore[0], (tuple, list, set)) and len(ignore[0]) > 1:
+            self._ignored = tuple(item[1] for item in ignore)
+        else:
+            self._ignored = ignore
         self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])
         self._file_writer_thread = None
         self.symbols = tuple(symbols) if isinstance(symbols, collections.Generator) else symbols
@@ -54,6 +59,17 @@ class SimulationOutput(LogMixin):
                 if not numpy.isclose(curr_dt, delta_t, rtol=rel_tol, atol=abs_tol):
                     return False
         return True
+
+    def interpolate_data(self, new_sample_resolution, kind='linear'):
+        if new_sample_resolution > 0:
+            new_independent = numpy.linspace(self.independent[0],
+                                             self.independent[-1],
+                                             num=new_sample_resolution)
+            interpolation_func = interpolate.interp1d(self.independent, self.dependent, axis=0, kind=kind)
+            return SimulationOutput(self.solver_used, self.requested_simulation_range, self.symbols,
+                                    dependent=interpolation_func(new_independent), independent=new_independent,
+                                    ignore=self._ignored, solver_method=self.solver_method_used, errors=self.errors)
+
 
     @property
     def is_output_set(self):
