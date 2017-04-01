@@ -31,9 +31,9 @@ class SimulationOutput(LogMixin):
         else:
             self.simulation_duration = 0.0
 
-        if isinstance(ignore[0], (tuple, list, set)) and len(ignore[0]) > 1:
+        try:
             self._ignored = tuple(item[1] for item in ignore)
-        else:
+        except IndexError:
             self._ignored = ignore
         self._path = os.path.abspath(config['Output Paths']['DATA_DIRECTORY'])
         self._file_writer_thread = None
