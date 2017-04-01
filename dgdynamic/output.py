@@ -61,15 +61,14 @@ class SimulationOutput(LogMixin):
         return True
 
     def interpolate_data(self, new_sample_resolution, kind='linear'):
+        """Shall return a new evenly spaced interpolated version of the original output"""
         if new_sample_resolution > 0:
-            new_independent = numpy.linspace(self.independent[0],
-                                             self.independent[-1],
-                                             num=new_sample_resolution)
+            new_independent = numpy.linspace(self.independent[0], self.independent[-1], num=new_sample_resolution)
             interpolation_func = interpolate.interp1d(self.independent, self.dependent, axis=0, kind=kind)
             return SimulationOutput(self.solver_used, self.requested_simulation_range, self.symbols,
                                     dependent=interpolation_func(new_independent), independent=new_independent,
                                     ignore=self._ignored, solver_method=self.solver_method_used, errors=self.errors)
-
+        return self
 
     @property
     def is_output_set(self):
