@@ -16,8 +16,6 @@ import argparse
 import numpy as np
 import warnings
 
-# TODO actually do what we write in the introduction doc
-
 
 def argument_handler():
     """Parses CLI arguments for the script"""
@@ -323,10 +321,10 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
 
     if do_plot and not out.has_sim_prematurely_stopped():
         dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-        title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {}, pd: {})"\
-            .format(out.solver_used.name, method, run_number + 1, runs, max(np.sqrt(variance_measurement)),
-                    max(fourier_amplitude_measurement), max(fourier_frequency_measurement),
-                    max(pair_diff))
+        title = "{} {} limiter {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {}, pd: {})"\
+            .format(out.solver_used.name, method, backward_limiter, run_number + 1, runs,
+                    max(np.sqrt(variance_measurement)), max(fourier_amplitude_measurement),
+                    max(fourier_frequency_measurement), max(pair_diff))
 
         image_path = os.path.join(output_dir, "{}_{}_{}_plot{}_{}_{}.png"
                                   .format(file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
