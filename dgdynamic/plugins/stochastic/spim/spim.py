@@ -91,6 +91,7 @@ class SpimStochastic(StochasticPlugin):
                         old_time = new_time
                     else:
                         errors.append(SimulationError("Simulation time regression detected"))
+
             return numpy.array(res_indep), numpy.array(res_dep)
 
         errors = list()

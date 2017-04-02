@@ -293,8 +293,12 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     sim_end = out.independent[-1]
     n_sample_points = len(out.dependent)
 
-    print("Is data equally spaced?", out.is_data_equally_spaced())
+    print("Is data equally spaced?", out.is_data_evenly_spaced())
     print("Stop prematurely?", out.has_sim_prematurely_stopped())
+
+    if not out.is_data_evenly_spaced():
+        print("Data was not equally spaced. Applying linear interpolation...")
+        out = out.interpolate_data(new_sample_resolution=sim_end_time)
 
     freqs = analytics.fourier_frequencies
     amp_spec = analytics.amplitude_spectra

@@ -46,7 +46,7 @@ class SimulationOutput(LogMixin):
         else:
             return self.requested_simulation_range[1] != 0
 
-    def is_data_equally_spaced(self, rel_tol=1e-05, abs_tol=1e-08):
+    def is_data_evenly_spaced(self, rel_tol=1e-05, abs_tol=1e-08):
         delta_t = 0
         time_vals = self.independent
         if len(time_vals) >= 2:

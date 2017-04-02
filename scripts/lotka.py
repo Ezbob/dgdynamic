@@ -80,7 +80,6 @@ with stochastic('spim') as spim:
                                                                   drain_parameters=drain_parameters)
         # The time domain plot comes before the frequency plot
         output.plot(figure_size=figure_size)
-
         analytics.plot_spectra(analytics.amplitude_spectra, analytics.fourier_frequencies,
                                include_maxima=True, include_maximum=True)
 
@@ -101,7 +100,8 @@ stochkit2.timeout = 20 * 4
 stochkit2.trajectories = 5
 
 # the simulate method (which is indirectly accessed here) gives a set of output.
-# This set can still be plotted or saved
+# This set can still be plotted or saved directly. The set can also be index or iterated like any other python iterable
+# objects
 stochkit2(end_t, initial_conditions, parameters, drain_parameters).plot()
 
 # Show all the plots generated so far
