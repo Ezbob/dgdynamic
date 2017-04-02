@@ -234,7 +234,7 @@ def write_score_data_parameter(name):
         return len(whole_header)
 
     dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-    file_name = "{}_{}_measurements_{}_{}.tsv".format(file_prefix, name, runs, dt)
+    file_name = "{}_{}_{}_measurements_{}_{}.tsv".format(file_prefix, name, backward_limiter, runs, dt)
     file_path = os.path.join(output_dir, file_name)
     print("Output file:\n{}".format(file_path))
 
