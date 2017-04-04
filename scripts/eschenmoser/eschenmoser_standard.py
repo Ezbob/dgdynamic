@@ -160,6 +160,10 @@ add_natural_drain(ode.symbols)
 sim_end_time = 60000
 period_bounds = (600, sim_end_time / 2)  # looking from 600 to 30000
 
+dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
+plot_names_file = "plots_scores_{}_{}_{}.txt".format(plugin_name, method_name, dt)
+    # shot format file that should help in sample classification
+
 measurement_output = {
     'variance': [],
     'fourier_amp': [],
@@ -170,12 +174,13 @@ measurement_output = {
 }
 
 
+def fp(float_value, fixed_precision=18):
+    """Fixed point string format conversion"""
+    return "{:.{}f}".format(float_value, fixed_precision)
+
+
 def write_score_data_parameter(name):
     """Write all data to a TSV file"""
-
-    def fp(float_value, fixed_precision=18):
-        """Fixed point string format conversion"""
-        return "{:.{}f}".format(float_value, fixed_precision)
 
     def spilt_reversible(r):
         """This splits reversible reaction into forward('->') and backward('->') components"""
@@ -213,7 +218,6 @@ def write_score_data_parameter(name):
         writer.writerow(whole_header)
         return len(whole_header)
 
-    dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
     file_name = "{}_{}_measurements_{}_{}.tsv".format(file_prefix, name, runs, dt)
     file_path = os.path.join(output_dir, file_name)
     print("Output file:\n{}".format(file_path))
@@ -248,10 +252,8 @@ def write_score_data_parameter(name):
             tsv_writer.writerow(data_row)
 
 
-def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=False):
+def do_sim_and_measure(run_number, params, plugin, plugin_name, method, plot_file=None):
     """Do a simulation run and get the measurements"""
-
-    print("Using plugin: {} with method: {}".format(plugin_name, method))
     plugin.method = method
 
     if hasattr(plugin, "delta_t"):
@@ -303,33 +305,36 @@ def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=
     print("Fourier maximum amplitude measurements: {}".format(fourier_amplitude_measurement))
     print("Fourier maximum frequency measurements: {}".format(fourier_frequency_measurement))
 
-    if do_plot and not out.has_sim_prematurely_stopped():
-        dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-        title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {}, pd: {})"\
-            .format(out.solver_used.name, method, run_number + 1, runs, max(np.sqrt(variance_measurement)),
-                    max(fourier_amplitude_measurement), max(fourier_frequency_measurement),
-                    max(pair_diff))
+    if plot_file is not None:
+        std_m, famp_m, ffreq_m, pd_m = max(np.sqrt(variance_measurement)), max(fourier_amplitude_measurement), \
+                                       max(fourier_frequency_measurement), max(pair_diff)
+        status = "s"
+        if not out.has_sim_prematurely_stopped():
+            title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {}, pd: {})"\
+                .format(out.solver_used.name, method, run_number + 1, runs, std_m, famp_m, ffreq_m, pd_m)
 
-        image_path = os.path.join(output_dir, "{}_{}_{}_plot{}_{}_{}.png"
-                                  .format(file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
-        out.plot(filename=image_path, figure_size=(46, 24), title=title)
+            image_path = os.path.join(output_dir, "{}_{}_{}_plot{}_{}_{}.png"
+                                      .format(file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
+            out.plot(filename=image_path, figure_size=(46, 24), title=title)
 
-        image_path = os.path.join(output_dir, "{}_fourier_{}_{}_plot{}_{}_{}.png"
-                                  .format(file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
-        analytics.plot_spectra(amp_spec, freqs, title=title, filename=image_path, figure_size=(46, 24))
-        plt.close('all')  # we don't need to show the figures
+            image_path = os.path.join(output_dir, "{}_fourier_{}_{}_plot{}_{}_{}.png"
+                                      .format(file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
+            analytics.plot_spectra(amp_spec, freqs, title=title, filename=image_path, figure_size=(46, 24))
+            plt.close('all')  # we don't need to show the figures
+        else:
+            status = "a"
+            title = "{} {} - Run: {} / {}, measures: " \
+                    "(std-dev: {}, amp: {}, freq: {}, pair_diff: {}), aborted at ({}, {})" \
+                .format(out.solver_used.name, method, run_number + 1, runs, std_m, famp_m, ffreq_m, pd_m,
+                        out.independent[-1], out.dependent[-1])
 
-    if out.has_sim_prematurely_stopped():
-        dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-        title = "{} {} - Run: {} / {}, measures: (std-dev: {}, amp: {}, freq: {}, pair_diff: {}), aborted at ({}, {})" \
-            .format(out.solver_used.name, method, run_number + 1, runs, max(np.sqrt(variance_measurement)),
-                    max(fourier_amplitude_measurement), max(fourier_frequency_measurement),
-                    max(pair_diff), out.independent[-1], out.dependent[-1])
+            image_path = os.path.join(output_dir, "aborted_{}_{}_{}_plot{}_{}_{}.png".format(
+                file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
+            out.plot(filename=image_path, figure_size=(46, 24), title=title)
+            plt.close('all')
 
-        image_path = os.path.join(output_dir, "aborted_{}_{}_{}_plot{}_{}_{}.png".format(
-            file_prefix, plugin_name, method_name, run_number + 1, runs, dt))
-        out.plot(filename=image_path, figure_size=(46, 24), title=title)
-        plt.close('all')
+        plot_file.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(run_number + 1, status, fp(std_m), fp(famp_m), fp(ffreq_m),
+                                                          fp(pd_m)))
 
     measurement_output['n_sample'].append(n_sample_points)
     measurement_output['end_t'].append(sim_end)
@@ -349,14 +354,22 @@ def main():
         'spim': stochastic("spim")
     }
 
-    try:
+    def do_all_runs(plot_file=None):
         for index, parm in enumerate(parameter_matrix):
             print("--- Run {} ---".format(index + 1))
 
             #  FIXME fourier for matlab is exceedingly slow
             #  TODO find out why spim is slacking
 
-            do_sim_and_measure(index, parm, plugins[plugin_name], plugin_name, method_name, do_plot=do_plots)
+            do_sim_and_measure(index, parm, plugins[plugin_name], plugin_name, method_name, plot_file)
+
+    try:
+        if do_plots:
+            plots_path = os.path.join(output_dir, plot_names_file)
+            with open(plots_path, mode="w") as plot_file:
+                do_all_runs(plot_file)
+        else:
+            do_all_runs()
 
     except KeyboardInterrupt:
         print("Received Interrupt Signal. ")

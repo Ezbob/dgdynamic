@@ -231,43 +231,50 @@ class DynamicAnalysisDevice:
             self.function_intersection(maxima_interpolation, minima_interpolation)
 
     def plot_spectrum(self, spectrum_data, frequencies, label=None, include_maxima=False, include_maximum=False,
-                      is_power_spectra=False, new_figure=True, figure_size=None):
+                      is_power_spectra=False, new_figure=True, figure_size=None, with_axes=None):
         if new_figure:
             plt.figure()
+        if with_axes is None:
+            ax = plt.subplot()
+        else:
+            ax = with_axes
+
+        fig = plt.gcf()
+
         plt.grid()
         if is_power_spectra:
-            plt.ylabel("power")
+            ax.set_ylabel("power")
         else:
-            plt.ylabel("amplitude")
-        plt.xlabel("frequencies")
+            ax.set_ylabel("amplitude")
+        ax.set_xlabel("frequencies")
 
         if figure_size is not None:
             assert hasattr(figure_size, "__len__") and len(figure_size) >= 2, \
                 "Figure size most be a collection of two elements"
 
             def cm2inch(number): return number / 2.54
-            fig = plt.gcf()
             fig.set_size_inches(cm2inch(figure_size[0]), cm2inch(figure_size[1]), forward=True)
 
-        plt.plot(frequencies, spectrum_data, marker='o', label=label)
+        ax.plot(frequencies, spectrum_data, marker='o', label=label)
 
         if include_maxima:
             maxima_values, maxima_frequency = self.nonzero_maxima(spectrum_data, frequencies)
-            plt.plot(maxima_frequency, maxima_values, 'ro', marker="^", markersize=10, color='red')
+            ax.plot(maxima_frequency, maxima_values, 'ro', marker="^", markersize=10, color='red')
         if include_maximum:
             maximum_value, maximum_frequency = self.nonzero_maximum(spectrum_data, frequencies)
-            plt.plot(maximum_frequency, maximum_value, 'ro', marker='*', markersize=12, color='red')
+            ax.plot(maximum_frequency, maximum_value, 'ro', marker='*', markersize=12, color='red')
         plt.legend()
 
     def plot_spectra(self, spectra_data, frequencies, include_maxima=False, include_maximum=False,
-                     is_power_spectra=False, title=None, filename=None, figure_size=None):
-        plt.figure()
-        plt.grid()
-        plt.title(title)
+                     is_power_spectra=False, title=None, filename=None, figure_size=None, with_axes=None):
+        fig = plt.figure()
+        ax = plt.subplot() if with_axes is None else with_axes
+        ax.grid()
+        ax.set_title(title)
         for data, label in zip(spectra_data, self.output.symbols):
             self.plot_spectrum(data, frequencies, label=label, include_maximum=include_maximum,
                                include_maxima=include_maxima, is_power_spectra=is_power_spectra,
-                               new_figure=False, figure_size=figure_size)
+                               new_figure=False, figure_size=figure_size, with_axes=with_axes)
         plt.legend()
         if filename is not None:
             plt.savefig(filename)

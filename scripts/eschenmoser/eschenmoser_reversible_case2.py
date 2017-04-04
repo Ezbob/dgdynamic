@@ -270,8 +270,6 @@ def write_score_data_parameter(name):
 
 def do_sim_and_measure(run_number, params, plugin, plugin_name, method, do_plot=False):
     """Do a simulation run and get the measurements"""
-
-    print("Using plugin: {} with method: {}".format(plugin_name, method))
     plugin.method = method
 
     if hasattr(plugin, "delta_t"):
