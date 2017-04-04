@@ -161,7 +161,7 @@ sim_end_time = 60000
 period_bounds = (600, sim_end_time / 2)  # looking from 600 to 30000
 
 dt = "{:%Y%m%d%H%M%S}".format(datetime.datetime.now())
-plot_names_file = "plots_scores_{}_{}_{}.txt".format(plugin_name, method_name, dt)
+plot_names_file = "plots_scores_{}_{}_{}_{}.txt".format(file_prefix, plugin_name, method_name, dt)
     # shot format file that should help in sample classification
 
 measurement_output = {
