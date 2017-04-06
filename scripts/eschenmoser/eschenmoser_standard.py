@@ -1,7 +1,7 @@
 """
 Case 0: The original Eschenmöser double integrated hyper cycles from the J. Andersen paper
 This is more or less a copy of the eschenmoser reversible script with the original model installed.
-Reactions rate generation has been modified to generate the same rate in both directions for reversible reactions.
+Reactions rate generation is randomly chosen
 Reversible reactions are also split into a "->"-reaction and a "<-"-reaction in the output file.
 """
 from dgdynamic import dgDynamicSim, HyperGraph
@@ -125,10 +125,10 @@ def generate_rates(reactions):
     rates = []
     for reaction in reactions:
         if '<=>' in reaction:
-            # forward and backward reaction gets equal rate
             f = random.random()
+            b = random.random()
             rates.append(
-                {'->': f, '<-': f}
+                {'->': f, '<-': b}
             )
         else:
             f = random.random()

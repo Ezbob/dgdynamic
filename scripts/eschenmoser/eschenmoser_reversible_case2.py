@@ -38,7 +38,7 @@ def argument_handler():
     parser.add_argument('-s', '--plot', help="Do and save plots in the output directory", default=defaults['plot'],
                         action='store_true')
     parser.add_argument('-l', '--limiter', help="Backward reaction limit factor for the targeted reactions",
-                        default=defaults['limit_factor'], type=float, choices=[1., 0.1, 0.01, 0.001, 0.0001, 0.00001])
+                        default=defaults['limit_factor'], type=float)
 
     parsed_args = parser.parse_args()
     output_dir = os.path.abspath(parsed_args.output_dir)
@@ -86,6 +86,7 @@ cycle2_reactions = [
     "C2S9 <=> C2S10"
 ]
 
+# "C1S4 <=> C1S5" "C2S2 <=> C2S3"
 # These are the "targeted" reaction which should add a
 targeted_c1_reaction = "C1S5 <=> C1S6 + {}".format(ImportantSpecies.Glyoxylate.name)
 targeted_c2_reaction = "C2S3 <=> {} + {}" \
