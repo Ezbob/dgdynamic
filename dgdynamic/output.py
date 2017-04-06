@@ -156,7 +156,7 @@ class SimulationOutput(LogMixin):
         float_precision = config.getint('Simulation', 'FIXED_POINT_PRECISION', fallback=18)
 
         if len(self.dependent) == 0 or len(self.independent) == 0:
-            self.logger.warn("No or mismatched data")
+            self._logger.warn("No or mismatched data")
             return
 
         if unfiltered:
@@ -171,7 +171,7 @@ class SimulationOutput(LogMixin):
         else:
             dependent_dimension = max(self.dependent_dimension - len(self._ignored), 0)
 
-        self.logger.debug("Dimension of the dependent variable is {}".format(dependent_dimension))
+        self._logger.debug("Dimension of the dependent variable is {}".format(dependent_dimension))
 
         header_labels = self.symbols if labels is None else labels
         assert isinstance(header_labels, (list, set, tuple))
@@ -196,11 +196,11 @@ class SimulationOutput(LogMixin):
 
         if stream is None:
             file_path = self._get_file_prefix(filename, prefix=prefix)
-            self.logger.info("Saving data as {}".format(file_path))
+            self._logger.info("Saving data as {}".format(file_path))
             stream = open(file_path, mode="w")
 
         def write_data():
-            self.logger.info("Started on writing data to disk")
+            self._logger.info("Started on writing data to disk")
             start_t = time.time()
             with stream as outfile:
                 # writing header underscore prefix marks that the columns where ignored (for ODE only, since SPiM
@@ -210,7 +210,7 @@ class SimulationOutput(LogMixin):
                 for row in data_rows():
                     writer.writerow(row)
             end_t = time.time()
-            self.logger.info("Finished writing to disk. Took: {} secs".format(end_t - start_t))
+            self._logger.info("Finished writing to disk. Took: {} secs".format(end_t - start_t))
 
         self._file_writer_thread = threading.Thread(target=write_data)
         self._file_writer_thread.start()

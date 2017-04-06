@@ -68,7 +68,7 @@ class StochKit2Stochastic(StochasticPlugin):
     def simulate(self, end_t, initial_conditions, rate_parameters, drain_parameters=None, *args, **kwargs):
         model_filename = "model.xml"
         output_dirname = "model_output"
-        self.logger.info("Starting on StochKit2 simulation with {} trajectories, "
+        self._logger.info("Starting on StochKit2 simulation with {} trajectories, "
                          "{} method, end time: {}, and {} sample points".format(self.trajectories, self.method,
                                                                                 end_t, self.resolution))
 
@@ -100,14 +100,14 @@ class StochKit2Stochastic(StochasticPlugin):
                     yield SimulationOutput(name, (0, end_t), self._simulator.symbols,
                                            solver_method=self.method, errors=(e,) + errors)
 
-        self.logger.info("started on StochKit2 simulation")
+        self._logger.info("started on StochKit2 simulation")
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             model_path = path.join(tmp_dir, model_filename)
             model_home_dir = path.join(tmp_dir, output_dirname)
             model = self.model(initial_conditions, rate_parameters, drain_parameters)
 
-            self.logger.info("Stochkit2 model:\n{}".format(model))
+            self._logger.info("Stochkit2 model:\n{}".format(model))
             with open(model_path, mode="w") as model_file:
                 model_file.write(model)
 
@@ -119,20 +119,20 @@ class StochKit2Stochastic(StochasticPlugin):
                 raise util_exceptions.SimulationError("Unknown stochkit2 method selected")
 
             program_path = path.join(self.stochkit2_path, program_name)
-            self.logger.info("Using stochkit2 driver at {}".format(program_name))
+            self._logger.info("Using stochkit2 driver at {}".format(program_name))
             execution_args = [program_path, '-m {}'.format(model_path),
                               '-r {}'.format(self.trajectories), '-t {}'.format(end_t),
                               '-i {}'.format(self.resolution),
                               '--epsilon {}'.format(self.tau_leaping_epsilon),
                               '--threshold {}'.format(self.switch_threshold),
                               *self.flag_options]
-            self.logger.info("Execution arguments are {!r}".format(" ".join(execution_args)))
+            self._logger.info("Execution arguments are {!r}".format(" ".join(execution_args)))
 
             with subprocess.Popen(" ".join(execution_args), shell=True, stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT, preexec_fn=os.setsid) as process:
                 try:
                     output, unused_err = process.communicate(timeout=self.timeout)
-                    self.logger.info(output)
+                    self._logger.info(output)
                 except subprocess.TimeoutExpired as exception:
                     # Time out path
                     os.killpg(os.getpgid(process.pid), signal.SIGINT)
@@ -174,7 +174,7 @@ class StochKit2Stochastic(StochasticPlugin):
                 with open(path.join(model_home_dir, 'log.txt')) as log:
                     log_message = log.readlines()
                     if settings.logging_is_enabled():
-                        self.logger.warn(log_message)
+                        self._logger.warn(log_message)
                     if len(trajectory_paths) == 0:
                         messages.print_solver_done(name, self.method.name, True)
                         return SimulationOutput(name, (0, end_t), self._simulator.symbols,

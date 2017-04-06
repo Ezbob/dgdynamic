@@ -64,7 +64,7 @@ class DynamicSimulator(abc.ABC, LogMixin):
                     if item == symbol:
                         self.ignored += ((item, symbol_index),)
         else:
-            self.logger.warn("ignored species count exceeds the count of actual species")
+            self._logger.warn("ignored species count exceeds the count of actual species")
         return self
 
     def generate_rate_laws(self):

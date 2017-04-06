@@ -87,7 +87,7 @@ class LogMixin:
     Handy code for injecting a logger instance in any class.
     """
     @property
-    def logger(self):
+    def _logger(self):
         name = ".".join([self.__class__.__module__, self.__class__.__name__])
         log_machine = logging.getLogger(name)
         log_machine.addHandler(logging_handler)

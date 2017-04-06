@@ -1,4 +1,3 @@
-import array
 import csv
 import math
 import os
@@ -61,11 +60,11 @@ class SpimStochastic(StochasticPlugin):
     def simulate(self, end_t, initial_conditions, rate_parameters, drain_parameters=None,
                  timeout=None, rel_tol=None, abs_tol=None):
 
-        self.logger.info("Starting on SPiM simulation")
-        self.logger.info("End_t: {} resolution: {}".format(end_t, self.resolution))
-        self.logger.info("Initial conditions: {}".format(initial_conditions))
-        self.logger.info("Rates: {}".format(rate_parameters))
-        self.logger.info("Drains: {}".format(drain_parameters))
+        self._logger.info("Starting on SPiM simulation")
+        self._logger.info("End_t: {} resolution: {}".format(end_t, self.resolution))
+        self._logger.info("Initial conditions: {}".format(initial_conditions))
+        self._logger.info("Rates: {}".format(rate_parameters))
+        self._logger.info("Drains: {}".format(drain_parameters))
 
         simulation_parameter_validate(end_t=end_t, initial_conditions=initial_conditions,
                                       rates_params=rate_parameters, drain_params=drain_parameters)
@@ -109,7 +108,7 @@ class SpimStochastic(StochasticPlugin):
 
             if logging_is_enabled():
                 with open(file_path_code) as debug_file:
-                    self.logger.info("SPiM simulation file:\n{}".format(debug_file.read()))
+                    self._logger.info("SPiM simulation file:\n{}".format(debug_file.read()))
 
             run_parameters = [self._ocamlrun_path, self._spim_path, file_path_code]
             try:
@@ -118,7 +117,7 @@ class SpimStochastic(StochasticPlugin):
                                            universal_newlines=True)
                 stdout, stderr = process.communicate(input="\n", timeout=self.timeout)
 
-                self.logger.info("SPiM stdout:\n{}".format(stdout))
+                self._logger.info("SPiM stdout:\n{}".format(stdout))
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.communicate()
@@ -133,7 +132,7 @@ class SpimStochastic(StochasticPlugin):
 
             if not os.path.isfile(csv_file_path):
                 if logging_is_enabled():
-                    self.logger.error("Missing SPiM output")
+                    self._logger.error("Missing SPiM output")
                 errors.append(SimulationError("Missing SPiM output"))
                 messages.print_solver_done(name, was_failure=True)
                 return SimulationOutput(name, (0, end_t),

@@ -24,9 +24,9 @@ class MatlabOde(OdePlugin, LogMixin):
     def __init__(self, simulator, method=MatlabOdeSolvers.ode45):
         super().__init__(simulator, method=method, delta_t=None)
 
-        self.logger.debug("Starting MATLAB engine...")
+        self._logger.debug("Starting MATLAB engine...")
         self.engine = matlab.engine.start_matlab()
-        self.logger.debug("MATLAB engine started.")
+        self._logger.debug("MATLAB engine started.")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.clear_workspace()
@@ -40,12 +40,12 @@ class MatlabOde(OdePlugin, LogMixin):
                                          drain_substitutions=drain_parameters)
 
         if ode_function is None or len(ode_function) == 0:
-            self.logger.error("Matlab ode function was not generated")
+            self._logger.error("Matlab ode function was not generated")
             messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
             return SimulationOutput(name, (self.initial_t, end_t), self._simulator.symbols,
                                     errors=(SimulationError("Ode function could not be generated"),))
 
-        self.logger.debug("Solving ode using MATLAB")
+        self._logger.debug("Solving ode using MATLAB")
 
         conditions = get_initial_values(initial_conditions, self._simulator.symbols)
 
@@ -58,14 +58,14 @@ class MatlabOde(OdePlugin, LogMixin):
         self.add_to_workspace('tspan', matlab.double((self.initial_t, end_t)))
 
         eval_str = "ode" + str(self.method.value) + "(" + ode_function + ", tspan, y0)"
-        self.logger.debug("evaluating matlab \
+        self._logger.debug("evaluating matlab \
 expression: {} with tspan: {} and y0: {}".format(eval_str, (self.initial_t, end_t), initial_conditions))
 
         t_result, y_result = self.engine.eval(eval_str, nargout=2)
         if len(t_result) >= 2:
             self.delta_t = t_result._data[1] - t_result._data[0]
         self.engine.clear(nargout=0)
-        self.logger.debug("Successfully solved")
+        self._logger.debug("Successfully solved")
 
         # http://stackoverflow.com/questions/30013853/convert-matlab-double-array-to-python-array
         def convert_matrix(double_matrix):
@@ -77,7 +77,7 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, (self.initial_t, end_
         t_result = tuple(a for i in t_result for a in i)
         y_result = tuple(convert_matrix(y_result))
 
-        self.logger.info("Return output object")
+        self._logger.info("Return output object")
         messages.print_solver_done(name, method_name=self.method.name)
         return SimulationOutput(solved_by=name, user_sim_range=(self.initial_t, end_t),
                                 symbols=self._simulator.symbols,
@@ -85,9 +85,9 @@ expression: {} with tspan: {} and y0: {}".format(eval_str, (self.initial_t, end_
                                 ignore=self._simulator.ignored, solver_method=self.method)
 
     def close_engine(self):
-        self.logger.debug("Closing MATLAB engine...")
+        self._logger.debug("Closing MATLAB engine...")
         self.engine.exit()
-        self.logger.debug("Closed")
+        self._logger.debug("Closed")
 
     def add_to_workspace(self, key, value):
         if isinstance(key, str):

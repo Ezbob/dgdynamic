@@ -1,6 +1,7 @@
 from ..config.settings import config
 import enum
 
+
 def _left_pad(string):
     string_stripped_size = len(string.strip())
     return "{:<{}}".format(string, string_stripped_size + 1 if string_stripped_size > 0 else 0)

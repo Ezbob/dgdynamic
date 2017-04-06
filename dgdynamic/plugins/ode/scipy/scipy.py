@@ -30,7 +30,7 @@ class ScipyOde(OdePlugin, LogMixin):
 
         if not ode_function:
             if config.getboolean('Logging', 'ENABLED_LOGGING'):
-                self.logger.error("Scipy ode function was not generated")
+                self._logger.error("Scipy ode function was not generated")
             messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
             return SimulationOutput(name, end_t, symbols=self._simulator.symbols,
                                     errors=(SimulationError("Ode function could not be generated"),))
@@ -39,16 +39,16 @@ class ScipyOde(OdePlugin, LogMixin):
             ode_function = eval(ode_function)
         except SyntaxError:
             if config.getboolean('Logging', 'ENABLE_LOGGING'):
-                self.logger.error("Scipy ode function was not generated; syntax error")
+                self._logger.error("Scipy ode function was not generated; syntax error")
             messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
             return SimulationOutput(name, end_t, self._simulator.symbols,
                                     errors=(SimulationError("Internal syntax error encountered")))
 
         initial_y = get_initial_values(initial_conditions, self._simulator.symbols)
 
-        self.logger.debug("Started solving using Scipy with method {}".format(self.method.value))
-        self.logger.debug("Initial conditions are {}, range: {} and dt: {} ".format(initial_conditions,
-                                                                                    end_t, self.delta_t))
+        self._logger.debug("Started solving using Scipy with method {}".format(self.method.value))
+        self._logger.debug("Initial conditions are {}, range: {} and dt: {} ".format(initial_conditions,
+                                                                                     end_t, self.delta_t))
 
         y_solution = list()
         t_solution = list()
@@ -63,13 +63,13 @@ class ScipyOde(OdePlugin, LogMixin):
                     t_solution.append(solver.t)
                     solver.integrate(solver.t + self.delta_t)
             except SystemError as integration_error:
-                self.logger.exception("Integration process failed", integration_error)
+                self._logger.exception("Integration process failed", integration_error)
                 messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
                 return SimulationOutput(name, (self.initial_t, end_t), self._simulator.symbols,
                                         dependent=y_solution, independent=t_solution,
                                         errors=(SimulationError("Integration failure"),))
 
-            self.logger.debug("Solving finished using fixed step integration")
+            self._logger.debug("Solving finished using fixed step integration")
             messages.print_solver_done(name, method_name=self.method.name)
             return SimulationOutput(name, user_sim_range=(self.initial_t, end_t),
                                     dependent=y_solution, independent=t_solution,
@@ -88,13 +88,13 @@ class ScipyOde(OdePlugin, LogMixin):
                 while solver.successful() and solver.t < end_t:
                     solver.integrate(end_t, step=True)
             except SystemError as integration_error:
-                self.logger.exception("Integration process failed", integration_error)
+                self._logger.exception("Integration process failed", integration_error)
                 messages.print_solver_done(name, method_name=self.method.name, was_failure=True)
                 return SimulationOutput(name, (self.initial_t, end_t), self._simulator.symbols,
                                         dependent=y_solution, independent=t_solution,
                                         errors=(SimulationError("Integration failure"),))
 
-            self.logger.debug("Solving finished using variable step integration")
+            self._logger.debug("Solving finished using variable step integration")
             messages.print_solver_done(name, method_name=self.method.name)
             return SimulationOutput(name, (self.initial_t, end_t), dependent=y_solution, independent=t_solution,
                                     symbols=self._simulator.symbols, ignore=self._simulator.ignored,
