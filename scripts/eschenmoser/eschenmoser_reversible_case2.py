@@ -1,7 +1,8 @@
 """
-Case 2: Continued on the hyper cycle definition from case 1, we here try some direction to each of the hyper cycles.
-This means that we take a reaction from each of the hyper cycles and make the backward reaction dependent on a fraction
-of the forward reaction. This should add a sense of flow direction to the two hyper cycles.
+Case 2: Continued on the hyper cycle definition from case 1, we here use a limiter to limit the backward reactions.
+A caveat: we don't limit the backward reactions of the reaction that was reversible in the case 0
+this means that this case should be viewed as a step between case 1 and case 2. A limiter of zero will thus 
+achieve the standard model and a limiter 1 will achieve the reversible model
 """
 from dgdynamic import dgDynamicSim, HyperGraph
 from dgdynamic.analytics import DynamicAnalysisDevice
@@ -86,13 +87,12 @@ cycle2_reactions = [
     "C2S9 <=> C2S10"
 ]
 
-# "C1S4 <=> C1S5" "C2S2 <=> C2S3"
-# These are the "targeted" reaction which should add a
-targeted_c1_reaction = "C1S5 <=> C1S6 + {}".format(ImportantSpecies.Glyoxylate.name)
-targeted_c2_reaction = "C2S3 <=> {} + {}" \
-    .format(ImportantSpecies.Oxaloglycolate.name, ImportantSpecies.Oxoaspartate.name)
-
-print("Targeted reactions for cycle 1: {} and cycle2: {}".format(targeted_c1_reaction, targeted_c2_reaction))
+# These reaction are reversible reaction in case 0. We don't limit these
+exclude_reactions = [
+    "{} <=> C2S4".format(ImportantSpecies.Oxaloglycolate.name),
+    "C2S4 <=> C2S5",
+    "C2S5 <=> C2S6"
+]
 
 cycle1_hyper = HyperGraph.from_abstract(*cycle1_reactions)
 cycle2_hyper = HyperGraph.from_abstract(*cycle2_reactions)
@@ -134,27 +134,34 @@ drain_params = {
 def generate_rates(reactions):
     """Generate random rates for reactions"""
     rates = []
+    r_count, l_count = 0, 0
     print("Backward reaction limiter set to: {}".format(backward_limiter))
     for reaction in reactions:
         if '<=>' in reaction:
-            if reaction in [targeted_c1_reaction, targeted_c2_reaction]:
+            if reaction not in exclude_reactions:
                 f = random.random()
-                b = backward_limiter * f
+                b = random.random()
+                b *= backward_limiter
                 print("Setting {} to have forward {} and backward {} rates".format(reaction, f, b))
                 rates.append(
                     {'->': f, '<-': b}
                 )
+                l_count += 1
             else:
                 f = random.random()
                 b = random.random()
+                print("Setting {} to have forward {} and backward {} rates".format(reaction, f, b))
                 rates.append(
                     {'->': f, '<-': b}
                 )
+                r_count += 1
         else:
             f = random.random()
             rates.append(
                 {'->': f}
             )
+    print("{} reactions was excluded, and {} reactions was backward limited with a factor of {} "
+          .format(r_count, l_count, backward_limiter))
     return rates
 
 
