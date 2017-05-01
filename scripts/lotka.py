@@ -4,14 +4,14 @@ A Lotka-Volterra model with (F)oxes and (R)abbits (prey-predator model).
     Foxes hunt and eat rabbits and multiples
     Foxes also dies of old age
 """
-from dgdynamic import dgDynamicSim, show_plots, HyperGraph, DynamicAnalysisDevice
+from dgdynamic.analytics import DynamicAnalysisDevice
+from dgdynamic import dgDynamicSim, show_plots, HyperGraph
 
 rabbit_multiples = "R -> 2 R"
 foxes_hunts = "R + F -> F + F"
 
 dg = HyperGraph.from_abstract(rabbit_multiples, foxes_hunts,)
 
-#dg.print()
 
 initial_conditions = {
     'F': 250,
