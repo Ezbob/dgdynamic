@@ -96,9 +96,6 @@ scipy_ode.delta_t = 0.1
 # Set initial t value, default is 0
 scipy_ode.initial_t = 0
 
-# Set the end_t
-scipy_ode.end_t = end_t
-
 # Set the initial conditions
 scipy_ode.initial_conditions = initial_conditions
 
@@ -108,7 +105,7 @@ scipy_ode.parameters = parameters
 scipy_ode.drain_parameters = drain_par
 
 # Solve the ODE system to get the output object
-output = scipy_ode.simulate()
+output = scipy_ode.simulate(end_t, initial_conditions, parameters)
 
 # Save the data to a file in the data folder using the output object
 output.save(name)
