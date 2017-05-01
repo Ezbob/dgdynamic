@@ -3,7 +3,6 @@ Here we numerically solve for the first-order autocatalytic cycles as described 
 See Section: "The linear case: self-origanisation of first-order autocatalysis"
 """
 
-import mod
 import numpy
 
 from dgdynamic.mod_dynamics import dgDynamicSim, HyperGraph, show_plots
@@ -71,6 +70,6 @@ solver = ode("scipy")
 solver.integrator_mode = ScipyOdeSolvers.LSODA
 solver.delta_t = 0.1
 
-output = solver.simulate(end_t, initial_conditions, parameters,)
+output = solver.simulate(end_t, initial_conditions, parameters)
 output.save("reproduction1", unfiltered=True).plot(figure_size=(60, 30))
 show_plots()

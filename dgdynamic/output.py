@@ -177,9 +177,6 @@ class SimulationOutput(LogMixin):
         assert isinstance(header_labels, (list, set, tuple))
 
         def header():
-            assert len(header_labels) - len(self._ignored) == dependent_dimension, \
-                "Expected {} number of labels got {}"\
-                .format(dependent_dimension, len(header_labels))
             yield "time"
             for index, label in enumerate(header_labels):
                 if unfiltered and index in self._ignored:
