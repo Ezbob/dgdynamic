@@ -69,7 +69,6 @@ def get_edge_rate_dict(deviation_graph, user_parameters: dict,
                                     .format(type(rate), edges_representation))
 
 
-
 @log_it
 def get_drain_rate_dict(internal_drains, user_drain_rates):
     """

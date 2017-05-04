@@ -1,5 +1,5 @@
 import abc
-from ..base_converters.reaction_parser import abstract_mod_parser
+from ..base_converters.reaction_parser import abstract_mod_parser, hyper_edge_to_string
 from dgdynamic.utils.project_utils import LogMixin
 from ..intermediate.intermediate_generators import generate_rate_laws, generate_rate_equations
 from collections import OrderedDict
@@ -18,6 +18,10 @@ class DynamicSimulator(abc.ABC, LogMixin):
     @property
     def symbols(self):
         yield from (vertex.graph.name for vertex in self.graph.vertices)
+
+    @property
+    def abstract_edges(self):
+        yield from (hyper_edge_to_string(edge) for edge in self.graph.edges)
 
     @property
     def symbols_internal(self):
