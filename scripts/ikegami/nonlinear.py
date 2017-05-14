@@ -3,22 +3,17 @@ Numerically solving non-linear case as described in the Ikegami et.al. paper
 (Figure 2)
 """
 import mod
-import numpy
-
 from dgdynamic.mod_dynamics import dgDynamicSim, show_plots
 from dgdynamic.choices import MatlabOdeSolvers, ScipyOdeSolvers
 
 root_symbol = 'A'
 species_limit = 60
-max_concentration = 1.0
 dimension_limit = species_limit // 2 + 1
-epsilon = numpy.nextafter(0, 1)
-theta = numpy.nextafter(max_concentration, 0)
 
 end_t = 600
 
 # Exclude every A_3i species
-banned_set = tuple(3 * i for i in range(species_limit))
+banned_set = tuple(3 * i for i in range(1, species_limit + 1))
 
 k_s = k_d = 1
 
@@ -59,33 +54,34 @@ dg = mod.dgAbstract(reactions)
 ode = dgDynamicSim(dg)
 sto = dgDynamicSim(dg, 'stochastic')
 
-solver = ode("scipy")
+scipy = ode("scipy")
 spim = sto('SPIM')
 stochkit2 = sto('stochkit2')
+matlab = ode('matlab')
 
-solver.method = ScipyOdeSolvers.LSODA
-solver.delta_t = 0.08
+scipy.method = ScipyOdeSolvers.LSODA
+scipy.delta_t = 0.08
 
-out = solver.simulate(end_t, initial_conditions, parameters)
+out = scipy.simulate(end_t, initial_conditions, parameters)
 out.plot(filename="scipy_nonlinear.svg", axis_limits=((0, end_t), (0, 1.5)), figure_size=(60, 30))
 
-solver = ode('matlab')
-
-solver.method = MatlabOdeSolvers.ode45
-out = solver.simulate(end_t, initial_conditions, parameters)
+matlab.method = MatlabOdeSolvers.ode45
+out = matlab.simulate(end_t, initial_conditions, parameters)
 
 out.plot(filename="matlab_nonlinear.svg", axis_limits=((0, end_t), (0, 1.5)), figure_size=(60, 30))
 
-initial_conditions = {symbol: 1 for symbol in get_symbols()}
-initial_conditions['A1'] = 10000000  # int(100 / 1e-5) * 100
+for species in initial_conditions.keys():
+    initial_conditions[species] = int(initial_conditions[species] * 1e5)
 
-out = spim.simulate(end_t + 2400, initial_conditions, parameters)
+end_t = end_t + 2400
+
+out = spim.simulate(end_t, initial_conditions, parameters)
 out.plot(filename="spim_nonlinear.svg", figure_size=(60, 30))
 
 stochkit2.method = 'tauLeaping'
 stochkit2.resolution = 7500
 
-out = stochkit2.simulate(end_t + 2400, initial_conditions, parameters)
-out.plot(filename="stochkit2_nonlinear.svg", figure_size=(60, 30))
+out = stochkit2.simulate(end_t, initial_conditions, parameters)
+out.plot(filename="stochkit2_nonlinear.svg", figure_size=(60, 30), axis_limits=((0, end_t), (0, 100000)))
 
 show_plots()
