@@ -387,9 +387,6 @@ def main():
         for index, parm in enumerate(parameter_matrix):
             print("--- Run {} ---".format(index + 1))
 
-            #  FIXME fourier for matlab is exceedingly slow
-            #  TODO find out why spim is slacking
-
             do_sim_and_measure(index, parm, plugins[plugin_name], plugin_name, method_name, plot_file)
 
     try:
