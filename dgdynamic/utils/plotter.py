@@ -69,6 +69,14 @@ def matplotlib_plot(input_data):
                 line.set_linestyle('dashdot')
             elif 16 < index <= 21:
                 line.set_linestyle('dotted')
+            elif 21 < index <= 26:
+                line.set_marker('+')
+            elif 26 < index <= 31:
+                line.set_marker('*')
+            elif 31 < index <= 36:
+                line.set_marker('d')
+            elif 36 < index <= 41:
+                line.set_marker('<')
 
         # shrinking the box so there is space for the left box
         box = plt.get_position()
