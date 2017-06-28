@@ -54,7 +54,7 @@ if __name__ == '__main__':
     setup(
         cmdclass={'install': CustomInstall},
         name=package_name,
-        version='0.5.2',
+        version='1.0.0',
         description='Dynamic simulation library for the MØD graph transformation framework',
         url='https://bitbucket.org/Ezben/dgdynamic',
         author='Anders Busch',
