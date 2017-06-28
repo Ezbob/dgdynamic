@@ -15,6 +15,7 @@ logs
 *.jam.*
 *.gch
 *.tsv
+*.eps
 eschenmoser_data/
 **__pycache__/
 **/StochKit/custom_drivers/
