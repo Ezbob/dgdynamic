@@ -7,7 +7,7 @@ To use this library, one have to access to the MØD framework.
 This library has been packaged as pip package and can be installed by the following command:
  
 ```
-./compile_stochkit2 && pip --user install .
+./compile_stochkit2 && pip install --user .
 ```
 This installs all of the Python dependencies via pip and installs them locally for your user.
 To install the package globally, do the following:
