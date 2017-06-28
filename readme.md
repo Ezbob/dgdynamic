@@ -1,5 +1,5 @@
-# dgDynamic library #
-`dgDynamic` is a library for dynamic simulations on deviation graphs produced by the MØD framework.
+# dgdynamic library #
+`dgdynamic` is a library for dynamic simulations on deviation graphs produced by the MØD framework.
  
 ### Installation ###
 To use this library, one have to access to the MØD framework.
